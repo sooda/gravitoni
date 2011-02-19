@@ -1,0 +1,156 @@
+\documentclass[a4paper,11pt]{article}
+
+\frenchspacing
+\usepackage[finnish]{babel}
+\usepackage[latin1]{inputenc}
+\usepackage[dvips]{graphicx}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+
+\pagestyle{myheadings}
+\markright{Lols\hfill Foobaa\hfill}
+\begin{document}
+
+\thispagestyle{empty}
+
+\vspace*{5cm}
+
+\begin{center}
+
+{ \Huge T-106.1240/1243 Ohjelmoinnin jatkokurssi T1/L1 }
+\\[1cm]
+{ \huge Projektin yleissuunnitelma }
+\end{center}
+
+\vfill
+
+\begin{flushright}
+
+Konsta Hölttä\\
+79149S\\
+AUT 4. vk\\
+konsta.holtta@aalto.fi\\
+x.2.2011
+\end{flushright}
+
+\newcommand{\kuvaa}[4]{%
+	\begin{figure}[h!]%
+		\centering \includegraphics[width=#1\textwidth]{#2}%
+		\caption{#3 \label{#4}}%
+	\end{figure}%
+}
+\newcommand{\kuva}[2]{\kuvaa{0.6}{#1}{#2}{fig:#1}}
+
+\newpage
+nätti maailma simu planeetta aurinkokunta maa kuu newton painovoima
+gravitoni
+GRaafinen Aurinkokunnan VIsualisaatio TOsi Nätisti Integroiden
+
+\section{Ohjelman rakennesuunnitelma}
+- simu
+	- vec3, body, world, integrator
+- gfx
+	- material: color, texture, opacity
+	- shape: vertices
+	- drawable extends simu.body: material, shape
+- ui
+	- canvas
+	- configuration panels
+- conf
+	- setting extends simu.body..?
+	- setting, contains data about simu.body and gfx stuff
+	- instantiates gfx drawables?
+	- or simu/gfx reads stuff based on abstract conf list?
+	- read(), save()
+
+Koodihierarkia hajautuu neljään erilliseen pääkategoriaan.
+
+\begin{itemize}
+	\item Konfiguraatiotiedostojen hallinta
+	\item Simulaatio integrointineen
+	\item Käyttöliittymä ja dialogit
+	\item Renderöinti ja sen käyttöliittymä
+\end{itemize}
+
+\subsection{Konfiguraatiotiedostot}
+
+Maailmankaikkeuksien rakenne kuvataan tiedostoissa, sekä ohjelman ajon aikana kaikkeuden kappaleita vastaavissa luokissa. Tiedostojen ja rakenteiden välillä on yksinkertainen tiedostoparseri, joka tuottaa geneerisiä rakennepuita asetetuista parametreista. Itse kaikkeusluokat lukevat näistä tiedot itselleen.
+
+Config-luokka vastaa yhtä kokonaista konfiguraatiota, joka saadaan yhdestä tiedostosta. Tiedoston sisällä voi olla include-määre, joka aiheuttaa toisen tiedoston sisältämien tietojen lukemista siihen kohtaan, missä määre on tiedostossa. Tiedosto sisältää lohkoja, joissa on sisällä asetuksia. Pääasetukset eivät ole eksplisiittisesti missään lohkossa. Luokka lataa tiedoston muistiin konstruktorissaan, ja instantioi lohkoja kun niitä esiintyy toedostossa. Metodilla getBlock(String)-metodilla kysellä tietyn nimiset lohkot, joita voi siis olla samalla nimellä useampia (esim. kappale-lohko). Päätason globaalit asetukset, jotka eivät ole missään erillisessä lohkossa, saadaan getGlobals()-metodilla. Luokan sisäisiä metodeja on mm. read(), parseLine() ja merge() tiedoston lukemiseen, rivin käsittelyyn ja kahden asetustiedoston yhdistämiseen.
+
+ConfigBlock-luokka kuvaa yhtä tällaista lohkoa. Se pohjautuu hashmapiin, jossa on avain/arvo-pareja tiedostosta luettuna. Konfigurointia käyttävät luokat ottavat näitä ja lukevat avainten perusteella arvoja. Luokka tarjoaa pari apumetodia mm. kokonaislukuarvon lukemiseksi: get lukee String-tyyppisen arvon, getInt kokonaisluvun. Konfigurointia käyttävät luokat ottavat näitä blokkeja ja lukevat avainten perusteella arvonsa.
+
+Asetusten lukeminen lohkoista luokkien jäsenmuuttujiin helpotetaan mahdollisesti annotaatioiden avulla, jolloin sijoituksia ei tarvitse erikseen koodata, vaan lataus hoituu relektiolla.
+
+
+\subsection{Simulaatio}
+
+Simulaatio sisältää fysiikkaan liittyviä luokkia. Se on kokonaan eristetty kokonaisuus, eikä vaadi esim. graafista käyttöliittymää toimiakseen.
+
+Vektoriluokka Vec kuvaa kolmiulotteista matemaattista vektoria ja helpottaa laskentaa, kun ohjelmassa toimitaan 3d-avaruudessa. Laskuoperaatiot (add, sub, mul yms; ottavat parametrikseen toisen vektorin) suoritetaan vektoreina sen sijaan, että komponentteja käsiteltäisiin erikseen skalaareina. Vektorien kanssa pitänee kiinnittää tehokkuussyistä huomiota siihen, koska vektoriolioita luodaan, jotta ylimääräinen muistinvarailu ja -vapauttelu minimoitaisiin. Esimerkiksi vektorien summaoperaatio muokkaa oliota suoraan, eikä luo uutta.
+
+Kappaleille on kappaleluokka Body, joka sisältää yleistä tietoa kaikista vuorovaikuttavista kappaleista, kuten sijainnin, nopeuden, massan ja nimen. Tästä periytyvät erilaiset kappaleet, joilla on erityisominaisuuksia: esim. planeetta ja raketti/satelliitti; raketilla on moottorin tuottama vakiokiihtyvyys vetovoimien lisäksi. Kappaleessa itsessään ei ole paljoakaan toiminnallisuutta, vaan se sisältää tilansa ja getterit ja setterit niille.
+
+World-luokka kuvaa koko maailmankaikkeutta ja varastoi listassa Body-oliot. Se hoitaa simulaation ulkoisten luokkien interaktion, laskee kiihtyvyyksiä ja hoitaa integroinnin kun jokin ulkoinen taho niin käskee. loadConfig(Config)-metodi lukee asetuksista mm. gravitaatiovakion, aika-askeleen ja kappalelohkot ja luo lohkoista kappaleolioita. Metodi run() ajaa yhden aika-askeleen eteenpäin valitulla integraattorilla (jäsenmuuttuja), joka kutsuu vastaavasti Worldin acceleration(Body, State)-metodia, joka laskee kiihtyvyyden tietylle kappaleelle tietyssä pisteessä.
+
+Itse integraattori on Worldin jäsenmuuttujana jokin Integrator-rajapinnan toteuttava luokka. Integraattoria käsketään ajamaan yksi aika-askel (run()), jolloin se lukee Worldilta kappaleiden tilat ja laskee niille uudet sekä lopuksi asettaa ne.
+
+Integraattori käyttää sisäisesti State-luokkaa, jossa on yhdistetty paikka- ja nopeusvektorit yhteen käsittelyn helpottamiseksi.
+
+
+\subsection{Käyttöliittymä}
+
+Käyttöliittymä on monitasoinen; siinä voi tarkastella koko maailman tilaa numeerisesti taulukossa, muokata kappaleiden tilaa muokkausdialogeilla, sekä tarkastella maailmaa kolmiulotteisesta näkymästä, jossa voi kulkea fps-pelien tapaan näppäimistön ja hiiren avulla. Käyttöliittymä koostuu monista palasista, joten sekin on jaettu keskeisimpiin luokkiin.
+
+Pääikkuna (luokka UI) on oma luokkansa, ja se avaa muita dialogeja tai piilossa olevia asetuspaneeleja kun käyttäjä niin valitsee. Pääikkunan alla on myös renderöintinäkymä. Renderöintiä päivitetään aina kun yksi aika-askel on ajettu.
+
+UI-luokka hoitaa korkeimman tason pääasiat ja ikkunan rakentamisen. SettingPane on hybridinäkymässä oleva konfigurointipaneeli, josta voi säätää keskeisimmät ja monet renderöintiin liittyvät asiat: 3d-näkymässä voi klikata kappaletta, jolloin sen tiedot (sijainti, nopeus, massa ym) tulevat näkyviin tähän sivupaneeliin, josta niitä voi myös muokata välittömästi. Selkeyden ja modulaarisuuden vuoksi SettingPane ei hoida itse juuri mitään asetuksia, vaan se säilöö useita eri asetuswidgettejä.
+
+BodyWidgetin vastuulla on kappaleen tietojen esittäminen. Se koostuu valikosta, josta valitaan käsiteltävä kappale (jonka voi toisaalta valita myös 3d-näkymästä), sekä tekstilaatikoista, joissa on nimi, paikan ja nopeuden x- y- ja z-komponentit, massa, ja muut kappaleen ominaisuudet.
+
+Joskus halutaan seurata kahden kappaleen välistä etäisyyttä. DistanceWidget seuraa tätä arvoa kokonaisuutena ja komponenteittain, sekä se sisältää valintalaatikot seurattaville kappaleille.
+
+Simuloinnin historiasta pidetään kirjaa mm. ratojen piirtämistä varten. TimeWidget sisältää sliderin, jolla aikaa voi kelata taaksepäin, sekä lisäksi napin sekä valintalaatikon, joiden avulla simuloida aikaa lisää eteenpäin tietyn aikaa, kunnes tapahtuu törmäys, tai pysähtymättä lainkaan.
+
+Widgeteillä on joitakin metodeita tiedon kuljettamisesta edestakaisin; esimeriksi BodyWidgetillä on chooseBody(Body), jota kutsutaan kun 3d-tilasta klikataan planeettaa, ja DistanceWidgetillä chooseBodies(Body, Body), jolla valitaan minkä kahden kappaleen välistä etäisyyttä seurataan.
+
+Näiden lisäksi projektin edistyessä saatetaan toteuttaa muitakin widgettejä sitä mukaa kun lisää ideoita ja tarvetta tulee.
+
+
+\subsection{Renderöinti}
+
+Simulaation nykytila ja kappaleiden ratahistoriat renderöidään kolmiulotteiseen opengl-näkymään. Koska simulaatio pidetään erillisenä grafiikasta, mutta eri kappaleilla voi olla eri muotoja ja tekstuureita, grafiikkapuoli sisältää kappaleille omat luokat, jotka viittaavat vastaaviin simulaation kappaleluokkiin.
+
+Renderöinnin pääasiat hallitsee Renderer-luokka, joka periytyy GLEventListeneristä. Kun näyttö halutaan päivittää, Rendererin piirtometodia kutsutaan. Renderer sisältää listan GfxBody-luokan olioista.
+
+GfxBody syö sisäänsä simuloinnin Bodyn. GfxBody sisältää lisäksi tiedon mm. kappaleen muodosta, ja se osaa piirtää itsensä näytölle, kun Renderer niin käskee. Piirtometodeina mm. draw(), drawBody() ja drawHistory().
+
+Shape-luokka vastaa erilaisten muotojen piirtämisestä opengl:llä. Se varastoi mm. verteksilistan ja värin/tekstuurin tiedot.
+
+\section{Käyttötapauskuvaus}
+
+      Esittäkää ainakin yksi realistinen ohjelman käyttötapaus, eli kuvaus tilanteesta, jossa käyttäjä käynnistää ohjelman ja tekee sillä joitakin ohjelmalle tyypillisiä asioita. Kertokaa sekä se, mitä toimenpiteitä käyttäjän on suoritettava päämääriensä saavuttamiseksi (eli minkä käyttöliittymän osien kanssa tämä on tekemisissä ja miten), että se, mitkä ohjelmanne osat aktivoituvat kussakin vaiheessa "kulissien takana" ja suorittavat tarvittavat tehtävät. Koodiyksityiskohdat eivät ole tässä kiinnostavia, vaan korkeamman tason työnjako.
+\section{Algoritmit}
+
+      Sanallinen kuvaus käyttämistänne algoritmeista, eli siitä miten ohjelma suorittaa tarvittavat tehtävät. Esim. miten tarvittava matemaattinen laskenta tapahtuu (kaavat mukaan)? Miten algoritminne löytää lyhimmän tiereitin kahden kaupungin välille? Miten toteuttamanne pelin tekoäly toimii? Kaavioita tms. voi käyttää apuna tarpeen mukaan. Mitä muita ratkaisuvaihtoehtoja olisi ollut? Perustelkaa valintanne!
+
+      Tässä kohdassa on siis tarkoitus selostaa ne periaatteet, joilla ongelmat voidaan ratkaista, ei sitä, miten algoritmit koodataan. Siis ei luokkien tai metodien kuvauksia tai muitakaan Javaan tai ohjelmakoodiin liittyviä seikkoja tänne! (Vielä rautalangasta: älkää mainitko tässä mitään siitä, millaisilla metodeilla algoritmi saadaan toimimaan, millaisia silmukkarakenteita tarvitsee kirjoittaa, tms. Nämä ovat toteutusteknisiä yksityiskohtia, jotka eivät ole tämän osion, eivätkä oikeastaan koko projektisuunnitelman kannalta kiinnostavia.) Jos ohjelmassa on tarkoitus käyttää joitakin yleisesti tunnettuja algoritmeja kannattaa toki mainita algoritmit nimeltä.
+\section{Tietorakenteet}
+
+      Minkälaiset kokoelmatyypit/tietorakenteet soveltuvat parhaiten ohjelmassa tarvittavan tiedon varastoimiseen ja käsittelyyn? Miksi? Mitä muita valintamahdollisuuksia olisi ollut? Tarvitsetteko dynaamisia rakenteita (so. muuttuvan kokoisia, esim. listat) vai riittävätkö esim. taulukot? Kun käytätte Javan valmiita tietorakenteita, ei niiden tarkkaa määrittelyä tarvitse esittää, kunhan perustelee miksi minkäkin rakenteen on valinnut. Jos taas ohjelmoitte itse jonkin tietorakenteen, on myös sen toimintatapa selostettava.
+\section{Aikataulu}
+
+      Yrittäkää hahmotella itsellenne aikataulu ja karkea arvio eri vaiheissa kuluvista työtunneista. Se on vaikeaa, mutta opettavaista, kun aikataulua vertaa käytännössä eri vaiheisiin kuluvaan todelliseen aikaan. Älkää heittäkö suunnitelmaan mitä tahansa ensiksi mieleen tulevia lukuja vaan yrittäkää arvioida tilannetta realistisesti.
+
+      Kuvatkaa myös suunniteltu etenemisjärjestys, eli missä järjestyksessä ohjelmanne aiotte toteuttaa. Tässä kannattaa jo miettiä ohjelman testausta, ja sitä, mitkä osat muusta koodista käyttävät muita osia. Yleensä ohjelmassa on keskeisiä ominaisuuksia joista kannattaa aloittaa, sekä ominaisuuksia, joiden toteutus ei ole heti olennaista. Muista että kehitettäessä jotkin asiat voidaan korvata tynkäluokilla tai tynkämetodeilla, jotta ohjelma saadaan kääntymään, ja jotta toteutettua koodia voi testata. Kokonaisia luokkia ei myöskään tarvitse toteuttaa alusta loppuun vaan tarkentaa toteutusta aste asteelta, kun työ etenee.
+\section{Yksikkötestaussuunnitelma}
+
+      Kuvatkaa tässä osiossa kuinka aiotte testata ohjelman keskeisimpiä osia toteutuksen edetessä. Koko ohjelman kaikkia ominaisuuksia ei ole tarkoitus käydä läpi, vaan keskittyä tässä ehkä ohjelman "ydinmetodeihin", jotka tekevät sen keskeisimmän työn. Kuvatkaa jälleen yleisluontoisesti, kuinka aiotte metodeja (valitkaa muutama) niiden valmistuttua kokeilla. Jälleen voi esittää keskeisiä syötteitä joilla ohjelman tulee toimia, mitä metodin tulee tällöin palauttaa ja mikä sen vaikutus ohjelman olioihin tulee olla. Vastaavasti voi pohtia sitä, kuinka metodeja voisi testata helposti ilman että tarvitsee toteuttaa valtavia apurakennelmia. (valitettavasti näiltä ei voi aina välttyä) Yksikkötestausta kannattaa sitten projektia toteuttaessa tehdä sopivassa määrin, jotta ei turhaan joudu etsimään bugia uusista koodiriveistä, kun virhe onkin jossain joka tehtiin aikaa sitten.
+\section{Kirjallisuusviitteet ja linkit}
+
+      Suunnitteluvaiheessa on syytä selvittää, millaista aiheeseenne liittyvää materiaalia on tarjolla. Kirjastot ja nettihakukoneet ovat resursseja, joita kannattaa hyödyntää. Kertokaa tässä, mitä kirjoja, nettisivuja tai muuta materiaalia olette jo käyttäneet tai suunnitelleet myöhemmin käyttävänne. Kaikki lähteet tulee ilmoittaa, vaikka niihin kuuluisivat pelkkä kurssilla käyttämänne oppikirja ja Javan perusluokkakirjastojen API-kuvaus.
+\section{Liitteet}
+
+      Lisäksi suunnitelmassa saa olla liitteitä, aiheesta riippuen.
+
+\end{document}

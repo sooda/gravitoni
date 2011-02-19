@@ -1,0 +1,134 @@
+\documentclass[a4paper,11pt]{article}
+
+\frenchspacing
+\usepackage[finnish]{babel}
+\usepackage[latin1]{inputenc}
+\usepackage[pdftex]{graphicx}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+
+%\pagestyle{myheadings}
+%\markright{Lols\hfill Foobaa\hfill}
+\begin{document}
+
+\thispagestyle{empty}
+
+\vspace*{5cm}
+
+\begin{center}
+
+% { \Huge T-106.1240/1243 Ohjelmoinnin jatkokurssi T1/L1 }
+{ \Huge T-106.1243 Ohjelmoinnin jatkokurssi L1 \\ }
+{ \huge Projektin yleissuunnitelma
+\\[1cm]
+Aihe 129: aurinkokuntasimulaattori }
+\end{center}
+
+\vfill
+
+\begin{flushright}
+
+Konsta Hölttä\\
+79149S\\
+AUT 4. vk\\
+konsta.holtta@aalto.fi\\
+x.2.2011
+\end{flushright}
+
+\newcommand{\kuvaa}[4]{%
+	\begin{figure}[h!]%
+		\centering \includegraphics[width=#1\textwidth]{#2}%
+		\caption{#3 \label{#4}}%
+	\end{figure}%
+}
+\newcommand{\kuva}[2]{\kuvaa{0.6}{#1}{#2}{fig:#1}}
+
+\newpage
+
+\section{Yleiskuvaus}
+
+Ohjelma simuloi taivaankappaleiden ja satelliittien liikkeitä. Ennalta aseteltujen kappaleiden ratoja lasketaan eteenpäin fysiikan lakien mukaisesti, ja radat voidaan tallentaa tiedostoon sekä laskentaa voi tarkastella reaaliajassa graafisella käyttöliittymällä kolmiulotteisessa maailmassa OpenGL:n avulla monesta eri kuvakulmasta. Jos käyttäjällä on sinipunalasit, voi kappaleita tarkastella anaglyyfikuvana. Jo simuloitua aikajanaa voi kelata eteen- ja taaksepäin sekä simulointia voi jatkaa koska tahansa.
+
+Simulaatiossa painopiste on gravitaatiovoimien laskeminen, ja pienet häiriötekijät kuten ilmanvastus jätetään huomiotta. Simulaatio pyrkii olemaan tarkka ja todenmukainen, ja käyttää SI-yksiköitä kaikkialla missä lukuja esitetään tai luetaan. Integrointiin käytettäneen pääasiassa RK4:ää, mutta integrointimenetelmää tulee olemaan helppo vaihtaa jos siihen tulee tarvetta. Törmäykselle voidaan valita useita eri käsittelytapoja, ainakin seuraavat: simulaatio loppuu törmäyksen sattuessa, törmäykset jätetään huomiotta, kappaleet kimpoavat toisistaan tai kappaleet hajoavat tavalla tai toisella palasiksi. Mukana on myös satelliitteja ja/tai raketteja, joita voi laukoa kiertoradoille. Tämä ominaisuus tekee ohjelmasta pelin, jossa pyritään esim. optimoimaan raketin moottorin käyttämä polttoaine, raketin kulkeman matkan pituus tms.
+
+Ohjelma toimii joko täysin itsenäisesti ilman käyttöliittymää vain lokiin tulostaen tai graafisen käyttöliittymän kautta ohjattuna. Kappaleiden ominaisuudet voidaan lukea asetustiedostosta sekä niitä voidaan lisätä käyttöliittymästä jälkeenpäin. Samassa tiedostossa voi olla myös ohjeet ohjelman automaattiajoon, jolloin itsenäistä simulointia voidaan konfiguroida etukäteen painelematta nappuloita ohjelmasta.
+
+Työn vaikeustaso on haastava.
+
+
+\section{Käyttöliittymän luonnos}
+
+Käyttöliittymän toiminnallisuus on jaettu kahteen pääosaan. Yhdessä tilassa käyttäjä voi säätää asetuksia: muokata luonnonvakioita (gravitaatiovakio, aika-askel ym.) ja taivaankappaleiden ominaisuuksia. Simulaation tarkastelun tilassa näkymä on kolmiulotteinen avaruuskuva, jossa voi liikkua vapaasti. Tilojen välillä voi vaihdella vapaasti sekä molemmat saa näkyviin keskenään siten, että asetuspaneelista on tiivistetty versio 3d-näkymän vierellä, kuten kuvassa \ref{fig:split_ui} (Asetustensäätötila vastaa vasemmalla olevaa, ja pelkkä 3d-näkymä oikealla olevaa). Tämä hybriditila tullee olemaan ohjelman yleisin tila; yleisimmät asetusarvot ovat nopeasti säädettävissä, sekä maailmaa voi samalla tarkastella 3d:nä.
+
+\begin{figure}[h]
+	\includegraphics[width=\textwidth]{split_ui.eps}
+	\caption{Käyttöliittymän hybridinäkymän luonnos.}
+	\label{fig:split_ui}
+\end{figure}
+
+Asetustensäätötila toteutetaan Swingillä, ja yleisimpiä komponentteja tulevat olemaan pudotusvalikot ja tekstilaatikot, joilla säädetään valittava kappale sekä sen asetukset. Asetuksia säätäessä käyttäjä voi tuunata kaikkea mitä tiedostostakin voisi, ja samalla asetukset voi tallentaa takaisin tiedostoon. Säädettäviä muuttujia ovat mm. planeetan tila (sijainti ja nopeus), massa, säde, tekstuuri yms. Lisäksi tilasta voi tarkastella ominaisuuksia, joita ei erikseen säädetä: esimerkiksi kappaleen liike-energiaa tai etäisyyttä toiseen kappaleeseen.
+
+Simulaatiotila on lähinnä opengl-canvas joillakin karkeilla (mm. popup-valikko planeetasta klikatessa, josta voi valita asioita, jotka ovat relevantteja klikattuun kohtaan nähden). Tilassa voi planeettojen sijaintien lisäksi tarkastella niiden liikevektoreita ja ratahistoriaa, jotka piirretään havainnollisesti planeettojen yhteyteen. Tilan näkymässä voi seikkailla fps-pelien tapaan hiirellä suuntaamalla ja näppäimistöllä kävelemällä.
+
+Tavallisen kiinteän kameran lisäksi simulaatiossa voi seurata jotakin tiettyä kappaletta siten, että sitä käsitellään origona; tällöin historiaviivatkin ovat suhteessa tähän kappaleeseen. Näin esim. kahden toisiaan kiertävän planeetan tarkastelu helpottuu, kun toista planeettaa kiertävän rata näyttää ympyrältä.
+
+
+\section{Tiedostot ja tiedostoformaatit}
+
+Ohjelman toiminnan perustana on asetustiedosto, josta maailmankaikkeuden alkutilanne luetaan. Asetustiedosto määrittää kaiken oleellisen, ja sen arvoja voidaan hienosäätää käyttöliittymässä ajon aikana. Eri maailmankaikkeudet voidaan konfiguroida helposti eri tiedostoihin, ja tiedostoja voidaan sisällyttää toisiinsa modulaarisuuden vuoksi.
+
+Asetustiedoston on oltava helposti käsin muokattavissa, joten siihen ei käytettäne XML:ää. Pikainen googlailu ei tuottanut tulosta sopivista kirjastoista, joten formaatti toteutettaneen itse jonain yksinkertaisena tekstimuotona. Tiedot ovat puumuodossa (esim. maailmankaikkeus sisältää kappaleita, joiden sisällä on tieto sijainnista, nopeudesta ja materiaalista, sekä materiaali sisältää edelleen tekstuurin tai värin ja läpinäkyvyyden) ja hajautettavissa useaan tiedostoon; samaan tiedostoon voi lukea monta muuta modulaarisesti.
+
+Eri alkutilanteiden testaamista varten voi valmiin tiedoston sisällyttää toiseen, jossa ylikirjoittaa esim. planeettojen paikat ja nopeudet muiden asetusten pysyessä entisellään. Tätä ominaisuutta voidaan hyödyntää myös kaikkeuden uuden tilan tallentamiseen, jolloin alkuperäiseen konfigurointiin ei tarvitse koskea, vaan uudet tilat voidaan tulostaa uuteen tiedostoon.
+
+Alla lyhyt esimerkki mahdollisesta muodosta.
+
+\begin{verbatim}
+// kommentti
+/* ja toinen
+   kommentti */
+include luonnonvakiot.conf; // parseri "copypasteaa" toisen
+include aurinko.conf;       // tiedoston sisällön tähän
+
+kappale {
+    nimi maapallo;
+    paikka 0, 0, 0;
+    materiaali {
+        tekstuuri maa.png;
+    }
+    massa 5.9736e24; säde 6371;
+}
+kappale {
+    nimi kuu;
+    paikka 384400, 0, 0;
+    nopeus 0, 1.018, 0;
+}
+\end{verbatim}
+
+
+Asetustiedostojen lisäksi ohjelma tukee useampia ulostulomuotoja. Simulointi voidaan ajaa offlinenä (eli ilman GUIta) siten, että simulointia ajetaan johonkin loppuehtoon saakka (esim. tietty aikaväli tai kappaleiden välinen törmäys) jonka ajan kappaleiden tilat tulostetaan lokitiedostoon. Lokitiedostomuotoja ovat esim. gnuplotille sopiva muoto tai CSV. Lokeihin voi koristella tietoja akseleiden otsikoista mukaan.
+
+
+\section{Järjestelmätestaussuunnitelma}
+
+Ohjelma jakautuu pääasiassa kolmeen osaan: raaka simulaatio, konfigurointikäyttöliittymä ja renderöinti. Simulaation ja asetustiedoston hallinnan voi testata varsin tarkasti ja automaattisesti, mutta käyttöliittymän testailuun on hiiren klikkailua vaikeaa simuloida, joten sitä testaillaan käyttämällä ohjelmaa.
+
+Testata voi suuremmassa mittakaavassa mm. seuraavaa:
+\begin{itemize}
+	\item Ladatun asetustiedoston tietojen oikeellisuus suhteessa tiedoston sisältöön (helppo testata koneellisesti)
+	\item Virheellisen asetustiedoston oikeaoppinen hallinta: configluokka heittää poikkeusta ja pääohjelma käsittelee sen sopivasti ja ilmoittaa käyttäjälle ongelmasta.
+	\item Simulaation kaavojen toimivuus: Lagrangen pisteessä oleva kappale pysyy paikallaan,  maa kiertää auringon siinä ajassa kun oikeastikin, maan ja auringon välinen etäisyys ei muutu eri kiertojen aikana.
+	\item Kappaleiden lisäys konfigurointikäyttöliittymässä: käyttöliittymä reagoi kuten haluttaisiin ja kappale ilmestyy listoihin ja 3d-näkymään.
+	\item Kappaleiden muokkaus: simulaatio reagoi sitä mukaa kun kappaleelle säätää vaikka uuden paikan tai massan.
+	\item Luonnonvakioiden ja muiden yleismuuttujien muokkaus: simulaatio reagoi vastaavasti.
+	\item Renderöinnin oikeellisuus planeettojen sijaintien, suuntavektorien, ratojen ym. osalta: kappaleiden sijainnit vastaavat sitä, mitä ne ovat konfiguraationäkymässä paikan seurannassa ja lokitiedostossa kuhunkin aikaan.
+	\item 3d-näkymässä liikkuminen: näppis ja hiiri toimivat odotetusti.
+	\item Kappaleen valinta 3d-näkymästä: näkymästä klikatessa oikea planeetta valitaan, konfigurointipaneeli reagoi valintaan ja 3d-näkymässä näkyy korostettuna, että kappale on valittu.
+	\item Kappaleen siirto 3d-näkymässä: valittua kappaletta voi raahailla hiirellä.
+	\item Kappaleen seuranta 3d-näkymässä: kappale pysyy näkymän keskipisteessä liikkuessaankin.
+	\item Origon määritys: muu maailma käyttäytyy siten, että seurattu kappale olisi origo.
+	\item Satelliitin laukaisu: 3d-näkymä ja simulaatio reagoivat oikein kun konfigurointipaneelista painetaan nappia satelliitin lähettämiseksi.
+\end{itemize}
+
+\end{document}
+
