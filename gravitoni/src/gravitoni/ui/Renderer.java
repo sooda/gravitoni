@@ -1,16 +1,23 @@
 package gravitoni.ui;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.IOException;
 
 import gravitoni.simu.*;
 import demos.common.TextureReader;
 import javax.media.opengl.GL;
 import javax.media.opengl.GLAutoDrawable;
+import javax.media.opengl.GLCanvas;
 import javax.media.opengl.GLEventListener;
 import javax.media.opengl.glu.GLU;
 import javax.media.opengl.glu.GLUquadric;
+import javax.swing.*;
 
-public class Renderer implements GLEventListener {
+public class Renderer implements GLEventListener, ActionListener {
 
 	protected float pyramidRotation;
 	protected float cubeRotation;
@@ -20,9 +27,53 @@ public class Renderer implements GLEventListener {
 	private int texture;
 	private GLU glu = new GLU();
 	
-	public Renderer(World world) {
+	private JMenuBar menuBar;
+	private JPopupMenu popup;
+	
+	public Renderer(World world, GLCanvas canvas) {
 		this.world = world;
+		menuBar = new JMenuBar();
+		JMenu menu = new JMenu("Asdf");
+		menuBar.add(menu);
+		popup = new JPopupMenu();
+		JMenuItem itm = new JMenuItem("ASdfzing");
+		menu.add(itm);
+		itm.addActionListener(this);
+		popup.add(itm);
+		itm = new JMenuItem("AZomgf");
+		itm.addActionListener(this);
+		menu.add(itm);
+		popup.add(itm);
+		MouseListener l = new PopupListener();
+		menuBar.addMouseListener(l);
+		canvas.addMouseListener(l);
+		
 	}
+	
+	class PopupListener extends MouseAdapter {
+	    public void mousePressed(MouseEvent e) {
+	        maybeShowPopup(e);
+	    }
+
+	    public void mouseReleased(MouseEvent e) {
+	        maybeShowPopup(e);
+	    }
+
+	    private void maybeShowPopup(MouseEvent e) {
+	        if (e.isPopupTrigger()) {
+	            popup.show(e.getComponent(),
+	                       e.getX(), e.getY());
+	        }
+	    }
+	}
+	
+	public void actionPerformed(ActionEvent e) {
+		System.out.println("JEAAAAAAH" + e);
+		System.out.println("ASDDDDF" + e.getSource());
+		
+	}
+
+
 	
 	public void setSpeed(double speed) {
 		this.speed = speed;
@@ -35,162 +86,19 @@ public class Renderer implements GLEventListener {
 			gl.glLoadIdentity();
 			gl.glColor3d(1, 1, 1);
 			Vec3 pos = b.getPos();
-			gl.glTranslated(0.1 * pos.x, 0.1 * pos.y, -100f);
+			//System.out.println("Hox! " + b.getName() + "; " + (100/1e11*pos.x) + "," + (100/1e11*pos.y) + "," + pos.z + "   " + (1/1e3 * b.getRadius()));
 			gl.glBindTexture(GL.GL_TEXTURE_2D, texture);
 			gl.glEnable(GL.GL_TEXTURE_GEN_S);
 			gl.glEnable(GL.GL_TEXTURE_GEN_T);
-			glu.gluSphere(qua, b.getRadius(), 20, 20);/*
-			 gl.glBegin(GL.GL_QUADS);
-		        // Front Face
-		        gl.glTexCoord2f(0.0f, 0.0f);
-		        gl.glVertex3f(-1.0f, -1.0f, 1.0f);
-		        gl.glTexCoord2f(1.0f, 0.0f);
-		        gl.glVertex3f(1.0f, -1.0f, 1.0f);
-		        gl.glTexCoord2f(1.0f, 1.0f);
-		        gl.glVertex3f(1.0f, 1.0f, 1.0f);
-		        gl.glTexCoord2f(0.0f, 1.0f);
-		        gl.glVertex3f(-1.0f, 1.0f, 1.0f);
-		        // Back Face
-		        gl.glTexCoord2f(1.0f, 0.0f);
-		        gl.glVertex3f(-1.0f, -1.0f, -1.0f);
-		        gl.glTexCoord2f(1.0f, 1.0f);
-		        gl.glVertex3f(-1.0f, 1.0f, -1.0f);
-		        gl.glTexCoord2f(0.0f, 1.0f);
-		        gl.glVertex3f(1.0f, 1.0f, -1.0f);
-		        gl.glTexCoord2f(0.0f, 0.0f);
-		        gl.glVertex3f(1.0f, -1.0f, -1.0f);
-		        // Top Face
-		        gl.glTexCoord2f(0.0f, 1.0f);
-		        gl.glVertex3f(-1.0f, 1.0f, -1.0f);
-		        gl.glTexCoord2f(0.0f, 0.0f);
-		        gl.glVertex3f(-1.0f, 1.0f, 1.0f);
-		        gl.glTexCoord2f(1.0f, 0.0f);
-		        gl.glVertex3f(1.0f, 1.0f, 1.0f);
-		        gl.glTexCoord2f(1.0f, 1.0f);
-		        gl.glVertex3f(1.0f, 1.0f, -1.0f);
-		        // Bottom Face
-		        gl.glTexCoord2f(1.0f, 1.0f);
-		        gl.glVertex3f(-1.0f, -1.0f, -1.0f);
-		        gl.glTexCoord2f(0.0f, 1.0f);
-		        gl.glVertex3f(1.0f, -1.0f, -1.0f);
-		        gl.glTexCoord2f(0.0f, 0.0f);
-		        gl.glVertex3f(1.0f, -1.0f, 1.0f);
-		        gl.glTexCoord2f(1.0f, 0.0f);
-		        gl.glVertex3f(-1.0f, -1.0f, 1.0f);
-		        // Right face
-		        gl.glTexCoord2f(1.0f, 0.0f);
-		        gl.glVertex3f(1.0f, -1.0f, -1.0f);
-		        gl.glTexCoord2f(1.0f, 1.0f);
-		        gl.glVertex3f(1.0f, 1.0f, -1.0f);
-		        gl.glTexCoord2f(0.0f, 1.0f);
-		        gl.glVertex3f(1.0f, 1.0f, 1.0f);
-		        gl.glTexCoord2f(0.0f, 0.0f);
-		        gl.glVertex3f(1.0f, -1.0f, 1.0f);
-		        // Left Face
-		        gl.glTexCoord2f(0.0f, 0.0f);
-		        gl.glVertex3f(-1.0f, -1.0f, -1.0f);
-		        gl.glTexCoord2f(1.0f, 0.0f);
-		        gl.glVertex3f(-1.0f, -1.0f, 1.0f);
-		        gl.glTexCoord2f(1.0f, 1.0f);
-		        gl.glVertex3f(-1.0f, 1.0f, 1.0f);
-		        gl.glTexCoord2f(0.0f, 1.0f);
-		        gl.glVertex3f(-1.0f, 1.0f, -1.0f);
-		        gl.glEnd();*/
+			gl.glTranslated(100/1e11 * pos.x, 100/1e11 * pos.y, -1000f);
+			//gl.glTranslated(100, 100, -1000f);
+			glu.gluSphere(qua, 120/7e8 * b.getRadius(), 20, 20);
+			//glu.gluSphere(qua, 100, 20, 20);
 		}
 		//System.out.println("Render!");
 		world.run(speed * world.dt);
-		/*
-		gl.glLoadIdentity();
-		gl.glTranslatef(-1.5f,0.0f,-6.0f);
-		gl.glRotatef(pyramidRotation,0.0f,1.0f,0.0f);
-		drawPyramid(gl);
-		pyramidRotation+=0.2f*speed;
-					
-		gl.glLoadIdentity();
-		gl.glTranslatef(1.5f,0.0f,-7.0f);				
-		gl.glRotatef(cubeRotation,1.0f,1.0f,1.0f);			
-		drawCube(gl);						
-		cubeRotation-=0.15f*speed;
-		
-		GLU glu = new GLU();
-		gl.glLoadIdentity();
-		gl.glTranslatef(0f, 1f, -8.0f);
-		gl.glColor3f(1.0f, 0.8f, 0.0f);
-		gl.glRotatef(cubeRotation*2,1f,1f,1f);
-		glu.gluSphere(qua, 2, 20, 20);
-		
-		gl.glLoadIdentity();
-		gl.glTranslatef(0f, -1f, -8.0f);
-		gl.glColor3f(0.8f, 1.0f, 0.0f);
-		gl.glRotatef(cubeRotation*2,1f,1f,1f);
-		glu.gluSphere(qua, 1.5, 20, 20);
-		*/
 	}
-	/*
-	protected void drawPyramid(GL gl){
-		gl.glBegin(GL.GL_TRIANGLES);					
-			gl.glColor3f(1.0f,0.0f,0.0f);			
-			gl.glVertex3f( 0.0f, 1.0f, 0.0f);			
-			gl.glColor3f(0.0f,1.0f,0.0f);			
-			gl.glVertex3f(-1.0f,-1.0f, 1.0f);			
-			gl.glColor3f(0.0f,0.0f,1.0f);			
-			gl.glVertex3f( 1.0f,-1.0f, 1.0f);			
-			gl.glColor3f(1.0f,0.0f,0.0f);			
-			gl.glVertex3f( 0.0f, 1.0f, 0.0f);			
-			gl.glColor3f(0.0f,0.0f,1.0f);			
-			gl.glVertex3f( 1.0f,-1.0f, 1.0f);			
-			gl.glColor3f(0.0f,1.0f,0.0f);			
-			gl.glVertex3f( 1.0f,-1.0f, -1.0f);			
-			gl.glColor3f(1.0f,0.0f,0.0f);			
-			gl.glVertex3f( 0.0f, 1.0f, 0.0f);			
-			gl.glColor3f(0.0f,1.0f,0.0f);			
-			gl.glVertex3f( 1.0f,-1.0f, -1.0f);			
-			gl.glColor3f(0.0f,0.0f,1.0f);			
-			gl.glVertex3f(-1.0f,-1.0f, -1.0f);			
-			gl.glColor3f(1.0f,0.0f,0.0f);			
-			gl.glVertex3f( 0.0f, 1.0f, 0.0f);			
-			gl.glColor3f(0.0f,0.0f,1.0f);			
-			gl.glVertex3f(-1.0f,-1.0f,-1.0f);			
-			gl.glColor3f(0.0f,1.0f,0.0f);			
-			gl.glVertex3f(-1.0f,-1.0f, 1.0f);			
-		gl.glEnd();	
-	}
-	
-	protected void drawCube(GL gl){
-		gl.glBegin(GL.GL_QUADS);					
-			gl.glColor3f(0.0f,1.0f,0.0f);			
-			gl.glVertex3f( 1.0f, 1.0f,-1.0f);			
-			gl.glVertex3f(-1.0f, 1.0f,-1.0f);			
-			gl.glVertex3f(-1.0f, 1.0f, 1.0f);			
-			gl.glVertex3f( 1.0f, 1.0f, 1.0f);			
-			gl.glColor3f(1.0f,0.5f,0.0f);			
-			gl.glVertex3f( 1.0f,-1.0f, 1.0f);			
-			gl.glVertex3f(-1.0f,-1.0f, 1.0f);			
-			gl.glVertex3f(-1.0f,-1.0f,-1.0f);			
-			gl.glVertex3f( 1.0f,-1.0f,-1.0f);			
-			gl.glColor3f(1.0f,0.0f,0.0f);			
-			gl.glVertex3f( 1.0f, 1.0f, 1.0f);			
-			gl.glVertex3f(-1.0f, 1.0f, 1.0f);			
-			gl.glVertex3f(-1.0f,-1.0f, 1.0f);			
-			gl.glVertex3f( 1.0f,-1.0f, 1.0f);			
-			gl.glColor3f(1.0f,1.0f,0.0f);			
-			gl.glVertex3f( 1.0f,-1.0f,-1.0f);			
-			gl.glVertex3f(-1.0f,-1.0f,-1.0f);			
-			gl.glVertex3f(-1.0f, 1.0f,-1.0f);			
-			gl.glVertex3f( 1.0f, 1.0f,-1.0f);			
-			gl.glColor3f(0.0f,0.0f,1.0f);			
-			gl.glVertex3f(-1.0f, 1.0f, 1.0f);			
-			gl.glVertex3f(-1.0f, 1.0f,-1.0f);			
-			gl.glVertex3f(-1.0f,-1.0f,-1.0f);			
-			gl.glVertex3f(-1.0f,-1.0f, 1.0f);			
-			gl.glColor3f(1.0f,0.0f,1.0f);			
-			gl.glVertex3f( 1.0f, 1.0f,-1.0f);			
-			gl.glVertex3f( 1.0f, 1.0f, 1.0f);			
-			gl.glVertex3f( 1.0f,-1.0f, 1.0f);			
-			gl.glVertex3f( 1.0f,-1.0f,-1.0f);			
-		gl.glEnd();	
-	}
-*/
+
 	public void displayChanged(GLAutoDrawable drawable, boolean modeChanged, boolean deviceChanged) {
 		// unimplemented in jogl?
 	}
@@ -209,7 +117,7 @@ public class Renderer implements GLEventListener {
         gl.glBindTexture(GL.GL_TEXTURE_2D, texture);
         TextureReader.Texture texture = null;
         try {
-            texture = TextureReader.readTexture("earth.png");
+            texture = TextureReader.readTexture("textures/earth.png");
         } catch (IOException e) {
             e.printStackTrace();
             throw new RuntimeException(e);
