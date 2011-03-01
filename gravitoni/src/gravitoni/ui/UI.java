@@ -20,13 +20,14 @@ public class UI extends JFrame implements ChangeListener {
 	protected SettingPane settings;
 	
 	public UI(World world) {
-		super("Eippää, maailmankaikkeussimulaattori!");
+		super("Eippää, behold maailmankaikkeus!");
 		this.world = world;
 		canvas = new GLCanvas();
 		canvas.setPreferredSize(new Dimension(640, 480));
 		
 		renderer = new Renderer(world, canvas);
 		canvas.addGLEventListener(renderer);
+		canvas.addKeyListener(renderer);
 		
 		settings = new SettingPane(this);
 		
@@ -62,7 +63,7 @@ public class UI extends JFrame implements ChangeListener {
 	public void stateChanged(ChangeEvent e) {
 		int val = ((JSlider)e.getSource()).getValue();
 		double zomg = val / 100.0 - 0.5;
-		zomg = Math.exp(12 * zomg);
+		zomg = Math.exp(19 * zomg);
 		renderer.setSpeed(zomg);
 	}
 }

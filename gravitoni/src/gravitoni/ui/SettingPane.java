@@ -1,12 +1,10 @@
 package gravitoni.ui;
 
-import java.awt.Button;
 import java.awt.GridLayout;
 import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
-import javax.swing.JSlider;
 
 @SuppressWarnings("serial")
 public class SettingPane extends JPanel {

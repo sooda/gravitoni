@@ -4,6 +4,7 @@ package gravitoni.ui;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 
+@SuppressWarnings("serial")
 public class TimeWidget extends JPanel {
 	private UI ui;
 	

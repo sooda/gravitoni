@@ -20,3 +20,6 @@
 gravitoni/bin
 gravitoni/src/demos
 gravitoni/src/tests
+*.pdf
+*.ps
+../teknosuunnitelma/*.png

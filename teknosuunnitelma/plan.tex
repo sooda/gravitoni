@@ -3,12 +3,13 @@
 \frenchspacing
 \usepackage[finnish]{babel}
 \usepackage[latin1]{inputenc}
-\usepackage[dvips]{graphicx}
+\usepackage[pdftex]{graphicx}
 \usepackage[T1]{fontenc}
 \usepackage{amsmath}
+\usepackage{hyperref}
 
-\pagestyle{myheadings}
-\markright{Lols\hfill Foobaa\hfill}
+%\pagestyle{myheadings}
+%\markright{Lols\hfill Foobaa\hfill}
 \begin{document}
 
 \thispagestyle{empty}
@@ -17,20 +18,21 @@
 
 \begin{center}
 
-{ \Huge T-106.1240/1243 Ohjelmoinnin jatkokurssi T1/L1 }
-\\[1cm]
-{ \huge Projektin yleissuunnitelma }
+{ \Huge Aurinkokuntasimulaattori \\[1cm] }
+{ \huge T-106.1243 Ohjelmoinnin jatkokurssi L1 \\
+Projektin tekninen suunnitelma \\ 
+Aihe 129}
 \end{center}
 
 \vfill
 
 \begin{flushright}
 
-Konsta H√∂ltt√§\\
+Konsta Hˆltt‰\\
 79149S\\
 AUT 4. vk\\
 konsta.holtta@aalto.fi\\
-x.2.2011
+25.2.2011
 \end{flushright}
 
 \newcommand{\kuvaa}[4]{%
@@ -42,115 +44,236 @@ x.2.2011
 \newcommand{\kuva}[2]{\kuvaa{0.6}{#1}{#2}{fig:#1}}
 
 \newpage
-n√§tti maailma simu planeetta aurinkokunta maa kuu newton painovoima
-gravitoni
-GRaafinen Aurinkokunnan VIsualisaatio TOsi N√§tisti Integroiden
+% GRaafinen Aurinkokunnan VIsualisaatio TOsi N‰tisti Integroiden
 
 \section{Ohjelman rakennesuunnitelma}
-- simu
-	- vec3, body, world, integrator
-- gfx
-	- material: color, texture, opacity
-	- shape: vertices
-	- drawable extends simu.body: material, shape
-- ui
-	- canvas
-	- configuration panels
-- conf
-	- setting extends simu.body..?
-	- setting, contains data about simu.body and gfx stuff
-	- instantiates gfx drawables?
-	- or simu/gfx reads stuff based on abstract conf list?
-	- read(), save()
+%- simu
+%	- vec3, body, rocket, satellite, world, integrator, rk4
+%- gfx
+%	- material: color, texture, opacity
+%	- shape: vertices
+%	- drawable extends simu.body: material, shape
+%- ui
+%	- UI
+%	- Renderer
+%	- SettingPane
+%	- BodyWidget, TimeWidget, DistanceWidget
+%- conf
+%	- Config: read(), save()
+%	- ConfigBlock: get(), getInt(), getVec(), set(), setInt() -- VAI: arvot objectei
+%	- aika abstraktia
+%	- instantioi gfx:t?
+%	- ei, simu/gfx/body lukee dataa konffista
 
-Koodihierarkia hajautuu nelj√§√§n erilliseen p√§√§kategoriaan.
+\kuvaa{1}{graph.png}{Karkea luokkajako. Kaavio ei ole UML:‰‰ eik‰ mit‰‰n muutakaan standardia muotoa. Viivat kuvaavat jonkinlaista interaktiota luokkien v‰lill‰.}{kuvapaske}
+
+Koodihierarkia hajautuu nelj‰‰n erilliseen p‰‰kategoriaan, joihin on suunniteltu ohjelman p‰‰komponentit. Eritt‰in karkea luokkajako on esitetty kuvassa \ref{kuvapaske}. Luokkien v‰liset riippuvuudet ja varsinkin k‰yttˆliittym‰n inputhandlerit tulevat viel‰ el‰m‰‰n merkitt‰v‰sti.
 
 \begin{itemize}
-	\item Konfiguraatiotiedostojen hallinta
-	\item Simulaatio integrointineen
-	\item K√§ytt√∂liittym√§ ja dialogit
-	\item Render√∂inti ja sen k√§ytt√∂liittym√§
+	\item Konfiguraatiotiedostojen hallinta: geneerinen konffij‰rjestelm‰, joka ei tied‰ mihin sit‰ k‰ytet‰‰n.
+	\item Simulaatio integrointeineen: kappaleet jotka sis‰lt‰v‰t mm. paikan, nopeuden ja massan; maailma, joka sis‰lt‰‰ kappaleet, sek‰ oheisluokkia mm. integrointiin ja lokittamiseen.
+	\item K‰yttˆliittym‰ ja dialogit: k‰li on p‰‰asiassa yksi ikkuna, jossa on modulaarisesti eri asetuspaneeleita sek‰ 3d-canvas erillisin‰ luokkina.
+	\item Renderˆinti ja sen k‰yttˆliittym‰: renderˆij‰ kyselee kappaleiden tiedot maailmalta ja piirt‰‰ ne n‰ytˆlle, sek‰ k‰sittelee mm. n‰pp‰imistˆsyˆtteet joilla n‰kym‰ss‰ voi liikkua.
 \end{itemize}
 
 \subsection{Konfiguraatiotiedostot}
 
-Maailmankaikkeuksien rakenne kuvataan tiedostoissa, sek√§ ohjelman ajon aikana kaikkeuden kappaleita vastaavissa luokissa. Tiedostojen ja rakenteiden v√§lill√§ on yksinkertainen tiedostoparseri, joka tuottaa geneerisi√§ rakennepuita asetetuista parametreista. Itse kaikkeusluokat lukevat n√§ist√§ tiedot itselleen.
+Maailmankaikkeuksien rakenne kuvataan tiedostoissa, sek‰ ohjelman ajon aikana kaikkeuden kappaleita vastaavissa luokissa. Tiedostojen ja rakenteiden v‰lill‰ on yksinkertainen tiedostoparseri, joka tuottaa geneerisi‰ rakennepuita asetetuista parametreista. Itse kaikkeusluokat lukevat n‰ist‰ tiedot itselleen.
 
-Config-luokka vastaa yht√§ kokonaista konfiguraatiota, joka saadaan yhdest√§ tiedostosta. Tiedoston sis√§ll√§ voi olla include-m√§√§re, joka aiheuttaa toisen tiedoston sis√§lt√§mien tietojen lukemista siihen kohtaan, miss√§ m√§√§re on tiedostossa. Tiedosto sis√§lt√§√§ lohkoja, joissa on sis√§ll√§ asetuksia. P√§√§asetukset eiv√§t ole eksplisiittisesti miss√§√§n lohkossa. Luokka lataa tiedoston muistiin konstruktorissaan, ja instantioi lohkoja kun niit√§ esiintyy toedostossa. Metodilla getBlock(String)-metodilla kysell√§ tietyn nimiset lohkot, joita voi siis olla samalla nimell√§ useampia (esim. kappale-lohko). P√§√§tason globaalit asetukset, jotka eiv√§t ole miss√§√§n erillisess√§ lohkossa, saadaan getGlobals()-metodilla. Luokan sis√§isi√§ metodeja on mm. read(), parseLine() ja merge() tiedoston lukemiseen, rivin k√§sittelyyn ja kahden asetustiedoston yhdist√§miseen.
+Config-luokka vastaa yht‰ kokonaista konfiguraatiota, joka saadaan yhdest‰ tiedostosta. Tiedoston sis‰ll‰ voi olla include-m‰‰re, joka aiheuttaa toisen tiedoston sis‰lt‰mien tietojen lukemista siihen kohtaan, miss‰ m‰‰re on tiedostossa. Tiedosto sis‰lt‰‰ lohkoja, joissa on sis‰ll‰ asetuksia. P‰‰asetukset eiv‰t ole eksplisiittisesti miss‰‰n tiedoston lohkossa. Luokka lataa tiedoston muistiin konstruktorissaan, ja instantioi lohko-olioita kun niit‰ esiintyy tiedostossa. Metodilla getBlock kysell‰‰n tietyn nimiset lohkot, joita voi siis olla samalla nimell‰ useampia (esim. kappale-lohko). P‰‰tason globaalit asetukset, jotka eiv‰t ole miss‰‰n erillisess‰ lohkossa, saadaan getGlobals-metodilla. Luokan sis‰isi‰ metodeja on mm. read, parseLine ja merge tiedoston lukemiseen, rivin k‰sittelyyn ja kahden asetustiedoston yhdist‰miseen.
 
-ConfigBlock-luokka kuvaa yht√§ t√§llaista lohkoa. Se pohjautuu hashmapiin, jossa on avain/arvo-pareja tiedostosta luettuna. Konfigurointia k√§ytt√§v√§t luokat ottavat n√§it√§ ja lukevat avainten perusteella arvoja. Luokka tarjoaa pari apumetodia mm. kokonaislukuarvon lukemiseksi: get lukee String-tyyppisen arvon, getInt kokonaisluvun. Konfigurointia k√§ytt√§v√§t luokat ottavat n√§it√§ blokkeja ja lukevat avainten perusteella arvonsa.
+ConfigBlock-luokka kuvaa yht‰ t‰llaista lohkoa. Se pohjautuu hashmapiin, jossa on avain/arvo-pareja tiedostosta luettuna. Konfigurointia k‰ytt‰v‰t luokat ottavat n‰it‰ ja lukevat avainten perusteella arvoja. Luokka tarjoaa pari apumetodia mm. kokonaislukuarvon lukemiseksi: pelkk‰ get lukee String-tyyppisen arvon, getInt kokonaisluvun. Konfigurointia k‰ytt‰v‰t luokat ottavat n‰it‰ blokkeja ja lukevat avainten perusteella arvonsa.
 
-Asetusten lukeminen lohkoista luokkien j√§senmuuttujiin helpotetaan mahdollisesti annotaatioiden avulla, jolloin sijoituksia ei tarvitse erikseen koodata, vaan lataus hoituu relektiolla.
+Asetusten lukeminen lohkoista luokkien j‰senmuuttujiin helpotetaan mahdollisesti annotaatioiden avulla, jolloin sijoituksia ei tarvitse erikseen koodata, vaan lataus hoituu taianomaisesti reflektiolla.
 
+Tiedostomuoto tulee olemaan jokseenkin seuraavanlainen:
+\begin{verbatim}
+include constants.conf // luonnonvakiot
+include moon.conf // body-blokki kuulle
+
+/* Monirivisetkin kommentit kelpaavat.
+Puolipisteist‰ ei ole viel‰ p‰‰tetty. */
+
+body {
+    name Earth
+    position 0, 0, 0 // :-)
+    mass 5.9736e24
+    radius 6371e3
+    material {
+        texture earth.png
+    }
+}
+\end{verbatim}
 
 \subsection{Simulaatio}
 
-Simulaatio sis√§lt√§√§ fysiikkaan liittyvi√§ luokkia. Se on kokonaan eristetty kokonaisuus, eik√§ vaadi esim. graafista k√§ytt√∂liittym√§√§ toimiakseen.
+Simulaatio sis‰lt‰‰ fysiikkaan liittyvi‰ luokkia. Se on kokonaan eristetty kokonaisuus, eik‰ vaadi esim. graafista k‰yttˆliittym‰‰ toimiakseen.
 
-Vektoriluokka Vec kuvaa kolmiulotteista matemaattista vektoria ja helpottaa laskentaa, kun ohjelmassa toimitaan 3d-avaruudessa. Laskuoperaatiot (add, sub, mul yms; ottavat parametrikseen toisen vektorin) suoritetaan vektoreina sen sijaan, ett√§ komponentteja k√§sitelt√§isiin erikseen skalaareina. Vektorien kanssa pit√§nee kiinnitt√§√§ tehokkuussyist√§ huomiota siihen, koska vektoriolioita luodaan, jotta ylim√§√§r√§inen muistinvarailu ja -vapauttelu minimoitaisiin. Esimerkiksi vektorien summaoperaatio muokkaa oliota suoraan, eik√§ luo uutta.
+Vektoriluokka Vec kuvaa kolmiulotteista matemaattista vektoria ja helpottaa laskentaa, kun ohjelmassa toimitaan 3d-avaruudessa. Laskuoperaatiot (add, sub, mul yms; ottavat parametrikseen toisen vektorin) suoritetaan vektoreina sen sijaan, ett‰ komponentteja k‰sitelt‰isiin erikseen skalaareina. Vektorien kanssa pit‰nee kiinnitt‰‰ tehokkuussyist‰ huomiota siihen, koska vektoriolioita luodaan, jotta ylim‰‰r‰inen muistinvarailu ja -vapauttelu minimoitaisiin. Esimerkiksi vektorien summaoperaatio muokkaa oliota suoraan, eik‰ luo uutta. T‰m‰n enemp‰‰ tehokkuuteen ei viel‰ kiinnitet‰ huomiota, eik‰ yksinkertaisissa tilanteissa tehokkuusongelmia tulekaan, mutta ohjelma suunnitellaan j‰rkev‰sti skaalautuvaksi ainakin kymmenille tuhansille kappaleille.
 
-Kappaleille on kappaleluokka Body, joka sis√§lt√§√§ yleist√§ tietoa kaikista vuorovaikuttavista kappaleista, kuten sijainnin, nopeuden, massan ja nimen. T√§st√§ periytyv√§t erilaiset kappaleet, joilla on erityisominaisuuksia: esim. planeetta ja raketti/satelliitti; raketilla on moottorin tuottama vakiokiihtyvyys vetovoimien lis√§ksi. Kappaleessa itsess√§√§n ei ole paljoakaan toiminnallisuutta, vaan se sis√§lt√§√§ tilansa ja getterit ja setterit niille.
+Kappaleille on kappaleluokka Body, joka sis‰lt‰‰ yleist‰ tietoa kaikista vuorovaikuttavista kappaleista, kuten sijainnin, nopeuden, massan ja nimen. T‰st‰ periytyv‰t erilaiset kappaleet, joilla on erityisominaisuuksia: esim. planeetta ja raketti/satelliitti; raketilla on moottorin tuottama vakiokiihtyvyys vetovoimien lis‰ksi. Kappaleessa itsess‰‰n ei ole paljoakaan toiminnallisuutta, vaan se sis‰lt‰‰ tilansa ja getterit ja setterit niille.
 
-World-luokka kuvaa koko maailmankaikkeutta ja varastoi listassa Body-oliot. Se hoitaa simulaation ulkoisten luokkien interaktion, laskee kiihtyvyyksi√§ ja hoitaa integroinnin kun jokin ulkoinen taho niin k√§skee. loadConfig(Config)-metodi lukee asetuksista mm. gravitaatiovakion, aika-askeleen ja kappalelohkot ja luo lohkoista kappaleolioita. Metodi run() ajaa yhden aika-askeleen eteenp√§in valitulla integraattorilla (j√§senmuuttuja), joka kutsuu vastaavasti Worldin acceleration(Body, State)-metodia, joka laskee kiihtyvyyden tietylle kappaleelle tietyss√§ pisteess√§.
+World-luokka kuvaa koko maailmankaikkeutta ja varastoi listassa Body-oliot. Se hoitaa simulaation ulkoisten luokkien interaktion, laskee kiihtyvyyksi‰ ja hoitaa integroinnin kun jokin ulkoinen taho niin k‰skee. loadConfig-metodi lukee asetuksista mm. gravitaatiovakion, aika-askeleen ja kappalelohkot ja luo lohkoista kappaleolioita. Metodi run ajaa yhden aika-askeleen eteenp‰in valitulla integraattorilla (Worldin j‰senmuuttuja), joka kutsuu vastaavasti Worldin acceleration-metodia, joka laskee kiihtyvyyden tietylle kappaleelle tietyss‰ pisteess‰.
 
-Itse integraattori on Worldin j√§senmuuttujana jokin Integrator-rajapinnan toteuttava luokka. Integraattoria k√§sket√§√§n ajamaan yksi aika-askel (run()), jolloin se lukee Worldilta kappaleiden tilat ja laskee niille uudet sek√§ lopuksi asettaa ne.
+Itse integraattori on Worldin j‰senmuuttujana jokin Integrator-rajapinnan toteuttava luokka. Integraattoria k‰sket‰‰n ajamaan yksi aika-askel (run-metodi), jolloin se lukee Worldilta kappaleiden tilat ja laskee niille uudet sek‰ lopuksi asettaa ne. Menetelm‰st‰ riippuen run saattaa ajaa maailmalle useamman pienen aika-askeleen per‰kk‰in.
 
-Integraattori k√§ytt√§√§ sis√§isesti State-luokkaa, jossa on yhdistetty paikka- ja nopeusvektorit yhteen k√§sittelyn helpottamiseksi.
+Integraattori k‰ytt‰‰ sis‰isesti State-luokkaa, jossa on yhdistetty paikka- ja nopeusvektorit yhteen k‰sittelyn helpottamiseksi. Erikseen voisi myˆs siirrell‰ paikkoja ja nopeuksia paikasta toiseen kahtena eri muuttujana.
+
+Simulaatiossa on mukana lokitiedostokirjoittimia, jotka periytyv‰t Loggerista. Ainakin GnuplotLogger ja CsvLogger toteutetaan. Ne ottavat referenssin Worldiin ja kirjoittavat sen tilan tiedostoon eri muodoissa.
+
+\subsection{K‰yttˆliittym‰}
+
+K‰yttˆliittym‰ on monitasoinen; siin‰ voi tarkastella koko maailman tilaa numeerisesti taulukossa, muokata kappaleiden tilaa muokkauspaneeleista, sek‰ tarkastella maailmaa kolmiulotteisesta n‰kym‰st‰, jossa voi kulkea fps-pelien tapaan n‰pp‰imistˆn ja hiiren avulla. K‰yttˆliittym‰ koostuu monista palasista, joten sekin on jaettu keskeisimpiin luokkiin.
+
+P‰‰ikkuna (luokka UI) on oma luokkansa, ja se avaa muita dialogeja tai piilossa olevia asetuspaneeleja kun k‰ytt‰j‰ niin valitsee. P‰‰ikkunan alla on myˆs renderˆintin‰kym‰. Renderˆinti‰ p‰ivitet‰‰n aina kun yksi aika-askel on ajettu.
+
+UI-luokka hoitaa korkeimman tason p‰‰asiat ja ikkunan rakentamisen. SettingPane on hybridin‰kym‰ss‰ oleva konfigurointipaneeli, josta voi s‰‰t‰‰ keskeisimm‰t ja monet renderˆintiin liittyv‰t asiat: 3d-n‰kym‰ss‰ voi klikata kappaletta, jolloin sen tiedot (sijainti, nopeus, massa ym) tulevat n‰kyviin t‰h‰n sivupaneeliin, josta niit‰ voi myˆs muokata v‰littˆm‰sti. Selkeyden ja modulaarisuuden vuoksi SettingPane ei hoida itse juuri mit‰‰n asetuksia, vaan se s‰ilˆˆ useita eri asetuswidgettej‰.
+
+BodyWidgetin vastuulla on kappaleen tietojen esitt‰minen. Se koostuu valikosta, josta valitaan k‰sitelt‰v‰ kappale (jonka voi toisaalta valita myˆs 3d-n‰kym‰st‰), sek‰ tekstilaatikoista, joissa on nimi, paikan ja nopeuden x- y- ja z-komponentit, massa, ja muut kappaleen ominaisuudet.
+
+Joskus halutaan seurata kahden kappaleen v‰list‰ et‰isyytt‰. DistanceWidget seuraa t‰t‰ arvoa kokonaisuutena ja komponenteittain, sek‰ se sis‰lt‰‰ valintalaatikot seurattaville kappaleille.
+
+Simuloinnin historiasta pidet‰‰n kirjaa mm. ratojen piirt‰mist‰ varten. TimeWidget sis‰lt‰‰ sliderin, jolla aikaa voi kelata taaksep‰in, sek‰ lis‰ksi napin sek‰ valintalaatikon, joiden avulla simuloida aikaa lis‰‰ eteenp‰in tietyn aikaa, kunnes tapahtuu tˆrm‰ys, tai pys‰htym‰tt‰ lainkaan.
+
+Widgeteill‰ on joitakin metodeita tiedon kuljettamisesta edestakaisin; esimeriksi BodyWidgetill‰ on chooseBody-metodi, jota kutsutaan kun 3d-tilasta klikataan planeettaa, ja DistanceWidgetill‰ chooseBodies, jolla valitaan mink‰ kahden kappaleen v‰list‰ et‰isyytt‰ seurataan.
+
+N‰iden lis‰ksi projektin edistyess‰ saatetaan toteuttaa muitakin widgettej‰ sit‰ mukaa kun lis‰‰ ideoita ja tarvetta tulee.
 
 
-\subsection{K√§ytt√∂liittym√§}
+\subsection{Renderˆinti}
 
-K√§ytt√∂liittym√§ on monitasoinen; siin√§ voi tarkastella koko maailman tilaa numeerisesti taulukossa, muokata kappaleiden tilaa muokkausdialogeilla, sek√§ tarkastella maailmaa kolmiulotteisesta n√§kym√§st√§, jossa voi kulkea fps-pelien tapaan n√§pp√§imist√∂n ja hiiren avulla. K√§ytt√∂liittym√§ koostuu monista palasista, joten sekin on jaettu keskeisimpiin luokkiin.
+Simulaation nykytila ja kappaleiden ratahistoriat renderˆid‰‰n kolmiulotteiseen opengl-n‰kym‰‰n. Koska simulaatio pidet‰‰n erillisen‰ grafiikasta, mutta eri kappaleilla voi olla eri muotoja ja tekstuureita, grafiikkapuoli sis‰lt‰‰ kappaleille omat luokat, jotka viittaavat vastaaviin simulaation kappaleluokkiin ja tiet‰v‰t myˆs jotain piirt‰misest‰.
 
-P√§√§ikkuna (luokka UI) on oma luokkansa, ja se avaa muita dialogeja tai piilossa olevia asetuspaneeleja kun k√§ytt√§j√§ niin valitsee. P√§√§ikkunan alla on my√∂s render√∂intin√§kym√§. Render√∂inti√§ p√§ivitet√§√§n aina kun yksi aika-askel on ajettu.
+Renderˆinnin p‰‰asiat hallitsee Renderer-luokka, joka periytyy GLEventListenerist‰. Kun n‰yttˆ halutaan p‰ivitt‰‰, Rendererin piirtometodia kutsutaan. Renderer sis‰lt‰‰ listan GfxBody-luokan olioista, joita se k‰skee piirt‰m‰‰n erikseen. Lis‰ksi se hoitaa mm. kuvakulman pyˆrittelyn oikeaan pikkaan.
 
-UI-luokka hoitaa korkeimman tason p√§√§asiat ja ikkunan rakentamisen. SettingPane on hybridin√§kym√§ss√§ oleva konfigurointipaneeli, josta voi s√§√§t√§√§ keskeisimm√§t ja monet render√∂intiin liittyv√§t asiat: 3d-n√§kym√§ss√§ voi klikata kappaletta, jolloin sen tiedot (sijainti, nopeus, massa ym) tulevat n√§kyviin t√§h√§n sivupaneeliin, josta niit√§ voi my√∂s muokata v√§litt√∂m√§sti. Selkeyden ja modulaarisuuden vuoksi SettingPane ei hoida itse juuri mit√§√§n asetuksia, vaan se s√§il√∂√∂ useita eri asetuswidgettej√§.
+GfxBody syˆ sis‰‰ns‰ simuloinnin Bodyn ja tiedon mm. kappaleen muodosta, ja se osaa piirt‰‰ itsens‰ n‰ytˆlle, kun Renderer niin k‰skee. Piirtometodeina mm. draw(), drawBody() ja drawHistory(). Yksityiskohdat opengl:n piirtotempuista sivuutetaan triviaaleina ja irrelevantteina.
 
-BodyWidgetin vastuulla on kappaleen tietojen esitt√§minen. Se koostuu valikosta, josta valitaan k√§sitelt√§v√§ kappale (jonka voi toisaalta valita my√∂s 3d-n√§kym√§st√§), sek√§ tekstilaatikoista, joissa on nimi, paikan ja nopeuden x- y- ja z-komponentit, massa, ja muut kappaleen ominaisuudet.
+Shape-luokka vastaa erilaisten muotojen piirt‰misest‰ opengl:ll‰. Se varastoi mm. verteksilistan ja v‰rin/tekstuurin tiedot.
 
-Joskus halutaan seurata kahden kappaleen v√§list√§ et√§isyytt√§. DistanceWidget seuraa t√§t√§ arvoa kokonaisuutena ja komponenteittain, sek√§ se sis√§lt√§√§ valintalaatikot seurattaville kappaleille.
+\section{K‰yttˆtapauskuvaus}
+\subsection{Komentorivi}
 
-Simuloinnin historiasta pidet√§√§n kirjaa mm. ratojen piirt√§mist√§ varten. TimeWidget sis√§lt√§√§ sliderin, jolla aikaa voi kelata taaksep√§in, sek√§ lis√§ksi napin sek√§ valintalaatikon, joiden avulla simuloida aikaa lis√§√§ eteenp√§in tietyn aikaa, kunnes tapahtuu t√∂rm√§ys, tai pys√§htym√§tt√§ lainkaan.
-
-Widgeteill√§ on joitakin metodeita tiedon kuljettamisesta edestakaisin; esimeriksi BodyWidgetill√§ on chooseBody(Body), jota kutsutaan kun 3d-tilasta klikataan planeettaa, ja DistanceWidgetill√§ chooseBodies(Body, Body), jolla valitaan mink√§ kahden kappaleen v√§list√§ et√§isyytt√§ seurataan.
-
-N√§iden lis√§ksi projektin edistyess√§ saatetaan toteuttaa muitakin widgettej√§ sit√§ mukaa kun lis√§√§ ideoita ja tarvetta tulee.
+K‰ytt‰j‰ ajaa ohjelman komentorivilt‰ parametreilla -f gnuplot -o plot.log -c test.conf -t 1000. Ohjelma lukee tiedostosta test.conf kaiken mit‰ sielt‰ lˆytyy, rakentelee Body-oliot ja ajaa ladattua maailmaa 1000 sekuntia eteenp‰in tulostaen plot.log-tiedostoon gnuplotin ymm‰rt‰m‰ss‰ muodossa GnuplotLoggerilla simuloinnin tulokset, jonka j‰lkeen se sulkeutuu avaamatta muita ikkunoita.
 
 
-\subsection{Render√∂inti}
+\subsection{GUI}
 
-Simulaation nykytila ja kappaleiden ratahistoriat render√∂id√§√§n kolmiulotteiseen opengl-n√§kym√§√§n. Koska simulaatio pidet√§√§n erillisen√§ grafiikasta, mutta eri kappaleilla voi olla eri muotoja ja tekstuureita, grafiikkapuoli sis√§lt√§√§ kappaleille omat luokat, jotka viittaavat vastaaviin simulaation kappaleluokkiin.
+K‰ytt‰j‰ ei anna komentoriviparametreja, jolloin ohjelma luo tyhj‰n maailman aluksi ja n‰ytt‰‰ hybridin‰kym‰n. (Ikkunat alustelevat itsens‰ yms, muttei simulaatio tee mit‰‰n kummempaa). K‰ytt‰j‰ lataa test.conf-tiedoston asetukset valikoista naksuttelemalla, jolloin asetusn‰kymiin tulee tietoja kappaleista ja 3d-n‰kym‰‰n maailman yleistilanne; simulaatio alustuu vastaavasti kuin komentorivilt‰ ajettaessa Bodyiksi. Samalla renderi lukee samaisista asetuksista sen, milt‰ kappaleiden tulisi n‰ytt‰‰ (s‰de, tekstuurit, muoto yms). K‰ytt‰j‰ vaihtelee 3d-n‰kym‰n tilaa, koska ei ole siihen tyytyv‰inen, navigoimalla siell‰ hiiren ja n‰pp‰imistˆn avulla fps-pelien tapaan. Seuraavaksi k‰ytt‰j‰ asettaa ohjelman simuloimaan jatkuvasti, jolloin kappaleet alkavat pyˆri‰ 3d-n‰kym‰ss‰. Taustalle aukeaa s‰ie pyˆrittelem‰‰n simulaatiota eli integroimaan kappaleiden tiloja eteenp‰in, ja 3d- ja konffin‰kym‰t p‰ivittelev‰t itse‰‰n samassa tahdissa. T‰st‰ voi jatkaa seikkailemalla renderill‰ tai virittelem‰ll‰ kappaleiden parametreja.
 
-Render√∂innin p√§√§asiat hallitsee Renderer-luokka, joka periytyy GLEventListenerist√§. Kun n√§ytt√∂ halutaan p√§ivitt√§√§, Rendererin piirtometodia kutsutaan. Renderer sis√§lt√§√§ listan GfxBody-luokan olioista.
 
-GfxBody sy√∂ sis√§√§ns√§ simuloinnin Bodyn. GfxBody sis√§lt√§√§ lis√§ksi tiedon mm. kappaleen muodosta, ja se osaa piirt√§√§ itsens√§ n√§yt√∂lle, kun Renderer niin k√§skee. Piirtometodeina mm. draw(), drawBody() ja drawHistory().
-
-Shape-luokka vastaa erilaisten muotojen piirt√§misest√§ opengl:ll√§. Se varastoi mm. verteksilistan ja v√§rin/tekstuurin tiedot.
-
-\section{K√§ytt√∂tapauskuvaus}
-
-      Esitt√§k√§√§ ainakin yksi realistinen ohjelman k√§ytt√∂tapaus, eli kuvaus tilanteesta, jossa k√§ytt√§j√§ k√§ynnist√§√§ ohjelman ja tekee sill√§ joitakin ohjelmalle tyypillisi√§ asioita. Kertokaa sek√§ se, mit√§ toimenpiteit√§ k√§ytt√§j√§n on suoritettava p√§√§m√§√§riens√§ saavuttamiseksi (eli mink√§ k√§ytt√∂liittym√§n osien kanssa t√§m√§ on tekemisiss√§ ja miten), ett√§ se, mitk√§ ohjelmanne osat aktivoituvat kussakin vaiheessa "kulissien takana" ja suorittavat tarvittavat teht√§v√§t. Koodiyksityiskohdat eiv√§t ole t√§ss√§ kiinnostavia, vaan korkeamman tason ty√∂njako.
 \section{Algoritmit}
 
-      Sanallinen kuvaus k√§ytt√§mist√§nne algoritmeista, eli siit√§ miten ohjelma suorittaa tarvittavat teht√§v√§t. Esim. miten tarvittava matemaattinen laskenta tapahtuu (kaavat mukaan)? Miten algoritminne l√∂yt√§√§ lyhimm√§n tiereitin kahden kaupungin v√§lille? Miten toteuttamanne pelin teko√§ly toimii? Kaavioita tms. voi k√§ytt√§√§ apuna tarpeen mukaan. Mit√§ muita ratkaisuvaihtoehtoja olisi ollut? Perustelkaa valintanne!
+P‰‰algoritmi teht‰v‰ss‰ on simulaation laskenta; muualla esiintyy pieni‰ ja suhteellisen merkityksettˆmi‰ tavallisia teknisi‰ algoritmeja, joita ei edes viel‰ k‰sitell‰.
 
-      T√§ss√§ kohdassa on siis tarkoitus selostaa ne periaatteet, joilla ongelmat voidaan ratkaista, ei sit√§, miten algoritmit koodataan. Siis ei luokkien tai metodien kuvauksia tai muitakaan Javaan tai ohjelmakoodiin liittyvi√§ seikkoja t√§nne! (Viel√§ rautalangasta: √§lk√§√§ mainitko t√§ss√§ mit√§√§n siit√§, millaisilla metodeilla algoritmi saadaan toimimaan, millaisia silmukkarakenteita tarvitsee kirjoittaa, tms. N√§m√§ ovat toteutusteknisi√§ yksityiskohtia, jotka eiv√§t ole t√§m√§n osion, eiv√§tk√§ oikeastaan koko projektisuunnitelman kannalta kiinnostavia.) Jos ohjelmassa on tarkoitus k√§ytt√§√§ joitakin yleisesti tunnettuja algoritmeja kannattaa toki mainita algoritmit nimelt√§.
+\subsection{Simulaatio}
+
+Varmasti suunniteltuna on vain nelj‰nnen asteen Runge-Kutta-menetelm‰n (RK4) k‰yttˆ. Kappaleiden tilat $y$ ja aika $t$ muuttuvat seuraavasti (alaindeksit y:lle ja t:lle kuvaavat integrointikierrosten indeksej‰):
+
+%\begin{equation}
+\begin{align}
+y_{n+1} &= y_n + \tfrac{1}{6} h \left(k_1 + 2k_2 + 2k_3 + k_4 \right) \\
+t_{n+1} &= t_n + h
+\end{align}
+%\end{equation}
+
+Arvot $k_i$ kertovat tietoja kulmakertoimesta ja m‰‰r‰ytyv‰t seuraavasti:
+
+%\begin{equation}
+\begin{align} 
+k_1 &= f(t_n, y_n)
+\\
+k_2 &= f(t_n + \tfrac{1}{2}h, y_n +  \tfrac{1}{2} h k_1)
+\\
+k_3 &= f(t_n + \tfrac{1}{2}h, y_n +   \tfrac{1}{2} h k_2)
+\\
+k_4 &= f(t_n + h, y_n + h k_3)
+\end{align}
+%\end{equation}
+
+$k_1$ on kulmakerroin nykyhetkell‰; $k_2$ on Eulerin menetelm‰ll‰ laskettu puolikkaan aika-askeleen j‰lkeen; $k_3$ vastaava, mutta kulmakertoimen $k_2$ avulla; $k_4$ lopussa eli aika-askeleen p‰‰ss‰ nykyhetkest‰ $k_3$:lla. N‰iden painotettu keskiarvo m‰‰r‰‰ oletetun derivaatan kohdassa $n$.
+
+Koska maailman tila on yhten‰inen eri kappaleiden suhteen ja kyseess‰ on periaatteessa yksi suuri tilavektori, ei kappaleiden tiloja p‰ivitell‰ vaiheiden v‰lill‰ erikseen, vaan kaikkien kappaleiden tilat lasketaan askeleiden v‰lill‰. Teknisesti tilavektori on hahmottamissyist‰ hajautettu erillisiin kappaleluokkiin. Esimerkiksi siis $k_2$:n laskemisessa yht‰ kappaletta varten muuta maailmaa ei pidet‰ paikallaan, vaan vaikutus lasketaan kaikelle.
+
+Muita vaihtoehtoisia integrointimenetelmi‰ olisi mm. Verlet ja Dormand-Prince. N‰m‰ saatetaan implementoida vaihtelun vuoksi. Euleria ei lasketa, koska se on kelvottoman huono.
+
+Simulaatio saatetaan toteuttaa tukemaan hyvin myˆs eritt‰in suurta m‰‰r‰‰ partikkeleita optimoimalla monet kaukana olevat kappaleet olettamalla yhdeksi siten, ett‰ ne approksimoidaan yhdeksi pisteeksi: jos aikaa j‰‰, tutkitaan esim. Barnes-Hut-simulaatiota.
+
+\subsection{Muuta}
+
+Yll‰ oleva algoritmi on koko ohjelman p‰‰asia, mutta t‰ss‰ myˆs joitain pienempi‰ huomioon otettavia asioita.
+
+Askelpituutta saatetaan muuttaa lennossa, jos k‰ytt‰j‰ sen sallii. Kappaleiden ollessa kaukana toisistaan simulaatiota voidaan tietysti laskea varsin pitk‰lle, mutta l‰hekk‰isille kappaleille pitk‰ askelv‰li aiheuttanee v‰‰r‰‰ k‰ytˆst‰. Askelpituuden muuttaminen adaptiivisesti onnistunee tarkastelemalla kappaleiden v‰lisien et‰isyyksien muutoksia. T‰m‰ nopeuttaa simulaatiota, kun lyhyt v‰li on tarpeeton.
+
+Grafiikan piirto on p‰‰osin suoraviivaista, mutta jos simulaatio kest‰‰ erityisen pitk‰‰n, esim. rataviivojen piirtoa ei v‰ltt‰m‰tt‰ jatketa aivan alusta saakka. Myˆs joitain askelia saatetaan hyppi‰ v‰list‰ pois, koska karkeampikin viiva riitt‰‰.
+
+Historiadatan tallentamiseen ei v‰ltt‰m‰tt‰ k‰ytet‰ jokaista askelta hyv‰ksi, sill‰ t‰llˆin ohjelman muistink‰yttˆ voi nousta pilviin nopeasti. Takaisin kelatessa suurempien askelien v‰list‰ voidaan interpoloida arvoja lennossa.
+
+Myˆsk‰‰n lokitiedostoon ei v‰ltt‰m‰tt‰ aina tallenneta jokaisen askeleen pistett‰. Asetustiedostossa on mahdollisuus m‰‰ritell‰ esim. miten monen askeleen v‰lein maailman tila tulostetaan lokiin.
+
+
 \section{Tietorakenteet}
 
-      Mink√§laiset kokoelmatyypit/tietorakenteet soveltuvat parhaiten ohjelmassa tarvittavan tiedon varastoimiseen ja k√§sittelyyn? Miksi? Mit√§ muita valintamahdollisuuksia olisi ollut? Tarvitsetteko dynaamisia rakenteita (so. muuttuvan kokoisia, esim. listat) vai riitt√§v√§tk√∂ esim. taulukot? Kun k√§yt√§tte Javan valmiita tietorakenteita, ei niiden tarkkaa m√§√§rittely√§ tarvitse esitt√§√§, kunhan perustelee miksi mink√§kin rakenteen on valinnut. Jos taas ohjelmoitte itse jonkin tietorakenteen, on my√∂s sen toimintatapa selostettava.
+Perustietorakenteisiin ei tarvita mit‰‰n listoja kummempaa. Kappaleiden m‰‰r‰ voi muuttua ohjelman toiminnan aikana, historiadataa kertyy jatkuvasti jne, jolloin ArrayList tullee olemaan varsin k‰ytetty perustaulukoiden sijaan.
+
+Jos j‰‰ aikaa raskaaseen partikkelisysteemiin, Barnes-Hut-menetelm‰ss‰ tarvitaan octree, joka toteutetaan itse. Octree jakaa 3d-maailman puumaisesti eri osiin, mik‰ nopeuttaa suuren partikkelim‰‰r‰n k‰sittely‰.
+
+
 \section{Aikataulu}
 
-      Yritt√§k√§√§ hahmotella itsellenne aikataulu ja karkea arvio eri vaiheissa kuluvista ty√∂tunneista. Se on vaikeaa, mutta opettavaista, kun aikataulua vertaa k√§yt√§nn√∂ss√§ eri vaiheisiin kuluvaan todelliseen aikaan. √Ñlk√§√§ heitt√§k√∂ suunnitelmaan mit√§ tahansa ensiksi mieleen tulevia lukuja vaan yritt√§k√§√§ arvioida tilannetta realistisesti.
+Aikataulu on jaettu arvioihin, mit‰ kunkin viikon loppuvaiheessa tulisi ainakin olla tehtyn‰. Seuraavassa viikkonumerot ja vastaavan viikon toiminnan kuvaus.
 
-      Kuvatkaa my√∂s suunniteltu etenemisj√§rjestys, eli miss√§ j√§rjestyksess√§ ohjelmanne aiotte toteuttaa. T√§ss√§ kannattaa jo mietti√§ ohjelman testausta, ja sit√§, mitk√§ osat muusta koodista k√§ytt√§v√§t muita osia. Yleens√§ ohjelmassa on keskeisi√§ ominaisuuksia joista kannattaa aloittaa, sek√§ ominaisuuksia, joiden toteutus ei ole heti olennaista. Muista ett√§ kehitett√§ess√§ jotkin asiat voidaan korvata tynk√§luokilla tai tynk√§metodeilla, jotta ohjelma saadaan k√§√§ntym√§√§n, ja jotta toteutettua koodia voi testata. Kokonaisia luokkia ei my√∂sk√§√§n tarvitse toteuttaa alusta loppuun vaan tarkentaa toteutusta aste asteelta, kun ty√∂ etenee.
-\section{Yksikk√∂testaussuunnitelma}
+\begin{description}
+\item[7] Tutustutaan menetelmiin ja arvioidaan vaihtoehtoja, jotain randomkoodailua, yleissuunnitelma
+\item[8] Teknosuunnitelma; Softa etsii muotoaan ja tekee jotain j‰rkev‰‰ joka suhteessa; konffit latautuu, simu toimii ja kirjoittaa lokeihin, k‰liss‰ on pari nappia ja opengl-canvas piirt‰‰ palluroita
+\item[9] Suunnitelmademo, softa kehittynyt hieman joka suhteessa edellisest‰
+\item[10] K‰yttˆliittym‰ss‰ on k‰ytett‰vi‰ nappeja ja 3d-n‰kym‰ss‰ on jotain automagiikkaa jolloin testaaminen on vikkel‰‰
+\item[11] 3d-n‰kym‰ss‰ on kauniita tekstuureita ja siell‰ voi k‰vell‰ ja valita asioita, jolloin niiden tiedot tulevat settingspaneen
+\item[12] Lokitiedostot voi konffata ja konffauspaneelissa (laajempi settingspane, josta n‰kee koko maailman tiedot selke‰mmin) on kokonaisuudessaan jotain, mm. lista kappaleista
+\item[13] Checkpoint; konffitiedostojen virheellisyys hallitaan oikein, konffauspaneeli myˆs reagoi muutoksiin
+\item[14] 3d-n‰kym‰ss‰ toimii ratah‰nn‰t ja kappaleen seuranta ja origos‰‰tˆ
+\item[15] Kiillotusta sielt‰ t‰‰lt‰, ehk‰ jopa octree-optimaatio
+\item[16] 20.4. DL
+\end{description}
 
-      Kuvatkaa t√§ss√§ osiossa kuinka aiotte testata ohjelman keskeisimpi√§ osia toteutuksen edetess√§. Koko ohjelman kaikkia ominaisuuksia ei ole tarkoitus k√§yd√§ l√§pi, vaan keskitty√§ t√§ss√§ ehk√§ ohjelman "ydinmetodeihin", jotka tekev√§t sen keskeisimm√§n ty√∂n. Kuvatkaa j√§lleen yleisluontoisesti, kuinka aiotte metodeja (valitkaa muutama) niiden valmistuttua kokeilla. J√§lleen voi esitt√§√§ keskeisi√§ sy√∂tteit√§ joilla ohjelman tulee toimia, mit√§ metodin tulee t√§ll√∂in palauttaa ja mik√§ sen vaikutus ohjelman olioihin tulee olla. Vastaavasti voi pohtia sit√§, kuinka metodeja voisi testata helposti ilman ett√§ tarvitsee toteuttaa valtavia apurakennelmia. (valitettavasti n√§ilt√§ ei voi aina v√§ltty√§) Yksikk√∂testausta kannattaa sitten projektia toteuttaessa tehd√§ sopivassa m√§√§rin, jotta ei turhaan joudu etsim√§√§n bugia uusista koodiriveist√§, kun virhe onkin jossain joka tehtiin aikaa sitten.
+Tyˆtunteja kuluu viikottain 10-15. Koodin syntyess‰ suunnitellaan ja kirjoitetaan mahdollisuuksien mukaan myˆs testikoodia sek‰ dokumentoidaan ja harkitaan erilaisia toteutusvaihtoehtoja; itse koodausprosessi on t‰st‰ vain osa. Viikkoroadmapit ovat vain suuntaa-antavia.
+
+
+\section{Yksikkˆtestaussuunnitelma}
+
+\begin{itemize}
+\item Config: tarkistetaan, ett‰ latausmetodit lataavat globaalit muuttujat ja blokit kunnolla sek‰ skippaavat kommentit.
+\item ConfigBlock: getterit palauttavat oikean arvon niit‰ hakiessa. Esim. getInt heitt‰‰ poikkeuksen mik‰li arvoa ei voi tulkita kokonaislukuna. Setterit vastaavasti.
+\item Simulaation toimivuus: Pyˆritell‰‰n maapalloa auringon ymp‰rill‰ pari aika-askelta ja katsotaan, ett‰ on siell‰ minne ennustettiin. Kiihtyvyysfunktiosta katsotaan, ett‰ kaikki planeetat vaikuttavat toisiinsa.
+\item Lagrangen pisteess‰ oleva kappale ei integroidessa liiku suhteessa muihin.
+\item Tˆrm‰ykset: tˆrm‰ystarkistusmetodi reagoi oikein kun kappaleet ovat liian l‰hekk‰in.
+\item K‰yttˆliittym‰n napit tekev‰t mit‰ pit‰‰kin; testattava l‰hinn‰ k‰sin.
+\item Asetuswidgettien chooseBody-metodit ym. reagoivat esim. valitsemalla oikean kappaleen.
+\item Renderer piirt‰‰ sille annetut palikat oikeisiin kohtiin. Apurakenteeksi jokin testihomma joka k‰ynnist‰‰ rendausikkunan dummykappaleilla.
+\item Rendererin navigointimetodit; testattava k‰sin.
+\end{itemize}
+
+Konepellin alla olevat asiat, eli asetush‰rp‰ttimet ja simulaation, voi testata hyvin helposti, ja ne vaativatkin algoritmisuudessaan eniten testausta. K‰yttˆliittym‰n testailu on hankalampaa, kun se vaatii ihmist‰ heiluttelemaan hiirt‰. Sen testaaminen on parasta tehd‰ siten, ett‰ kun simulaation toimivuus on todettu, havainnoidaan ett‰ k‰yttˆliittym‰ reagoi halutusti -- suuri osa t‰st‰ hoituu ihan k‰ytt‰m‰ll‰ ohjelmaa. Esim. rendererin piirtoh‰ss‰k‰t saa testattua helposti siten, ett‰ ladataan jokin alkutilanne josta tiedet‰‰n milt‰ sen pit‰isi n‰ytt‰‰, ja katsotaan ett‰ n‰ytˆll‰ on se mit‰ kuuluu olla.
+
+% Kuvatkaa t‰ss‰ osiossa kuinka aiotte testata ohjelman keskeisimpi‰ osia toteutuksen edetess‰. Koko ohjelman kaikkia ominaisuuksia ei ole tarkoitus k‰yd‰ l‰pi, vaan keskitty‰ t‰ss‰ ehk‰ ohjelman "ydinmetodeihin", jotka tekev‰t sen keskeisimm‰n tyˆn. Kuvatkaa j‰lleen yleisluontoisesti, kuinka aiotte metodeja (valitkaa muutama) niiden valmistuttua kokeilla. J‰lleen voi esitt‰‰ keskeisi‰ syˆtteit‰ joilla ohjelman tulee toimia, mit‰ metodin tulee t‰llˆin palauttaa ja mik‰ sen vaikutus ohjelman olioihin tulee olla. Vastaavasti voi pohtia sit‰, kuinka metodeja voisi testata helposti ilman ett‰ tarvitsee toteuttaa valtavia apurakennelmia. (valitettavasti n‰ilt‰ ei voi aina v‰ltty‰) Yksikkˆtestausta kannattaa sitten projektia toteuttaessa tehd‰ sopivassa m‰‰rin, jotta ei turhaan joudu etsim‰‰n bugia uusista koodiriveist‰, kun virhe onkin jossain joka tehtiin aikaa sitten.
+
+
 \section{Kirjallisuusviitteet ja linkit}
 
-      Suunnitteluvaiheessa on syyt√§ selvitt√§√§, millaista aiheeseenne liittyv√§√§ materiaalia on tarjolla. Kirjastot ja nettihakukoneet ovat resursseja, joita kannattaa hy√∂dynt√§√§. Kertokaa t√§ss√§, mit√§ kirjoja, nettisivuja tai muuta materiaalia olette jo k√§ytt√§neet tai suunnitelleet my√∂hemmin k√§ytt√§v√§nne. Kaikki l√§hteet tulee ilmoittaa, vaikka niihin kuuluisivat pelkk√§ kurssilla k√§ytt√§m√§nne oppikirja ja Javan perusluokkakirjastojen API-kuvaus.
-\section{Liitteet}
+Tietoa ammennetaan mm. seuraavista l‰hteist‰:
+\begin{itemize}
+\item \url{http://gafferongames.com/game-physics/integration-basics/}
+\item \url{http://en.wikipedia.org/wiki/Runge-Kutta_methods}
+\item \url{http://en.wikipedia.org/wiki/Verlet_integration}
+\item \url{http://www.gamasutra.com/resource_guide/20030121/jacobson_01.shtml}
+\item \url{http://en.wikipedia.org/wiki/Dormand-Prince}
+\item \url{http://en.wikipedia.org/wiki/Barnes-Hut_simulation}
+\item \url{http://en.wikipedia.org/wiki/Octree}
+\item \url{https://noppa.tkk.fi/noppa/kurssi/t-106.1240/luennot}
+\item \url{http://download.oracle.com/javase/6/docs/api/}
+\end{itemize}
 
-      Lis√§ksi suunnitelmassa saa olla liitteit√§, aiheesta riippuen.
+
+%\section{Liitteet}
+%      Lis‰ksi suunnitelmassa saa olla liitteit‰, aiheesta riippuen.
 
 \end{document}

@@ -1,0 +1,128 @@
+digraph G {
+        fontname = "Bitstream Vera Sans"
+        fontsize = 8
+        node [
+                fontname = "Bitstream Vera Sans"
+                fontsize = 8
+                shape = "record"
+        ]
+        edge [
+                fontname = "Bitstream Vera Sans"
+                fontsize = 8
+        ]
+        subgraph clusterAnimalImpl {
+                label = "simu"
+				Vec3 [
+					label = "{Vec3|- x\l- y\l- z\l}"
+				]
+				State [
+					label = "{State|- pos\l- spd\l}"
+				]
+				Body [
+					label = "{Body|- pos\l- spd\l- name\l}"
+				]
+				Rocket [
+					label = "{Rocket|- fuel\l- power\l}"
+				]
+				Satellite [
+					label = "Satellite"
+				]
+				World [
+					label = "{World|- bodies\l- integrator\l- loadConfig()\l- lrun()\lacceleration()\l}"
+				]
+				Integrator [
+					label = "{Integrator|- run()}"
+				]
+				RK4 [
+					label = "RK4"
+				]
+				Logger [
+					label = "{Logger|- log()}"
+				]
+				GnuplotLogger [
+					label = "GnuplotLogger"
+				]
+				CsvLogger [
+					label = "CsvLogger"
+				]
+        }
+        subgraph clusterAnimalImpl2 {
+			label = "gfx"
+			Material [
+				label = "{Material|- color\l- texture\l- render()\l}"
+			]
+			Shape [
+				label = "{Shape|- vertices}"
+			]
+			Drawable [
+				label = "{Drawable|- material\l- shape\l}"
+			]
+        }
+        subgraph clusterAnimalImpl3 {
+			label = "ui"
+			UI [
+				label = "{UI|- settings\l- renderer\l}"
+			]
+			Renderer [
+				label = "{Renderer|- world\l- bodies\l- render()\l}"
+			]
+			SettingPane [
+				label = "{SettingPane|- widgets}"
+			]
+			BodyWidget [
+				label = "{BodyWidget|- chooseBody()\l}"
+			]
+			TimeWidget [
+				label = "{TimeWidget|- setTime()\l}"
+			]
+			DistanceWidget [
+				label = "{DistanceWidget|- chooseBodies()\l}"
+			]
+        }
+        subgraph clusterAnimalImpl4 {
+			label = "conf"
+			Config [
+				label = "{Config|- load()\l- save()\l- getBlocks()\l}"
+			]
+			ConfigBlock [
+				label = "{ConfigBlock|- get()\l- getInt()\l- getVec()\l}"
+			]
+        }
+        edge [
+                arrowhead = "empty"
+        ]
+        edge [
+                arrowhead = "none"
+
+        ]
+        
+        Body -> Vec3
+        Rocket -> Body
+        Satellite -> Rocket
+        World -> Integrator
+        RK4 -> Integrator
+        State -> RK4
+        
+        Logger -> World
+        GnuplotLogger -> Logger
+        CsvLogger -> Logger
+        
+        Drawable -> Material
+        Drawable -> Shape
+        Drawable -> Body
+        
+        Renderer -> UI
+        SettingPane -> UI
+        BodyWidget -> SettingPane
+        TimeWidget -> SettingPane
+        DistanceWidget -> SettingPane
+        
+        Renderer -> World
+        Renderer -> Drawable
+        SettingPane -> World
+        
+        World -> Config
+        Body -> ConfigBlock
+        
+        Config -> ConfigBlock
+}

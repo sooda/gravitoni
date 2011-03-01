@@ -4,6 +4,7 @@ import java.awt.Button;
 
 import javax.swing.JPanel;
 
+@SuppressWarnings("serial")
 public class BodyWidget extends JPanel {
 	private UI ui;
 	

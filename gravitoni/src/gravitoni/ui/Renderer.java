@@ -2,6 +2,8 @@ package gravitoni.ui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -17,7 +19,7 @@ import javax.media.opengl.glu.GLU;
 import javax.media.opengl.glu.GLUquadric;
 import javax.swing.*;
 
-public class Renderer implements GLEventListener, ActionListener {
+public class Renderer implements GLEventListener, ActionListener, KeyListener {
 
 	protected float pyramidRotation;
 	protected float cubeRotation;
@@ -26,6 +28,8 @@ public class Renderer implements GLEventListener, ActionListener {
 	private World world;
 	private int texture;
 	private GLU glu = new GLU();
+	
+	private Navigator navigator;
 	
 	private JMenuBar menuBar;
 	private JPopupMenu popup;
@@ -47,7 +51,7 @@ public class Renderer implements GLEventListener, ActionListener {
 		MouseListener l = new PopupListener();
 		menuBar.addMouseListener(l);
 		canvas.addMouseListener(l);
-		
+		navigator = new Navigator();
 	}
 	
 	class PopupListener extends MouseAdapter {
@@ -83,18 +87,44 @@ public class Renderer implements GLEventListener, ActionListener {
 		final GL gl = drawable.getGL();
 		gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
 		for (Body b: world.getBodies()) {
+			//if (!b.getName().equals("Moon")) continue;
 			gl.glLoadIdentity();
 			gl.glColor3d(1, 1, 1);
 			Vec3 pos = b.getPos();
-			//System.out.println("Hox! " + b.getName() + "; " + (100/1e11*pos.x) + "," + (100/1e11*pos.y) + "," + pos.z + "   " + (1/1e3 * b.getRadius()));
+			// System.out.println("Hox! " + b.getName() + "; " + (1/1e7*pos.x) + ", " + (1/1e7*pos.y) + ", " + pos.z + "   " + (1/1e3 * b.getRadius()));
 			gl.glBindTexture(GL.GL_TEXTURE_2D, texture);
 			gl.glEnable(GL.GL_TEXTURE_GEN_S);
 			gl.glEnable(GL.GL_TEXTURE_GEN_T);
-			gl.glTranslated(100/1e11 * pos.x, 100/1e11 * pos.y, -1000f);
+			navigator.apply(gl);
+			gl.glTranslated(10/1e7 * pos.x, 10/1e7 * pos.y, -1500f);
 			//gl.glTranslated(100, 100, -1000f);
-			glu.gluSphere(qua, 120/7e8 * b.getRadius(), 20, 20);
+			glu.gluSphere(qua, .01/1e3 * b.getRadius(), 20, 20);
+			//glu.gluCylinder(qua, 100, 100, 100, 100, 100);
 			//glu.gluSphere(qua, 100, 20, 20);
 		}
+		gl.glDisable(GL.GL_TEXTURE_GEN_S);
+		gl.glDisable(GL.GL_TEXTURE_GEN_T);
+		
+		gl.glColor3d(0, 0, 1);
+		gl.glLoadIdentity();
+		navigator.apply(gl);
+		gl.glTranslated(0, 0, -1500f);
+		glu.gluCylinder(qua, 20, 1, 200, 24, 240);
+		
+		gl.glColor3d(0, 1, 0);
+		gl.glLoadIdentity();
+		navigator.apply(gl);
+		gl.glTranslated(0, 0, -1500f);
+		gl.glRotated(90, 1, 0, 0);
+		glu.gluCylinder(qua, 20, 1, 200, 24, 240);
+		
+		gl.glColor3d(1, 0, 0);
+		gl.glLoadIdentity();
+		navigator.apply(gl);
+		gl.glTranslated(0, 0, -1500f);
+		gl.glRotated(90, 0, 1, 0);
+		glu.gluCylinder(qua, 20, 1, 200, 24, 240);
+		
 		//System.out.println("Render!");
 		world.run(speed * world.dt);
 	}
@@ -176,11 +206,61 @@ static GLfloat	LightPos[] = {4.0f, 4.0f, 6.0f, 1.0f};				// Light Position
 				45.0f, 
 				(double) width / (double) height, 
 				0.1f,
-				1000.0f);
+				3000.0f);
 
 		gl.glMatrixMode(GL.GL_MODELVIEW);
 		gl.glLoadIdentity();
 		qua = glu.gluNewQuadric();
+	}
+
+
+	public void keyPressed(KeyEvent e) {
+		double amount = 30, ramount = 1;
+		switch (e.getKeyCode()) {
+			case KeyEvent.VK_W:
+				navigator.walk(0, 0, amount);
+				break;
+			case KeyEvent.VK_S:
+				navigator.walk(0, 0, -amount);
+				break;
+			case KeyEvent.VK_A:
+				navigator.walk(amount, 0, 0);
+				break;
+			case KeyEvent.VK_D:
+				navigator.walk(-amount, 0, 0);
+				break;
+				
+			case KeyEvent.VK_Z:
+				navigator.walk(0, amount, 0);
+				break;
+			case KeyEvent.VK_X:
+				navigator.walk(0, -amount, 0);
+				break;
+				
+			case KeyEvent.VK_LEFT:
+				navigator.rotate(0, -ramount, 0);
+				break;
+			case KeyEvent.VK_RIGHT:
+				navigator.rotate(0, ramount, 0);
+				break;
+			case KeyEvent.VK_UP:
+				navigator.rotate(-ramount, 0, 0);
+				break;
+			case KeyEvent.VK_DOWN:
+				navigator.rotate(ramount, 0, 0);
+				break;
+				
+			case KeyEvent.VK_SPACE:
+				navigator.reset();
+				break;
+			default:
+				System.out.println("Unknown keypress on canvas: " + e);
+		}
+		
+	}
+	public void keyReleased(KeyEvent e) {
+	}
+	public void keyTyped(KeyEvent e) {
 	}
 
 }
