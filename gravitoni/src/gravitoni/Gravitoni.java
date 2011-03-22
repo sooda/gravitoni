@@ -51,6 +51,7 @@ public class Gravitoni {
 		double min = 99999999999999f;
 		for (int i = 0; i < steps; i++) {
 			double time = i * dt;
+			/*
 			if (i % printsteps == 0) {
 				String state = world.toString();
 				String[] lines = state.split("\n");
@@ -71,6 +72,7 @@ public class Gravitoni {
 				}
 
 			}
+			*/
 			world.run(dt);
 		}
 		System.out.println("# Min at " + minat + ": " + min);

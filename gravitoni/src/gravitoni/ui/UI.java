@@ -25,11 +25,12 @@ public class UI extends JFrame implements ChangeListener {
 		canvas = new GLCanvas();
 		canvas.setPreferredSize(new Dimension(640, 480));
 		
-		renderer = new Renderer(world, canvas);
+		renderer = new Renderer(world, this, canvas);
 		canvas.addGLEventListener(renderer);
 		canvas.addKeyListener(renderer);
 		
 		settings = new SettingPane(this);
+		settings.setDistanceBodies(world.getBodies().get(0), world.getBodies().get(1));
 		
 		insertContents();
 		pack();
@@ -63,7 +64,9 @@ public class UI extends JFrame implements ChangeListener {
 	public void stateChanged(ChangeEvent e) {
 		int val = ((JSlider)e.getSource()).getValue();
 		double zomg = val / 100.0 - 0.5;
-		zomg = Math.exp(19 * zomg);
 		renderer.setSpeed(zomg);
+	}
+	public void refreshWidgets() {
+		settings.refresh();
 	}
 }

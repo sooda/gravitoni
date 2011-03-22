@@ -1,5 +1,7 @@
 package gravitoni.ui;
 
+import gravitoni.simu.Body;
+
 import java.awt.GridLayout;
 import java.util.ArrayList;
 
@@ -13,7 +15,7 @@ public class SettingPane extends JPanel {
 	
 	
 	public SettingPane(UI ui) {
-		super(new GridLayout(3, 1));
+		super(new GridLayout(0, 1));
 		this.ui = ui;
 		widgets = new ArrayList<JPanel>();
 		insertContents();
@@ -29,5 +31,24 @@ public class SettingPane extends JPanel {
 	    pane = new TimeWidget(ui);
 	    widgets.add(pane);
 	    add(pane);
+	    
+	    pane = new DistanceWidget(ui);
+	    widgets.add(pane);
+	    add(pane);
+	}
+	public void updateDistance() {
+		for (JPanel pane : widgets) {
+			if (pane instanceof DistanceWidget)
+				((DistanceWidget)pane).update();
+		}
+	}
+	public void setDistanceBodies(Body a, Body b) {
+		for (JPanel pane : widgets) {
+			if (pane instanceof DistanceWidget)
+				((DistanceWidget)pane).setBodies(a, b);
+		}
+	}
+	public void refresh() {
+		updateDistance();
 	}
 }

@@ -7,7 +7,9 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import gravitoni.simu.*;
 import demos.common.TextureReader;
@@ -19,23 +21,33 @@ import javax.media.opengl.glu.GLU;
 import javax.media.opengl.glu.GLUquadric;
 import javax.swing.*;
 
-public class Renderer implements GLEventListener, ActionListener, KeyListener {
+public class Renderer implements GLEventListener, ActionListener, KeyListener, MouseMotionListener {
 
-	protected float pyramidRotation;
-	protected float cubeRotation;
-	private double speed=1;
-	private GLUquadric  qua;
 	private World world;
+	private ArrayList<GfxBody> bodies = new ArrayList<GfxBody>();
+	private int activeBody = -1;
+	private Body origin = null;
+	
+	private double speed = 1;
+	private GLUquadric qua;
 	private int texture;
 	private GLU glu = new GLU();
+	private GL gl;
 	
 	private Navigator navigator;
 	
 	private JMenuBar menuBar;
 	private JPopupMenu popup;
 	
-	public Renderer(World world, GLCanvas canvas) {
+	private UI ui;
+	
+	public Renderer(World world, UI ui, GLCanvas canvas) {
 		this.world = world;
+		this.ui = ui;
+		
+		navigator = new Navigator();
+
+		
 		menuBar = new JMenuBar();
 		JMenu menu = new JMenu("Asdf");
 		menuBar.add(menu);
@@ -48,10 +60,12 @@ public class Renderer implements GLEventListener, ActionListener, KeyListener {
 		itm.addActionListener(this);
 		menu.add(itm);
 		popup.add(itm);
+		
 		MouseListener l = new PopupListener();
 		menuBar.addMouseListener(l);
 		canvas.addMouseListener(l);
-		navigator = new Navigator();
+		canvas.addMouseMotionListener(this);
+		setSpeed(0.3);
 	}
 	
 	class PopupListener extends MouseAdapter {
@@ -78,30 +92,59 @@ public class Renderer implements GLEventListener, ActionListener, KeyListener {
 	}
 
 
+	public Body getActiveBody() {
+		return activeBody == -1 ? null : bodies.get(activeBody).getBody();
+	}
 	
 	public void setSpeed(double speed) {
+		System.out.println("SPD"+speed);
+		speed = Math.exp(19 * speed);
 		this.speed = speed;
 	}
 	
 	public void display(GLAutoDrawable drawable) {
 		final GL gl = drawable.getGL();
+		this.gl = gl;
+
 		gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
-		for (Body b: world.getBodies()) {
+		gl.glLoadIdentity();
+		drawCursor(gl);
+		gl.glLoadIdentity();
+		//origin = bodies.get(0).getBody();
+		if (origin != null) {
+			Vec3 pos = origin.getPos();
+			System.out.println(pos);
+			gl.glTranslated(-10/1e7 * pos.x, -10/1e7 * pos.y, pos.z);
+		}
+		navigator.apply(gl);
+		Body active = getActiveBody();
+		
+		for (GfxBody b: bodies) {
+			b.render(gl, b.getBody() == active);
+			/*
+			gl.glPushMatrix();
 			//if (!b.getName().equals("Moon")) continue;
-			gl.glLoadIdentity();
 			gl.glColor3d(1, 1, 1);
 			Vec3 pos = b.getPos();
 			// System.out.println("Hox! " + b.getName() + "; " + (1/1e7*pos.x) + ", " + (1/1e7*pos.y) + ", " + pos.z + "   " + (1/1e3 * b.getRadius()));
 			gl.glBindTexture(GL.GL_TEXTURE_2D, texture);
 			gl.glEnable(GL.GL_TEXTURE_GEN_S);
 			gl.glEnable(GL.GL_TEXTURE_GEN_T);
-			navigator.apply(gl);
 			gl.glTranslated(10/1e7 * pos.x, 10/1e7 * pos.y, -1500f);
 			//gl.glTranslated(100, 100, -1000f);
 			glu.gluSphere(qua, .01/1e3 * b.getRadius(), 20, 20);
 			//glu.gluCylinder(qua, 100, 100, 100, 100, 100);
 			//glu.gluSphere(qua, 100, 20, 20);
+			gl.glPopMatrix();
+			*/
 		}
+		ui.refreshWidgets();
+		//System.out.println("Render!");
+		world.run(speed * world.dt);
+	}
+	
+	private void drawCursor(GL gl) {
+		gl.glPushMatrix();
 		gl.glDisable(GL.GL_TEXTURE_GEN_S);
 		gl.glDisable(GL.GL_TEXTURE_GEN_T);
 		
@@ -124,9 +167,7 @@ public class Renderer implements GLEventListener, ActionListener, KeyListener {
 		gl.glTranslated(0, 0, -1500f);
 		gl.glRotated(90, 0, 1, 0);
 		glu.gluCylinder(qua, 20, 1, 200, 24, 240);
-		
-		//System.out.println("Render!");
-		world.run(speed * world.dt);
+		gl.glPopMatrix();
 	}
 
 	public void displayChanged(GLAutoDrawable drawable, boolean modeChanged, boolean deviceChanged) {
@@ -135,6 +176,7 @@ public class Renderer implements GLEventListener, ActionListener, KeyListener {
 
 	public void init(GLAutoDrawable drawable) {
 		final GL gl = drawable.getGL();
+		this.gl = gl;
 		gl.glShadeModel(GL.GL_SMOOTH);
 		gl.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		gl.glClearDepth(1.0f);
@@ -145,20 +187,27 @@ public class Renderer implements GLEventListener, ActionListener, KeyListener {
 		gl.glEnable(GL.GL_TEXTURE_2D);
 		texture = genTexture(gl);
         gl.glBindTexture(GL.GL_TEXTURE_2D, texture);
-        TextureReader.Texture texture = null;
+        TextureReader.Texture atexture = null;
         try {
-            texture = TextureReader.readTexture("textures/earth.png");
+            atexture = TextureReader.readTexture("textures/earth.png");
         } catch (IOException e) {
             e.printStackTrace();
             throw new RuntimeException(e);
         }
-        makeRGBTexture(gl, glu, texture, GL.GL_TEXTURE_2D, false);
+        makeRGBTexture(gl, glu, atexture, GL.GL_TEXTURE_2D, false);
         gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR);
         gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
         
         gl.glTexGeni(GL.GL_S, GL.GL_TEXTURE_GEN_MODE, GL.GL_SPHERE_MAP);
     	gl.glTexGeni(GL.GL_T, GL.GL_TEXTURE_GEN_MODE, GL.GL_SPHERE_MAP);
+		qua = glu.gluNewQuadric();
     	
+    	
+		for (Body b: world.getBodies()) {
+			bodies.add(new GfxBody(b, texture, qua));
+		}
+		
+
     	/*
     	 * 
     	 * static GLfloat	LightAmb[] = {0.7f, 0.7f, 0.7f, 1.0f};				// Ambient Light
@@ -210,7 +259,6 @@ static GLfloat	LightPos[] = {4.0f, 4.0f, 6.0f, 1.0f};				// Light Position
 
 		gl.glMatrixMode(GL.GL_MODELVIEW);
 		gl.glLoadIdentity();
-		qua = glu.gluNewQuadric();
 	}
 
 
@@ -251,8 +299,20 @@ static GLfloat	LightPos[] = {4.0f, 4.0f, 6.0f, 1.0f};				// Light Position
 				break;
 				
 			case KeyEvent.VK_SPACE:
-				navigator.reset();
+				// navigator.reset();
+				origin = getActiveBody();
 				break;
+				
+			case KeyEvent.VK_LESS:
+				if ((e.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) != 0)
+					nextActive();
+				else
+					prevActive();
+				break;
+			case KeyEvent.VK_GREATER:
+				
+				break;
+				
 			default:
 				System.out.println("Unknown keypress on canvas: " + e);
 		}
@@ -261,6 +321,22 @@ static GLfloat	LightPos[] = {4.0f, 4.0f, 6.0f, 1.0f};				// Light Position
 	public void keyReleased(KeyEvent e) {
 	}
 	public void keyTyped(KeyEvent e) {
+	}
+
+
+
+	public void mouseDragged(MouseEvent e) {
+	}
+
+	public void mouseMoved(MouseEvent e) {
+		// System.out.println(e.getX() + " " + e.getY());
+	}
+	
+	public void nextActive() {
+		if (++activeBody == bodies.size()) activeBody = -1;
+	}
+	public void prevActive() {
+		if (--activeBody == -2) activeBody = bodies.size() - 1;
 	}
 
 }

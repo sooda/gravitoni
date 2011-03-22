@@ -14,13 +14,12 @@ public class TimeWidget extends JPanel {
 	}
 	
 	private void buildContents() {
-	    JSlider slider = new JSlider(JSlider.HORIZONTAL, 0, 100, 50);
+	    JSlider slider = new JSlider(JSlider.HORIZONTAL, 0, 100, 80);
 	    slider.setMajorTickSpacing(10);
 	    slider.setMinorTickSpacing(1);
 	    slider.setPaintTicks(true);
 	    slider.addChangeListener(ui);
 	    add(slider);
-
 	}
 
 }
