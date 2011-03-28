@@ -1,4 +1,4 @@
-package gravitoni.ui;
+package gravitoni.gfx;
 
 import java.nio.DoubleBuffer;
 import java.nio.IntBuffer;

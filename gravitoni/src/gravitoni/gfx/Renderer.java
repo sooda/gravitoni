@@ -1,4 +1,4 @@
-package gravitoni.ui;
+package gravitoni.gfx;
 
 import java.awt.Point;
 import java.awt.event.ActionEvent;
@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import gravitoni.simu.*;
+import gravitoni.ui.UI;
 import demos.common.TextureReader;
 
 import javax.media.opengl.GL;

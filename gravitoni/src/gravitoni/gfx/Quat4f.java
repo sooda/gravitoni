@@ -1,4 +1,4 @@
-package gravitoni.ui;
+package gravitoni.gfx;
 /**
  * Created by IntelliJ IDEA.
  * User: pepijn

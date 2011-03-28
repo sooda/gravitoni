@@ -1,5 +1,6 @@
 package gravitoni.ui;
 
+import gravitoni.gfx.Renderer;
 import gravitoni.simu.World;
 
 import java.awt.*;

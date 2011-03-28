@@ -1,4 +1,4 @@
-package gravitoni.ui;
+package gravitoni.gfx;
 
 import gravitoni.simu.Vec3;
 
