@@ -57,6 +57,8 @@ public class Renderer implements GLEventListener, ActionListener, KeyListener, M
     private double zoom = 1500;
     
     private Point pan = new Point(), panStart, panCurrent = new Point();
+    
+    private boolean paused = false;
 
 	
 	public Renderer(World world, UI ui, GLCanvas canvas) {
@@ -184,7 +186,16 @@ public class Renderer implements GLEventListener, ActionListener, KeyListener, M
 		}
 		ui.refreshWidgets();
 		//System.out.println("Render!");
-		world.run(speed * world.dt);
+		if (!paused) {
+			world.run(speed * world.dt);
+		}
+	}
+	
+	public void pause() {
+		paused = true;
+	}
+	public void cont() {
+		paused = false;
 	}
 	
 	private void drawCursor(GL gl) {

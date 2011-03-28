@@ -115,4 +115,22 @@ public class Vec3 {
 	public String toString() {
 		return x + "\t" + y + "\t" + z;
 	}
+	
+	/** Get one component of this vector
+	 * 
+	 * @param idx the id to return
+	 * @return idx==0?x, idx==1?y, idx==2?z
+	 */
+	public double component(int idx) {
+		switch (idx) {
+		case 0:
+			return x;
+		case 1:
+			return y;
+		case 2:
+			return z;
+		default:
+			return z;
+		}
+	}
 }

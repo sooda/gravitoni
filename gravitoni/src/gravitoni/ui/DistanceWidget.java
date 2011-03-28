@@ -8,7 +8,7 @@ import javax.swing.JTextField;
 import gravitoni.simu.Body;
 
 @SuppressWarnings("serial")
-public class DistanceWidget extends JPanel {
+public class DistanceWidget extends Widget {
 	private Body a, b;
 	private JTextField tf1 = new JTextField("Rai rai");
 	private JTextField tf2 = new JTextField("Rai rai");

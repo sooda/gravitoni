@@ -5,7 +5,7 @@ import javax.swing.JPanel;
 import javax.swing.JSlider;
 
 @SuppressWarnings("serial")
-public class TimeWidget extends JPanel {
+public class TimeWidget extends Widget {
 	private UI ui;
 	
 	public TimeWidget(UI ui) {
@@ -20,6 +20,12 @@ public class TimeWidget extends JPanel {
 	    slider.setPaintTicks(true);
 	    slider.addChangeListener(ui);
 	    add(slider);
+	}
+
+	@Override
+	public void update() {
+		// TODO Auto-generated method stub
+		
 	}
 
 }
