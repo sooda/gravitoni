@@ -50,6 +50,12 @@ public class Config {
 		return blocks;
 	}
 	
+	public ConfigBlock getFirstBlock(String blockName) {
+		ArrayList<ConfigBlock> blks = blocks.get(blockName);
+		if (blks.size() == 0) return null;
+		return blks.get(0);
+	}
+	
 	private void parseLine(String line) throws FileNotFoundException {
 		String origLine = line;
 		//System.out.println("Raw parsing:" + line);

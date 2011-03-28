@@ -1,14 +1,27 @@
 package gravitoni.simu;
 
 import gravitoni.config.ConfigBlock;
+import gravitoni.config.ConfigVar;
 
 public class Body {
-	private Vec3 pos, vel;
+	@ConfigVar("position")
+	private Vec3 pos;
+	
+	@ConfigVar("velocity")
+	private Vec3 vel;
+	
+	@ConfigVar("name")
 	private String name;
+	
+	@ConfigVar("mass")
 	private double mass;
+	
+	@ConfigVar("radius")
 	private double radius;
 	
 	public Body(ConfigBlock cfg) {
+		vel = new Vec3();
+		/*
 		pos = cfg.getVec("position");
 		if (cfg.has("velocity")) {
 			vel = cfg.getVec("velocity");
@@ -18,6 +31,8 @@ public class Body {
 		name = cfg.get("name");
 		mass = cfg.getDouble("mass");
 		radius = cfg.getDouble("radius");
+		*/
+		cfg.apply(this, Body.class);
 	}
 	
 	public double getRadius() {

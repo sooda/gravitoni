@@ -7,9 +7,16 @@ import java.util.ArrayList;
 public class World {
 	private ArrayList<Body> bodies = new ArrayList<Body>();
 	private Integrator integrator = new BadRK4(this);
-	private double G = 0;
-	public double dt = 0;
 	
+	@ConfigVar("G")
+	private double G = 0;
+	@ConfigVar("dt")
+	public double dt = 0;
+	private double time = 0;
+	
+	private gravitoni.simu.Logger logger = new Logger(this);
+	
+	@ConfigVar("G")
 	public void add(Body body) {
 		bodies.add(body);
 	}
@@ -18,10 +25,16 @@ public class World {
 		return bodies;
 	}
 	
+	public double getTime() {
+		return time;
+	}
+	
 	public void loadConfig(Config cfg) {
+
 		ConfigBlock globals = cfg.getGlobals();
-		if (globals.has("G")) G = globals.getDouble("G");
-		if (globals.has("dt")) dt = globals.getDouble("dt");
+		globals.apply(this, World.class);
+		//if (globals.has("G")) G = globals.getDouble("G");
+		//if (globals.has("dt")) dt = globals.getDouble("dt");
 
 		if (cfg.getBlocks().containsKey("body")) {
 			for (ConfigBlock blk: cfg.getBlocks().get("body")) {
@@ -31,13 +44,18 @@ public class World {
 					bodies.add(b);
 				} catch (Exception e) {
 					System.out.println("BAD BAD BAD." + e);
+					e.printStackTrace();
 				}
 			}
 		}
+		
+		logger.loadConfig(cfg);
 	}
 	
 	public void run(double dt) {
 		integrator.run(dt);
+		time += dt;
+		logger.log();
 	}
 	
 	public Vec3 acceleration(Body body, Vec3 bodyPos) {
