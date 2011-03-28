@@ -1,5 +1,6 @@
 package gravitoni.ui;
 
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -8,11 +9,14 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.io.IOException;
 import java.util.ArrayList;
 
 import gravitoni.simu.*;
 import demos.common.TextureReader;
+
 import javax.media.opengl.GL;
 import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.GLCanvas;
@@ -20,8 +24,9 @@ import javax.media.opengl.GLEventListener;
 import javax.media.opengl.glu.GLU;
 import javax.media.opengl.glu.GLUquadric;
 import javax.swing.*;
+import javax.swing.event.*;
 
-public class Renderer implements GLEventListener, ActionListener, KeyListener, MouseMotionListener {
+public class Renderer implements GLEventListener, ActionListener, KeyListener, MouseMotionListener, MouseInputListener, MouseWheelListener {
 
 	private World world;
 	private ArrayList<GfxBody> bodies = new ArrayList<GfxBody>();
@@ -40,6 +45,18 @@ public class Renderer implements GLEventListener, ActionListener, KeyListener, M
 	private JPopupMenu popup;
 	
 	private UI ui;
+	
+    private Matrix4f LastRot = new Matrix4f();
+    private Matrix4f ThisRot = new Matrix4f();
+    private final Object matrixLock = new Object();
+    private float[] matrix = new float[16];
+
+    private ArcBall arcBall = new ArcBall(640.0f, 480.0f);
+    
+    private double zoom = 1500;
+    
+    private Point pan = new Point(), panStart, panCurrent = new Point();
+
 	
 	public Renderer(World world, UI ui, GLCanvas canvas) {
 		this.world = world;
@@ -65,10 +82,29 @@ public class Renderer implements GLEventListener, ActionListener, KeyListener, M
 		menuBar.addMouseListener(l);
 		canvas.addMouseListener(l);
 		canvas.addMouseMotionListener(this);
+		canvas.addMouseListener(this);
+		canvas.addMouseWheelListener(this);
 		setSpeed(0.3);
 	}
 	
-	class PopupListener extends MouseAdapter {
+	public void startDrag(Point p) {
+        synchronized(matrixLock) {
+            LastRot.set( ThisRot );                                        // Set Last Static Rotation To Last Dynamic One
+        }
+        arcBall.click( p );                                 // Update Start Vector And Prepare For Dragging
+		
+	}
+	public void drag(Point p) {
+        Quat4f ThisQuat = new Quat4f();
+
+        arcBall.drag( p, ThisQuat);                         // Update End Vector And Get Rotation As Quaternion
+        synchronized(matrixLock) {
+            ThisRot.setRotation(ThisQuat);     // Convert Quaternion Into Matrix3fT
+            ThisRot.mul( ThisRot, LastRot);                // Accumulate Last Rotation Into This One
+        }
+	}
+	
+	class PopupListener extends MouseInputAdapter {
 	    public void mousePressed(MouseEvent e) {
 	        maybeShowPopup(e);
 	    }
@@ -79,8 +115,7 @@ public class Renderer implements GLEventListener, ActionListener, KeyListener, M
 
 	    private void maybeShowPopup(MouseEvent e) {
 	        if (e.isPopupTrigger()) {
-	            popup.show(e.getComponent(),
-	                       e.getX(), e.getY());
+	            popup.show(e.getComponent(), e.getX(), e.getY());
 	        }
 	    }
 	}
@@ -106,19 +141,27 @@ public class Renderer implements GLEventListener, ActionListener, KeyListener, M
 		final GL gl = drawable.getGL();
 		this.gl = gl;
 
+        ThisRot.get(matrix);
+
 		gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
 		gl.glLoadIdentity();
+		
+		gl.glTranslated(0, 0, -zoom);
+        gl.glMultMatrixf(matrix, 0);
+        Point tmppan = new Point(pan);
+        tmppan.x += panCurrent.x;
+        tmppan.y += panCurrent.y;
+		gl.glTranslated(tmppan.x, -tmppan.y, 0);
+		
 		drawCursor(gl);
-		gl.glLoadIdentity();
-		//origin = bodies.get(0).getBody();
+		
 		if (origin != null) {
 			Vec3 pos = origin.getPos();
 			System.out.println(pos);
 			gl.glTranslated(-10/1e7 * pos.x, -10/1e7 * pos.y, pos.z);
 		}
-		navigator.apply(gl);
-		Body active = getActiveBody();
 		
+		Body active = getActiveBody();
 		for (GfxBody b: bodies) {
 			b.render(gl, b.getBody() == active);
 			/*
@@ -149,24 +192,17 @@ public class Renderer implements GLEventListener, ActionListener, KeyListener, M
 		gl.glDisable(GL.GL_TEXTURE_GEN_T);
 		
 		gl.glColor3d(0, 0, 1);
-		gl.glLoadIdentity();
-		navigator.apply(gl);
-		gl.glTranslated(0, 0, -1500f);
 		glu.gluCylinder(qua, 20, 1, 200, 24, 240);
 		
 		gl.glColor3d(0, 1, 0);
-		gl.glLoadIdentity();
-		navigator.apply(gl);
-		gl.glTranslated(0, 0, -1500f);
 		gl.glRotated(90, 1, 0, 0);
 		glu.gluCylinder(qua, 20, 1, 200, 24, 240);
+		gl.glRotated(-90, 1, 0, 0);
 		
 		gl.glColor3d(1, 0, 0);
-		gl.glLoadIdentity();
-		navigator.apply(gl);
-		gl.glTranslated(0, 0, -1500f);
 		gl.glRotated(90, 0, 1, 0);
 		glu.gluCylinder(qua, 20, 1, 200, 24, 240);
+		gl.glRotated(-90, 0, 1, 0);
 		gl.glPopMatrix();
 	}
 
@@ -222,6 +258,11 @@ static GLfloat	LightPos[] = {4.0f, 4.0f, 6.0f, 1.0f};				// Light Position
 	glEnable(GL_LIGHTING);							// Enable Lighting
 	
     	 */
+		
+        LastRot.setIdentity();                                // Reset Rotation
+        ThisRot.setIdentity();                                // Reset Rotation
+        ThisRot.get(matrix);
+
         
 	}
 	
@@ -243,7 +284,6 @@ static GLfloat	LightPos[] = {4.0f, 4.0f, 6.0f, 1.0f};				// Light Position
     }
 	public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
 		final GL gl = drawable.getGL();
-		//final GLU glu = new GLU();
 		
 		gl.setSwapInterval(1);
 
@@ -259,6 +299,8 @@ static GLfloat	LightPos[] = {4.0f, 4.0f, 6.0f, 1.0f};				// Light Position
 
 		gl.glMatrixMode(GL.GL_MODELVIEW);
 		gl.glLoadIdentity();
+        arcBall.setBounds((float) width, (float) height);
+
 	}
 
 
@@ -323,13 +365,41 @@ static GLfloat	LightPos[] = {4.0f, 4.0f, 6.0f, 1.0f};				// Light Position
 	public void keyTyped(KeyEvent e) {
 	}
 
+    public void mousePressed(MouseEvent e) {
+        if (SwingUtilities.isLeftMouseButton(e)) {
+            startDrag(e.getPoint());
+        }
+        if (SwingUtilities.isMiddleMouseButton(e)) {
+        	startPan(e.getPoint());
+        }
+    }
 
+    public void mouseDragged(MouseEvent e) {
+        if (SwingUtilities.isLeftMouseButton(e)) {
+            drag(e.getPoint());
+        }
+        if (SwingUtilities.isMiddleMouseButton(e)) {
+        	pan(e.getPoint());
+        }
+    }
 
-	public void mouseDragged(MouseEvent e) {
-	}
+    public void startPan(Point p) {
+    	panStart = p;
+    }
+    public void pan(Point p) {
+    	panCurrent.x = p.x - panStart.x;
+    	panCurrent.y = p.y - panStart.y;
+    }
+    public void stopPan() {
+		pan.x += panCurrent.x;
+		pan.y += panCurrent.y;
+		panCurrent.x = 0;
+		panCurrent.y = 0;
+    }
+
 
 	public void mouseMoved(MouseEvent e) {
-		// System.out.println(e.getX() + " " + e.getY());
+		//System.out.println(e.getX() + " " + e.getY());
 	}
 	
 	public void nextActive() {
@@ -337,6 +407,23 @@ static GLfloat	LightPos[] = {4.0f, 4.0f, 6.0f, 1.0f};				// Light Position
 	}
 	public void prevActive() {
 		if (--activeBody == -2) activeBody = bodies.size() - 1;
+	}
+
+	public void mouseClicked(MouseEvent e) {
+	}
+	public void mouseEntered(MouseEvent e) {
+	}
+	public void mouseExited(MouseEvent e) {
+	}
+	public void mouseReleased(MouseEvent e) {
+		if (SwingUtilities.isMiddleMouseButton(e)) {
+			stopPan();
+		}
+	}
+
+	public void mouseWheelMoved(MouseWheelEvent e) {
+		int rot = e.getWheelRotation();
+		zoom += 50 * rot;
 	}
 
 }
