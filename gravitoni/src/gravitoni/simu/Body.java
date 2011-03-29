@@ -5,18 +5,18 @@ import gravitoni.config.ConfigVar;
 
 public class Body {
 	@ConfigVar("position")
-	private Vec3 pos;
+	private Vec3 pos = new Vec3();
 	
 	@ConfigVar("velocity")
-	private Vec3 vel;
+	private Vec3 vel = new Vec3();
 	
-	@ConfigVar("name")
+	@ConfigVar(value="name", mandatory=true)
 	private String name;
 	
 	@ConfigVar("mass")
 	private double mass;
 	
-	@ConfigVar("radius")
+	@ConfigVar(value="radius", mandatory=true)
 	private double radius;
 	
 	public Body(ConfigBlock cfg) {
@@ -33,6 +33,11 @@ public class Body {
 		radius = cfg.getDouble("radius");
 		*/
 		cfg.apply(this, Body.class);
+		if (cfg.has("origin"))
+			pos.add(cfg.getVec("origin"));
+		if (cfg.has("vorigin"))
+			vel.add(cfg.getVec("vorigin"));
+		System.out.println(this);
 	}
 	
 	public double getRadius() {
@@ -66,6 +71,6 @@ public class Body {
 	}
 	
 	public String toString() {
-		return name + "\t" + pos + "\t" + vel + "\t";
+		return name + "\t" + mass + "\t" + pos + "\t" + vel + "\t";
 	}
 }

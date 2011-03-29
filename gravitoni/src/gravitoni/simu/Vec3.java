@@ -133,4 +133,11 @@ public class Vec3 {
 			return z;
 		}
 	}
+	
+	/** Parse str and try to find a Vec3 in the form x,y,z */
+	public static Vec3 parse(String str) throws NumberFormatException {
+		String[] parts = str.split(" *, *");
+		if (parts.length != 3) throw new NumberFormatException("Bad: " + str);
+		return new Vec3(Double.parseDouble(parts[0]), Double.parseDouble(parts[1]), Double.parseDouble(parts[2]));
+	}
 }

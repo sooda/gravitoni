@@ -33,11 +33,9 @@ public class World {
 
 		ConfigBlock globals = cfg.getGlobals();
 		globals.apply(this, World.class);
-		//if (globals.has("G")) G = globals.getDouble("G");
-		//if (globals.has("dt")) dt = globals.getDouble("dt");
 
-		if (cfg.getBlocks().containsKey("body")) {
-			for (ConfigBlock blk: cfg.getBlocks().get("body")) {
+		if (cfg.hasBlocks("body")) {
+			for (ConfigBlock blk: cfg.getBlocks("body")) {
 				Body b = null;
 				try {
 					b = new Body(blk);

@@ -75,8 +75,8 @@ public class UI extends JFrame implements ChangeListener {
 		p.addTab("Quick view", quickView);
 		p.addChangeListener(new Lisnur());
 		
-		// p.setSelectedComponent(quickView);
 		tabukki=p;
+		p.setSelectedComponent(quickView);
 		add(p);
 	}
 	class Lisnur implements ChangeListener {

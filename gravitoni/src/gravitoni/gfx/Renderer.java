@@ -135,8 +135,8 @@ public class Renderer implements GLEventListener, ActionListener, KeyListener, M
 	}
 	
 	public void setSpeed(double speed) {
-		System.out.println("SPD"+speed);
-		speed = Math.exp(19 * speed);
+		System.out.println("SPD "+speed);
+		speed = Math.exp(3 * speed);
 		this.speed = speed;
 	}
 	
@@ -187,7 +187,12 @@ public class Renderer implements GLEventListener, ActionListener, KeyListener, M
 		ui.refreshWidgets();
 		//System.out.println("Render!");
 		if (!paused) {
-			world.run(speed * world.dt);
+			int iters = (int)speed;
+			double laststep = speed - iters;
+			for (int i = 0; i < iters; i++) {
+				world.run(world.dt);
+			}
+			world.run(laststep*world.dt);
 		}
 	}
 	
@@ -306,8 +311,8 @@ static GLfloat	LightPos[] = {4.0f, 4.0f, 6.0f, 1.0f};				// Light Position
 		glu.gluPerspective(
 				45.0f, 
 				(double) width / (double) height, 
-				0.1f,
-				3000.0f);
+				1f,
+				300000.0f);
 
 		gl.glMatrixMode(GL.GL_MODELVIEW);
 		gl.glLoadIdentity();
@@ -435,7 +440,8 @@ static GLfloat	LightPos[] = {4.0f, 4.0f, 6.0f, 1.0f};				// Light Position
 
 	public void mouseWheelMoved(MouseWheelEvent e) {
 		int rot = e.getWheelRotation();
-		zoom += 50 * rot;
+		if (rot > 0) zoom *= 1.1 * rot;
+		else zoom /= 1.1 * -rot;
 	}
 
 }

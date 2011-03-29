@@ -1,5 +1,7 @@
 package gravitoni.config;
 
+import gravitoni.simu.Vec3;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,44 +21,113 @@ public class Config {
 	private Scanner scn = null;
 	private ConfigBlock globals = new ConfigBlock();
 	private HashMap<String, ArrayList<ConfigBlock>> blocks = new HashMap<String, ArrayList<ConfigBlock>>();
+	private ArrayList<ConfigBlock> allBlocks = new ArrayList<ConfigBlock>();
 	private ConfigBlock activeBlock = globals;
 	private enum State { NOTHING, COMMENT, BLOCK, VARNAME };
 	private State state = State.NOTHING;
+	private String mySource;
 	
-	public Config(Reader rdr) throws FileNotFoundException {
-		scn = new Scanner(rdr);  //new BufferedReader(new StringReader("Moro"))); // new FileReader
+	/**
+	 * Read everything from rdr.
+	 *  
+	 * @param rdr Input data.
+	 */
+	public Config(Reader rdr) {
+		mySource = rdr.toString();
+		scn = new Scanner(rdr);
 		read();
 	}
 	
+	/**
+	 * Open the given file and read everything from it.
+	 *  
+	 * @param configFile The file name.
+	 * @throws FileNotFoundException
+	 */
 	public Config(String configFile) throws FileNotFoundException {
-		//System.out.println("Parsing: " + configFile);
+		mySource = "file:" + configFile;
 		scn = new Scanner(new FileReader(configFile));
 		read();
 	}
 	
-	public void read() throws FileNotFoundException {
-		// BufferedReader rdr;
-		
+	/**
+	 * For internal use, read all lines from this.scn.
+	 */
+	public void read() {
 		while (scn.hasNextLine()) {
 			parseLine(scn.nextLine());
 		}
+		finalTune();
 	}
 	
+	/**
+	 * TODO
+	 */
+	private void finalTune() {
+		if (globals.has("origin")) {
+		 	ArrayList<ConfigBlock> x = blocks.get("body");
+		 	if (x == null) return;
+			for (ConfigBlock blk : x) {
+				blk.add("origin", globals.get("origin"));
+			}
+		}
+	}
+	
+	/**
+	 * Get global settings.
+	 * 
+	 * @return The global variables.
+	 */
 	public ConfigBlock getGlobals() {
 		return globals;
 	}
 	
+	/**
+	 * Get all blocks.
+	 * 
+	 * @return A key-values-pair of all the blocks.
+	 */
 	public HashMap<String, ArrayList<ConfigBlock>> getBlocks() {
 		return blocks;
 	}
 	
+	/**
+	 * Get all blocks matching the given name.
+	 * 
+	 * @param key The block name. (TODO: tee paremmat kommentit)
+	 * @return A list of the blocks that has the given key, or null if nothing was found.
+	 */
+	public ArrayList<ConfigBlock> getBlocks(String key) {
+		return blocks.get(key);
+	}
+	
+	/**
+	 * Find out if we have these blocks.
+	 * 
+	 * @param blockName The key to look for.
+	 * @return true, if there's at least one block of the given name.
+	 */
+	public boolean hasBlocks(String blockName) {
+		return blocks.containsKey(blockName);
+	}
+	
+	/**
+	 * Find the first block of the given key.
+	 * 
+	 * @param blockName
+	 * @return null, if not found.
+	 */
 	public ConfigBlock getFirstBlock(String blockName) {
 		ArrayList<ConfigBlock> blks = blocks.get(blockName);
 		if (blks.size() == 0) return null;
 		return blks.get(0);
 	}
 	
-	private void parseLine(String line) throws FileNotFoundException {
+	/**
+	 * For internal use, parse the given line string and do whatever we need to.
+	 * @param line
+	 */
+	private void parseLine(String line) {
 		String origLine = line;
 		//System.out.println("Raw parsing:" + line);
 		// skip comments
@@ -89,11 +160,13 @@ public class Config {
 			}
 			activeBlock = new ConfigBlock();
 			blks.add(activeBlock);
+			allBlocks.add(activeBlock);
 			return;
 		}
 		
 		// block ends
 		if (line.equals("}")) {
+			// TODO: how about nested blocks! BUG!1
 			activeBlock = globals;
 			return;
 		}
@@ -104,29 +177,75 @@ public class Config {
 			System.out.println("Warning: Bad line: " + origLine);
 		}
 		if (data[0].equals("include")) {
-			//try {
-			merge(new Config(data[1]));
-			//} catch (FileNotFoundException e) {
-			//}
+			String[] opts = data[1].split(" ");
+			String fName = opts[0];
+			ConfigBlock baseDefaults = new ConfigBlock();
+			for (int i = 1; i < opts.length; i++) {
+				if (opts[i].indexOf('=') != -1) {
+					String[] pair = opts[i].split("=", 2);
+					baseDefaults.add(pair[0], pair[1]);
+					System.out.println(mySource + "Adding defaults: " + opts[i]);
+					// TODO: origin pitäs saada privateks niin ettei merget mergaa pääglobaaliksi
+				}
+			}
+			Config cfg = null;
+			try {
+				cfg = new Config(fName);
+			} catch (FileNotFoundException e) {
+				System.out.println("Warning: couldn't load " + fName);
+			}
+			if (cfg != null && cfg.getBlocks("body") != null) {
+				//cfg.mergeGlobals(baseDefaults);
+				for (ConfigBlock blk : cfg.getBlocks("body")) {
+					if (baseDefaults.get("origin") != null) 
+						blk.add("origin", baseDefaults.get("origin"));
+					if (baseDefaults.get("vorigin") != null) 
+						blk.add("vorigin", baseDefaults.get("vorigin"));
+					System.out.println("Adding for body " + blk);
+				}
+				System.out.println("K, added: " + baseDefaults);
+			}
+			merge(cfg);
 			return;
 		}
-		//System.out.println(data[0] + "!!" + data[1]);
 
 		activeBlock.add(data[0], data[1]);
 	}
 	
+	/**
+	 * Merge the given block to this' globals.
+	 * 
+	 * @param other
+	 */
+	public void mergeGlobals(ConfigBlock other) {
+		globals.merge(other);
+	}
+	
+	/**
+	 * Merge everything from the given configuration to this.
+	 * 
+	 * Merge globals, and add all blocks that the given config has.
+	 * 
+	 * @param other The configuration to merge to this.
+	 */
 	public void merge(Config other) {
-		globals.merge(other.globals);
+		System.out.println("Merging: " + other);
+		mergeGlobals(other.globals);
+		
 		for (String key: other.blocks.keySet()) {
 			if (!blocks.containsKey(key)) blocks.put(key, new ArrayList<ConfigBlock>());
 			ArrayList<ConfigBlock> ownList = blocks.get(key); 
 			for (ConfigBlock blk: other.blocks.get(key)) {
 				ownList.add(blk);
+				allBlocks.add(blk);
 			}
 		}
-		//System.out.println("Merged: " + other);
+		finalTune();
 	}
 	
+	/**
+	 * Return a string that tells what we have here.
+	 */
 	public String toString() {
 		String ret = "Globals: " + globals.toString() + "\n";
 		for (String blkName: blocks.keySet()) {

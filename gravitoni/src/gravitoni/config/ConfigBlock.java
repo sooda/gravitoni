@@ -33,10 +33,18 @@ public class ConfigBlock {
 	}
 	
 	public Vec3 getVec(String key) {
-		String s = table.get(key);
-		String[] parts = s.split(",");
-		if (parts.length != 3) return null;
-		return new Vec3(Double.parseDouble(parts[0]), Double.parseDouble(parts[1]), Double.parseDouble(parts[2]));
+		Vec3 v = Vec3.parse(table.get(key));
+		/*
+		String origin = table.get("origin");
+		if (origin != null) {
+			System.out.println(v);
+			System.out.println(Vec3.parse(origin));
+			v.add(Vec3.parse(origin));
+			System.out.println("ORIGIN HAZ!");
+			System.out.println(v);
+		}
+		*/
+		return v;
 	}
 	
 	public Enumeration<String> keys() {
@@ -56,14 +64,14 @@ public class ConfigBlock {
 	}
 	
 	public void apply(Object obj, Class<?> cls) {
-		// System.out.println("Doing at " + this);
+		System.out.println("Doing at " + this);
 		try {
 			for (Field f : cls.getDeclaredFields()) {
-				// System.out.println("Trying: " + f.getName());
+				//System.out.println("Trying: " + f.getName());
 				if (f.isAnnotationPresent(ConfigVar.class)) {
 					ConfigVar ann = f.getAnnotation(ConfigVar.class);
 					String setting = ann.value();
-					// System.out.println("CONFIG: found " + setting + "/" + f.getName() + " for " + obj.getClass().getName());
+					//System.out.println("CONFIG: found " + setting + "/" + f.getName() + " for " + obj.getClass().getName());
 					f.setAccessible(true);
 					try {
 						if (f.getType().equals(int.class)) {
