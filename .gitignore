@@ -23,3 +23,7 @@ gravitoni/src/tests
 *.pdf
 *.ps
 ../teknosuunnitelma/*.png
+gravitoni/lib32
+gravitoni/lib64
+gravitoni/*.log
+aikataulu.txt
