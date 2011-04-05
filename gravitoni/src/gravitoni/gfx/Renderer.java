@@ -160,32 +160,15 @@ public class Renderer implements GLEventListener, ActionListener, KeyListener, M
 		
 		if (origin != null) {
 			Vec3 pos = origin.getPos();
-			System.out.println(pos);
+			//System.out.println(pos);
 			gl.glTranslated(-10/1e7 * pos.x, -10/1e7 * pos.y, pos.z);
 		}
 		
 		Body active = getActiveBody();
 		for (GfxBody b: bodies) {
 			b.render(gl, b.getBody() == active);
-			/*
-			gl.glPushMatrix();
-			//if (!b.getName().equals("Moon")) continue;
-			gl.glColor3d(1, 1, 1);
-			Vec3 pos = b.getPos();
-			// System.out.println("Hox! " + b.getName() + "; " + (1/1e7*pos.x) + ", " + (1/1e7*pos.y) + ", " + pos.z + "   " + (1/1e3 * b.getRadius()));
-			gl.glBindTexture(GL.GL_TEXTURE_2D, texture);
-			gl.glEnable(GL.GL_TEXTURE_GEN_S);
-			gl.glEnable(GL.GL_TEXTURE_GEN_T);
-			gl.glTranslated(10/1e7 * pos.x, 10/1e7 * pos.y, -1500f);
-			//gl.glTranslated(100, 100, -1000f);
-			glu.gluSphere(qua, .01/1e3 * b.getRadius(), 20, 20);
-			//glu.gluCylinder(qua, 100, 100, 100, 100, 100);
-			//glu.gluSphere(qua, 100, 20, 20);
-			gl.glPopMatrix();
-			*/
 		}
 		ui.refreshWidgets();
-		//System.out.println("Render!");
 		if (!paused) {
 			int iters = (int)speed;
 			double laststep = speed - iters;
@@ -205,8 +188,7 @@ public class Renderer implements GLEventListener, ActionListener, KeyListener, M
 	
 	private void drawCursor(GL gl) {
 		gl.glPushMatrix();
-		gl.glDisable(GL.GL_TEXTURE_GEN_S);
-		gl.glDisable(GL.GL_TEXTURE_GEN_T);
+		gl.glDisable(GL.GL_TEXTURE_2D);
 		
 		gl.glColor3d(0, 0, 1);
 		glu.gluCylinder(qua, 20, 1, 200, 24, 240);
@@ -230,37 +212,22 @@ public class Renderer implements GLEventListener, ActionListener, KeyListener, M
 	public void init(GLAutoDrawable drawable) {
 		final GL gl = drawable.getGL();
 		this.gl = gl;
+		
 		gl.glShadeModel(GL.GL_SMOOTH);
 		gl.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		gl.glClearDepth(1.0f);
 		gl.glEnable(GL.GL_DEPTH_TEST);
 		gl.glDepthFunc(GL.GL_LEQUAL);
-		gl.glHint(GL.GL_PERSPECTIVE_CORRECTION_HINT, GL.GL_NICEST);
-		
+		gl.glHint(GL.GL_PERSPECTIVE_CORRECTION_HINT, GL.GL_NICEST);		
 		gl.glEnable(GL.GL_TEXTURE_2D);
-		texture = genTexture(gl);
-        gl.glBindTexture(GL.GL_TEXTURE_2D, texture);
-        TextureReader.Texture atexture = null;
-        try {
-            atexture = TextureReader.readTexture("textures/earth.png");
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        }
-        makeRGBTexture(gl, glu, atexture, GL.GL_TEXTURE_2D, false);
-        gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR);
-        gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
-        
-        gl.glTexGeni(GL.GL_S, GL.GL_TEXTURE_GEN_MODE, GL.GL_SPHERE_MAP);
-    	gl.glTexGeni(GL.GL_T, GL.GL_TEXTURE_GEN_MODE, GL.GL_SPHERE_MAP);
-		qua = glu.gluNewQuadric();
-    	
+
+    	qua = glu.gluNewQuadric();
+    	glu.gluQuadricTexture(qua, true);
     	
 		for (Body b: world.getBodies()) {
-			bodies.add(new GfxBody(b, texture, qua));
+			bodies.add(new GfxBody(b, gl, qua));
 		}
 		
-
     	/*
     	 * 
     	 * static GLfloat	LightAmb[] = {0.7f, 0.7f, 0.7f, 1.0f};				// Ambient Light
@@ -276,14 +243,14 @@ static GLfloat	LightPos[] = {4.0f, 4.0f, 6.0f, 1.0f};				// Light Position
 	
     	 */
 		
-        LastRot.setIdentity();                                // Reset Rotation
-        ThisRot.setIdentity();                                // Reset Rotation
+        LastRot.setIdentity();
+        ThisRot.setIdentity();
         ThisRot.get(matrix);
 
         
 	}
 	
-	private int genTexture(GL gl) {
+	/*private int genTexture(GL gl) {
         final int[] tmp = new int[1];
         gl.glGenTextures(1, tmp, 0);
         return tmp[0];
@@ -299,6 +266,7 @@ static GLfloat	LightPos[] = {4.0f, 4.0f, 6.0f, 1.0f};				// Light Position
                     img.getHeight(), 0, GL.GL_RGB, GL.GL_UNSIGNED_BYTE, img.getPixels());
         }
     }
+    */
 	public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
 		final GL gl = drawable.getGL();
 		
@@ -322,8 +290,9 @@ static GLfloat	LightPos[] = {4.0f, 4.0f, 6.0f, 1.0f};				// Light Position
 
 
 	public void keyPressed(KeyEvent e) {
-		double amount = 30, ramount = 1;
+		//double amount = 30, ramount = 1;
 		switch (e.getKeyCode()) {
+		/*
 			case KeyEvent.VK_W:
 				navigator.walk(0, 0, amount);
 				break;
@@ -356,7 +325,7 @@ static GLfloat	LightPos[] = {4.0f, 4.0f, 6.0f, 1.0f};				// Light Position
 			case KeyEvent.VK_DOWN:
 				navigator.rotate(ramount, 0, 0);
 				break;
-				
+			*/	
 			case KeyEvent.VK_SPACE:
 				// navigator.reset();
 				origin = getActiveBody();

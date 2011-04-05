@@ -19,25 +19,21 @@ public class Body {
 	@ConfigVar(value="radius", mandatory=true)
 	private double radius;
 	
+	private ConfigBlock cfg;
+	
 	public Body(ConfigBlock cfg) {
 		vel = new Vec3();
-		/*
-		pos = cfg.getVec("position");
-		if (cfg.has("velocity")) {
-			vel = cfg.getVec("velocity");
-		} else {
-			vel = new Vec3();
-		}
-		name = cfg.get("name");
-		mass = cfg.getDouble("mass");
-		radius = cfg.getDouble("radius");
-		*/
 		cfg.apply(this, Body.class);
 		if (cfg.has("origin"))
 			pos.add(cfg.getVec("origin"));
 		if (cfg.has("vorigin"))
 			vel.add(cfg.getVec("vorigin"));
+		this.cfg = cfg;
 		System.out.println(this);
+	}
+	
+	public ConfigBlock getCfg() {
+		return cfg;
 	}
 	
 	public double getRadius() {
