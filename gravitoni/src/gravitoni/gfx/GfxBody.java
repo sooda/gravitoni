@@ -1,17 +1,10 @@
 package gravitoni.gfx;
 
 import java.io.IOException;
-import java.nio.DoubleBuffer;
-import java.nio.IntBuffer;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.glu.GLU;
 import javax.media.opengl.glu.GLUquadric;
-
-import com.sun.opengl.util.BufferUtil;
-
-import demos.common.TextureReader;
-
 
 import gravitoni.simu.Body;
 import gravitoni.simu.Vec3;
