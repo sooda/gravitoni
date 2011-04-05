@@ -15,7 +15,7 @@ import javax.media.opengl.GLCanvas;
 import com.sun.opengl.util.Animator;
 
 @SuppressWarnings("serial")
-public class UI extends JFrame implements ChangeListener {
+public class UI extends JFrame implements ChangeListener,ActionListener {
 	protected GLCanvas canvas;
 	protected Animator animator;
 	protected Renderer renderer;
@@ -40,15 +40,16 @@ public class UI extends JFrame implements ChangeListener {
 		
 		animator = new Animator(canvas);
 		addWindowListener(new WindowAdapter() {
-	        public void windowClosing(WindowEvent e) {
-	          new Thread(new Runnable() {
-	              public void run() {
-	                animator.stop();
-	                System.exit(0);
-	              }
-	            }).start();
-	        }
-	      });
+			public void windowClosing(WindowEvent e) {
+				new Thread(new Runnable() {
+					public void run() {
+						System.out.println("Closing");
+						animator.stop();
+						System.exit(0);
+					}
+				}).start();
+			}
+		});
 		
 		setVisible(true);
 		animator.start();
@@ -76,7 +77,40 @@ public class UI extends JFrame implements ChangeListener {
 		tabukki=p;
 		p.setSelectedComponent(quickView);
 		add(p);
+		
+		buildMenu();
 	}
+	
+	private void buildMenu() {
+		JMenuBar menuBar;
+		JMenu menu;
+		menuBar = new JMenuBar();
+		menu = new JMenu("File");
+		menu.setMnemonic(KeyEvent.VK_F);
+		menuBar.add(menu);
+		addMenuItem(menu, "Lols");
+		addMenuItem(menu, "Quit");
+		setJMenuBar(menuBar);
+		//JRadioButtonMenuItem rbMenuItem;
+		//JCheckBoxMenuItem cbMenuItem;
+	}
+	
+	private void addMenuItem(JMenu menu, String name) {
+		JMenuItem item = new JMenuItem(name);
+		menu.add(item);
+		item.addActionListener(this);
+	}
+	
+	public void actionPerformed(ActionEvent e) {
+		String cmd = e.getActionCommand();
+		if ("Quit".equals(cmd)) {
+			//setVisible(false);
+			//dispose();
+			WindowEvent wev = new WindowEvent(this, WindowEvent.WINDOW_CLOSING);
+			Toolkit.getDefaultToolkit().getSystemEventQueue().postEvent(wev);
+		}
+	}
+	
 	class Lisnur implements ChangeListener {
 		public void stateChanged(ChangeEvent e) {
 			if (tabukki.getSelectedIndex() == 0) {
@@ -87,9 +121,6 @@ public class UI extends JFrame implements ChangeListener {
 			}
 		}
 	}
-		
-	//public void start() {
-	//}
 	
 	public void stateChanged(ChangeEvent e) {
 		int val = ((JSlider)e.getSource()).getValue();

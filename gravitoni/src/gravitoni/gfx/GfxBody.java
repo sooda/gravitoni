@@ -80,7 +80,8 @@ public class GfxBody {
 		Vec3 cross = orig.clone().cross(dir); // rotation axis
 		double cos = dir.dot(orig); // rotation amount
 		double spdamount = body.getVel().len();
-		spdamount *= 0.05;// / body.getRadius();
+		spdamount = Math.log(1+spdamount);
+		//spdamount *= 0.05;// / body.getRadius();
 		gl.glRotated(180 / Math.PI * Math.acos(cos), cross.x, cross.y, cross.z);
 		glu.gluCylinder(qua, r - 1, 0, (1 + spdamount) * r, 100, 100);
 		gl.glPopMatrix();

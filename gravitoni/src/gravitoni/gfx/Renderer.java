@@ -20,7 +20,6 @@ import javax.swing.*;
 import javax.swing.event.*;
 
 public class Renderer implements GLEventListener, ActionListener {
-
 	private World world;
 	private ArrayList<GfxBody> bodies = new ArrayList<GfxBody>();
 	private int activeBody = -1;
@@ -29,25 +28,20 @@ public class Renderer implements GLEventListener, ActionListener {
 	private double speed = 1;
 	private GLUquadric qua;
 	private GLU glu = new GLU();
-	private GL gl;
-	
-	//private Navigator navigator;
-	
-	private JMenuBar menuBar;
-	private JPopupMenu popup;
 	
 	private UI ui;
+	private JMenuBar menuBar;
+	private JPopupMenu popup;	
 	
-    private Matrix4f LastRot = new Matrix4f();
-    private Matrix4f ThisRot = new Matrix4f();
+    private Matrix4f LastRot = new Matrix4f(); // transformation since last operations
+    private Matrix4f ThisRot = new Matrix4f(); // current state with current pan/rotation
     private final Object matrixLock = new Object();
     private float[] matrix = new float[16];
 
     private ArcBall arcBall = new ArcBall(640.0f, 480.0f);
+    private Point panStart;
     
-    private double zoom = 1500, planetzoom = 1;
-    
-    private Point pan = new Point(), panStart, panCurrent = new Point();
+    private double zoom = 1500, planetzoom = 1;    
     
     private boolean paused = false;
 
@@ -56,27 +50,9 @@ public class Renderer implements GLEventListener, ActionListener {
 		this.world = world;
 		this.ui = ui;
 		
-		//navigator = new Navigator();
-
+		buildMenu(canvas);
 		
-		menuBar = new JMenuBar();
-		JMenu menu = new JMenu("Asdf");
-		menuBar.add(menu);
-		popup = new JPopupMenu();
-		JMenuItem itm = new JMenuItem("ASdfzing");
-		menu.add(itm);
-		itm.addActionListener(this);
-		popup.add(itm);
-		itm = new JMenuItem("AZomgf");
-		itm.addActionListener(this);
-		menu.add(itm);
-		popup.add(itm);
-		
-		MouseListener l = new PopupListener();
-		menuBar.addMouseListener(l);
-		canvas.addMouseListener(l);
 		canvas.addGLEventListener(this);
-
 		
 		UserInputHandler ih = new UserInputHandler(this);
 		canvas.addKeyListener(ih);
@@ -86,22 +62,57 @@ public class Renderer implements GLEventListener, ActionListener {
 		setSpeed(0.3);
 	}
 	
+	void buildMenu(GLCanvas canvas) {
+		menuBar = new JMenuBar();
+		
+		JMenu menu = new JMenu("Asdf");
+		menuBar.add(menu);
+		
+		popup = new JPopupMenu();
+		
+		JMenuItem itm = new JMenuItem("ASdfzing");
+		menu.add(itm);
+		popup.add(itm);
+		itm.addActionListener(this);
+		
+		itm = new JMenuItem("AZomgf");
+		menu.add(itm);
+		popup.add(itm);
+		itm.addActionListener(this);
+		
+		MouseListener l = new PopupListener();
+		menuBar.addMouseListener(l);
+		canvas.addMouseListener(l);
+	}
+	
 	public void startDrag(Point p) {
         synchronized(matrixLock) {
-            LastRot.set( ThisRot );                                        // Set Last Static Rotation To Last Dynamic One
+            LastRot.set(ThisRot);
         }
-        arcBall.click( p );                                 // Update Start Vector And Prepare For Dragging
+        arcBall.click(p);
 		
 	}
 	public void drag(Point p) {
         Quat4f ThisQuat = new Quat4f();
 
-        arcBall.drag( p, ThisQuat);                         // Update End Vector And Get Rotation As Quaternion
+        arcBall.drag(p, ThisQuat);
         synchronized(matrixLock) {
-            ThisRot.setRotation(ThisQuat);     // Convert Quaternion Into Matrix3fT
-            ThisRot.mul( ThisRot, LastRot);                // Accumulate Last Rotation Into This One
+            ThisRot.setRotation(ThisQuat);
+            ThisRot.mul(ThisRot, LastRot);
         }
 	}
+	
+    public void startPan(Point p) {
+    	panStart = p;
+    	LastRot.set(ThisRot);
+    }
+    public void pan(Point p) {
+    	synchronized(matrixLock) {
+	        ThisRot.setTranslation(p.x - panStart.x, -(p.y - panStart.y), 0);
+	    	ThisRot.mul(ThisRot, LastRot);
+    	}
+    }
+
 	
 	class PopupListener extends MouseInputAdapter {
 	    public void mousePressed(MouseEvent e) {
@@ -138,20 +149,14 @@ public class Renderer implements GLEventListener, ActionListener {
 	
 	public void display(GLAutoDrawable drawable) {
 		final GL gl = drawable.getGL();
-		this.gl = gl;
-
-        ThisRot.get(matrix);
 
 		gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
 		gl.glLoadIdentity();
 		
 		gl.glTranslated(0, 0, -zoom);
+        ThisRot.get(matrix);
         gl.glMultMatrixf(matrix, 0);
-        Point tmppan = new Point(pan);
-        tmppan.x += panCurrent.x;
-        tmppan.y += panCurrent.y;
-		gl.glTranslated(tmppan.x, -tmppan.y, 0);
-		
+        
 		drawCursor(gl);
 		
 		if (origin != null) {
@@ -198,6 +203,9 @@ public class Renderer implements GLEventListener, ActionListener {
 		gl.glRotated(90, 0, 1, 0);
 		glu.gluCylinder(qua, 20, 1, 200, 24, 240);
 		gl.glRotated(-90, 0, 1, 0);
+		
+		gl.glColor3d(.5,.5,.5);
+		glu.gluDisk(qua, 0, 800, 360, 1);
 		gl.glPopMatrix();
 	}
 
@@ -207,7 +215,6 @@ public class Renderer implements GLEventListener, ActionListener {
 
 	public void init(GLAutoDrawable drawable) {
 		final GL gl = drawable.getGL();
-		this.gl = gl;
 		
 		gl.glShadeModel(GL.GL_SMOOTH);
 		gl.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -287,19 +294,6 @@ static GLfloat	LightPos[] = {4.0f, 4.0f, 6.0f, 1.0f};				// Light Position
 	public void resetOrigin() {
 		origin = getActiveBody();
 	}
-    public void startPan(Point p) {
-    	panStart = p;
-    }
-    public void pan(Point p) {
-    	panCurrent.x = p.x - panStart.x;
-    	panCurrent.y = p.y - panStart.y;
-    }
-    public void stopPan() {
-		pan.x += panCurrent.x;
-		pan.y += panCurrent.y;
-		panCurrent.x = 0;
-		panCurrent.y = 0;
-    }
     
 	public void nextActive() {
 		if (++activeBody == bodies.size()) activeBody = -1;

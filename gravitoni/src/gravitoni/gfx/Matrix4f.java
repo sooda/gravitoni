@@ -98,6 +98,13 @@ class Matrix4f {
         M32 = 0f;
         M33 = 1f;
     }
+    
+    void setTranslation(double x, double y, double z) {
+    	setIdentity();
+    	M03 = (float)x;
+    	M13 = (float)y;
+    	M23 = (float)z;
+    }
 
     public final void set(Matrix4f m1) {
         M00 = m1.M00; M01 = m1.M01; M02 = m1.M02; M03 = m1.M03;
