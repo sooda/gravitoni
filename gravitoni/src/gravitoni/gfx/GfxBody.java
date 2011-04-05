@@ -59,7 +59,7 @@ public class GfxBody {
 		return body;
 	}
 	
-	void render(GL gl, boolean selected) {
+	void render(GL gl, boolean selected, double zoom) {
 		gl.glPushMatrix();
 		
 		Vec3 pos = body.getPos();
@@ -76,6 +76,7 @@ public class GfxBody {
 		}
 		
 		gl.glTranslated(10/1e7 * pos.x, 10/1e7 * pos.y, 0);
+		gl.glScaled(zoom, zoom, zoom);
 		glu.gluSphere(qua, r, 20, 20);
 		
 		gl.glDisable(GL.GL_TEXTURE_2D);

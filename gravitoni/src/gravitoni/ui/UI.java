@@ -31,8 +31,6 @@ public class UI extends JFrame implements ChangeListener {
 		canvas.setPreferredSize(new Dimension(640, 480));
 		
 		renderer = new Renderer(world, this, canvas);
-		canvas.addGLEventListener(renderer);
-		canvas.addKeyListener(renderer);
 		
 		settings = new SettingPane(this);
 		settings.setDistanceBodies(world.getBodies().get(0), world.getBodies().get(1));

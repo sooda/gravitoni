@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import gravitoni.simu.*;
-import gravitoni.ui.UI;
+import gravitoni.ui.*;
 import demos.common.TextureReader;
 
 import javax.media.opengl.GL;
@@ -27,7 +27,7 @@ import javax.media.opengl.glu.GLUquadric;
 import javax.swing.*;
 import javax.swing.event.*;
 
-public class Renderer implements GLEventListener, ActionListener, KeyListener, MouseMotionListener, MouseInputListener, MouseWheelListener {
+public class Renderer implements GLEventListener, ActionListener {
 
 	private World world;
 	private ArrayList<GfxBody> bodies = new ArrayList<GfxBody>();
@@ -36,11 +36,10 @@ public class Renderer implements GLEventListener, ActionListener, KeyListener, M
 	
 	private double speed = 1;
 	private GLUquadric qua;
-	private int texture;
 	private GLU glu = new GLU();
 	private GL gl;
 	
-	private Navigator navigator;
+	//private Navigator navigator;
 	
 	private JMenuBar menuBar;
 	private JPopupMenu popup;
@@ -54,7 +53,7 @@ public class Renderer implements GLEventListener, ActionListener, KeyListener, M
 
     private ArcBall arcBall = new ArcBall(640.0f, 480.0f);
     
-    private double zoom = 1500;
+    private double zoom = 1500, planetzoom = 1;
     
     private Point pan = new Point(), panStart, panCurrent = new Point();
     
@@ -65,7 +64,7 @@ public class Renderer implements GLEventListener, ActionListener, KeyListener, M
 		this.world = world;
 		this.ui = ui;
 		
-		navigator = new Navigator();
+		//navigator = new Navigator();
 
 		
 		menuBar = new JMenuBar();
@@ -84,9 +83,14 @@ public class Renderer implements GLEventListener, ActionListener, KeyListener, M
 		MouseListener l = new PopupListener();
 		menuBar.addMouseListener(l);
 		canvas.addMouseListener(l);
-		canvas.addMouseMotionListener(this);
-		canvas.addMouseListener(this);
-		canvas.addMouseWheelListener(this);
+		canvas.addGLEventListener(this);
+
+		
+		UserInputHandler ih = new UserInputHandler(this);
+		canvas.addKeyListener(ih);
+		canvas.addMouseMotionListener(ih);
+		canvas.addMouseListener(ih);
+		canvas.addMouseWheelListener(ih);
 		setSpeed(0.3);
 	}
 	
@@ -166,7 +170,7 @@ public class Renderer implements GLEventListener, ActionListener, KeyListener, M
 		
 		Body active = getActiveBody();
 		for (GfxBody b: bodies) {
-			b.render(gl, b.getBody() == active);
+			b.render(gl, b.getBody() == active, planetzoom);
 		}
 		ui.refreshWidgets();
 		if (!paused) {
@@ -287,88 +291,10 @@ static GLfloat	LightPos[] = {4.0f, 4.0f, 6.0f, 1.0f};				// Light Position
         arcBall.setBounds((float) width, (float) height);
 
 	}
-
-
-	public void keyPressed(KeyEvent e) {
-		//double amount = 30, ramount = 1;
-		switch (e.getKeyCode()) {
-		/*
-			case KeyEvent.VK_W:
-				navigator.walk(0, 0, amount);
-				break;
-			case KeyEvent.VK_S:
-				navigator.walk(0, 0, -amount);
-				break;
-			case KeyEvent.VK_A:
-				navigator.walk(amount, 0, 0);
-				break;
-			case KeyEvent.VK_D:
-				navigator.walk(-amount, 0, 0);
-				break;
-				
-			case KeyEvent.VK_Z:
-				navigator.walk(0, amount, 0);
-				break;
-			case KeyEvent.VK_X:
-				navigator.walk(0, -amount, 0);
-				break;
-				
-			case KeyEvent.VK_LEFT:
-				navigator.rotate(0, -ramount, 0);
-				break;
-			case KeyEvent.VK_RIGHT:
-				navigator.rotate(0, ramount, 0);
-				break;
-			case KeyEvent.VK_UP:
-				navigator.rotate(-ramount, 0, 0);
-				break;
-			case KeyEvent.VK_DOWN:
-				navigator.rotate(ramount, 0, 0);
-				break;
-			*/	
-			case KeyEvent.VK_SPACE:
-				// navigator.reset();
-				origin = getActiveBody();
-				break;
-				
-			case KeyEvent.VK_LESS:
-				if ((e.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) != 0)
-					nextActive();
-				else
-					prevActive();
-				break;
-			case KeyEvent.VK_GREATER:
-				
-				break;
-				
-			default:
-				System.out.println("Unknown keypress on canvas: " + e);
-		}
-		
+	
+	public void resetOrigin() {
+		origin = getActiveBody();
 	}
-	public void keyReleased(KeyEvent e) {
-	}
-	public void keyTyped(KeyEvent e) {
-	}
-
-    public void mousePressed(MouseEvent e) {
-        if (SwingUtilities.isLeftMouseButton(e)) {
-            startDrag(e.getPoint());
-        }
-        if (SwingUtilities.isMiddleMouseButton(e)) {
-        	startPan(e.getPoint());
-        }
-    }
-
-    public void mouseDragged(MouseEvent e) {
-        if (SwingUtilities.isLeftMouseButton(e)) {
-            drag(e.getPoint());
-        }
-        if (SwingUtilities.isMiddleMouseButton(e)) {
-        	pan(e.getPoint());
-        }
-    }
-
     public void startPan(Point p) {
     	panStart = p;
     }
@@ -382,12 +308,7 @@ static GLfloat	LightPos[] = {4.0f, 4.0f, 6.0f, 1.0f};				// Light Position
 		panCurrent.x = 0;
 		panCurrent.y = 0;
     }
-
-
-	public void mouseMoved(MouseEvent e) {
-		//System.out.println(e.getX() + " " + e.getY());
-	}
-	
+    
 	public void nextActive() {
 		if (++activeBody == bodies.size()) activeBody = -1;
 	}
@@ -395,22 +316,14 @@ static GLfloat	LightPos[] = {4.0f, 4.0f, 6.0f, 1.0f};				// Light Position
 		if (--activeBody == -2) activeBody = bodies.size() - 1;
 	}
 
-	public void mouseClicked(MouseEvent e) {
+	public void zoom(double amount) {
+		if (amount > 0) zoom *= 1.1 * amount;
+		else zoom /= 1.1 * -amount;
 	}
-	public void mouseEntered(MouseEvent e) {
-	}
-	public void mouseExited(MouseEvent e) {
-	}
-	public void mouseReleased(MouseEvent e) {
-		if (SwingUtilities.isMiddleMouseButton(e)) {
-			stopPan();
-		}
-	}
-
-	public void mouseWheelMoved(MouseWheelEvent e) {
-		int rot = e.getWheelRotation();
-		if (rot > 0) zoom *= 1.1 * rot;
-		else zoom /= 1.1 * -rot;
+	
+	public void zoomBodies(double amount) {
+		if (amount > 0) planetzoom *= 1.1 * amount;
+		else planetzoom /= 1.1 * -amount;		
 	}
 
 }
