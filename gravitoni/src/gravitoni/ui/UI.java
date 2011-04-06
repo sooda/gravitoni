@@ -88,7 +88,8 @@ public class UI extends JFrame implements ChangeListener,ActionListener {
 		menu = new JMenu("File");
 		menu.setMnemonic(KeyEvent.VK_F);
 		menuBar.add(menu);
-		addMenuItem(menu, "Lols");
+		addMenuItem(menu, "Pause");
+		addMenuItem(menu, "Unpause");
 		addMenuItem(menu, "Quit");
 		setJMenuBar(menuBar);
 		//JRadioButtonMenuItem rbMenuItem;
@@ -108,6 +109,10 @@ public class UI extends JFrame implements ChangeListener,ActionListener {
 			//dispose();
 			WindowEvent wev = new WindowEvent(this, WindowEvent.WINDOW_CLOSING);
 			Toolkit.getDefaultToolkit().getSystemEventQueue().postEvent(wev);
+		} else if ("Pause".equals(cmd)) {
+			renderer.pause();
+		} else if ("Unpause".equals(cmd)) {
+			renderer.cont();
 		}
 	}
 	

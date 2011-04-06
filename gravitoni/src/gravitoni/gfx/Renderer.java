@@ -41,7 +41,7 @@ public class Renderer implements GLEventListener, ActionListener {
     private ArcBall arcBall = new ArcBall(640.0f, 480.0f);
     private Point panStart;
     
-    private double zoom = 1500, planetzoom = 1;    
+    private double zoom = 2000, planetzoom = 1;    
     
     private boolean paused = false;
 
@@ -50,9 +50,9 @@ public class Renderer implements GLEventListener, ActionListener {
 		this.world = world;
 		this.ui = ui;
 		
-		buildMenu(canvas);
-		
 		canvas.addGLEventListener(this);
+		
+		buildMenu(canvas);
 		
 		UserInputHandler ih = new UserInputHandler(this);
 		canvas.addKeyListener(ih);
@@ -76,13 +76,16 @@ public class Renderer implements GLEventListener, ActionListener {
 		itm.addActionListener(this);
 		
 		itm = new JMenuItem("AZomgf");
+		itm.setEnabled(false);
 		menu.add(itm);
 		popup.add(itm);
 		itm.addActionListener(this);
 		
-		MouseListener l = new PopupListener();
+		PopupListener l = new PopupListener();
 		menuBar.addMouseListener(l);
 		canvas.addMouseListener(l);
+		
+		popup.addPopupMenuListener(l);
 	}
 	
 	public void startDrag(Point p) {
@@ -113,8 +116,7 @@ public class Renderer implements GLEventListener, ActionListener {
     	}
     }
 
-	
-	class PopupListener extends MouseInputAdapter {
+	class PopupListener extends MouseInputAdapter implements PopupMenuListener {
 	    public void mousePressed(MouseEvent e) {
 	        maybeShowPopup(e);
 	    }
@@ -125,13 +127,26 @@ public class Renderer implements GLEventListener, ActionListener {
 
 	    private void maybeShowPopup(MouseEvent e) {
 	        if (e.isPopupTrigger()) {
+	        	popup.setLightWeightPopupEnabled(false);
 	            popup.show(e.getComponent(), e.getX(), e.getY());
 	        }
 	    }
+		public void popupMenuCanceled(PopupMenuEvent e) {
+		}
+
+		public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+			cont();
+		}
+
+		public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+			pause();
+		}
+
+
 	}
 	
 	public void actionPerformed(ActionEvent e) {
-		System.out.println("JEAAAAAAH" + e);
+		System.out.println("JEAAAAAAH" + e.getActionCommand());
 		System.out.println("ASDDDDF" + e.getSource());
 		
 	}
@@ -205,7 +220,9 @@ public class Renderer implements GLEventListener, ActionListener {
 		gl.glRotated(-90, 0, 1, 0);
 		
 		gl.glColor3d(.5,.5,.5);
-		glu.gluDisk(qua, 0, 800, 360, 1);
+		glu.gluQuadricDrawStyle(qua, GLU.GLU_LINE);
+		glu.gluDisk(qua, 0, 800, 36, 1);
+		glu.gluQuadricDrawStyle(qua, GLU.GLU_FILL);
 		gl.glPopMatrix();
 	}
 
