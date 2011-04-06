@@ -89,4 +89,8 @@ public class GfxBody {
 		gl.glPopMatrix();
 	}
 	
+	public String toString() {
+		return "[gfx] " + body;
+	}
+	
 }

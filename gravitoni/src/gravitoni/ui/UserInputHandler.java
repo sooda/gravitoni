@@ -56,7 +56,11 @@ public class UserInputHandler implements KeyListener, MouseMotionListener, Mouse
 			case KeyEvent.VK_DOWN:
 				navigator.rotate(ramount, 0, 0);
 				break;
-			*/	
+			*/
+			case KeyEvent.VK_P:
+				renderer.togglePause();
+				break;
+		
 			case KeyEvent.VK_SPACE:
 				// navigator.reset();
 				renderer.resetOrigin();

@@ -5,6 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 
 import gravitoni.simu.*;
@@ -19,11 +20,14 @@ import javax.media.opengl.glu.GLUquadric;
 import javax.swing.*;
 import javax.swing.event.*;
 
+import com.sun.opengl.util.BufferUtil;
+
 public class Renderer implements GLEventListener, ActionListener {
 	private World world;
 	private ArrayList<GfxBody> bodies = new ArrayList<GfxBody>();
 	private int activeBody = -1;
 	private Body origin = null;
+	private GLCanvas canvas;
 	
 	private double speed = 1;
 	private GLUquadric qua;
@@ -45,10 +49,15 @@ public class Renderer implements GLEventListener, ActionListener {
     
     private boolean paused = false;
 
+    
+    
+    private boolean selectMode = false;
+    private Point selectPt;
 	
 	public Renderer(World world, UI ui, GLCanvas canvas) {
 		this.world = world;
 		this.ui = ui;
+		this.canvas = canvas;
 		
 		canvas.addGLEventListener(this);
 		
@@ -63,28 +72,19 @@ public class Renderer implements GLEventListener, ActionListener {
 	}
 	
 	void buildMenu(GLCanvas canvas) {
-		menuBar = new JMenuBar();
-		
-		JMenu menu = new JMenu("Asdf");
-		menuBar.add(menu);
-		
 		popup = new JPopupMenu();
 		
-		JMenuItem itm = new JMenuItem("ASdfzing");
-		menu.add(itm);
+		JMenuItem itm = new JMenuItem("Select");
 		popup.add(itm);
 		itm.addActionListener(this);
 		
 		itm = new JMenuItem("AZomgf");
 		itm.setEnabled(false);
-		menu.add(itm);
 		popup.add(itm);
 		itm.addActionListener(this);
 		
 		PopupListener l = new PopupListener();
-		menuBar.addMouseListener(l);
-		canvas.addMouseListener(l);
-		
+		canvas.addMouseListener(l);		
 		popup.addPopupMenuListener(l);
 	}
 	
@@ -96,7 +96,7 @@ public class Renderer implements GLEventListener, ActionListener {
 		
 	}
 	public void drag(Point p) {
-        Quat4f ThisQuat = new Quat4f();
+        Quat ThisQuat = new Quat();
 
         arcBall.drag(p, ThisQuat);
         synchronized(matrixLock) {
@@ -106,8 +106,10 @@ public class Renderer implements GLEventListener, ActionListener {
 	}
 	
     public void startPan(Point p) {
-    	panStart = p;
-    	LastRot.set(ThisRot);
+    	synchronized(matrixLock) {
+    		panStart = p;
+    		LastRot.set(ThisRot);
+    	}
     }
     public void pan(Point p) {
     	synchronized(matrixLock) {
@@ -129,26 +131,30 @@ public class Renderer implements GLEventListener, ActionListener {
 	        if (e.isPopupTrigger()) {
 	        	popup.setLightWeightPopupEnabled(false);
 	            popup.show(e.getComponent(), e.getX(), e.getY());
+	            selectPt = new Point(e.getX(), e.getY());
 	        }
 	    }
+	    
 		public void popupMenuCanceled(PopupMenuEvent e) {
 		}
 
 		public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+			System.out.println("popupcont");
 			cont();
 		}
 
 		public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+			System.out.println("popuppause");
 			pause();
 		}
-
-
 	}
 	
 	public void actionPerformed(ActionEvent e) {
-		System.out.println("JEAAAAAAH" + e.getActionCommand());
-		System.out.println("ASDDDDF" + e.getSource());
-		
+		String cmd = e.getActionCommand();
+		System.out.println("Tottoroo " + e);
+		if ("Select".equals(cmd)) {
+			selectMode = true;
+		}
 	}
 
 
@@ -164,7 +170,55 @@ public class Renderer implements GLEventListener, ActionListener {
 	
 	public void display(GLAutoDrawable drawable) {
 		final GL gl = drawable.getGL();
-
+		if (selectMode) {
+			select(gl, selectPt.x, canvas.getHeight() - selectPt.y);
+			selectMode = false;
+		} else {
+			render(gl);
+			runSimulation();
+		}
+	}
+	
+	public void select(GL gl, int x, int y) {
+		int[] buff = new int[64];
+		IntBuffer buf = BufferUtil.newIntBuffer(64);		
+		gl.glSelectBuffer(64, buf);
+		gl.glRenderMode(GL.GL_SELECT);
+		
+		gl.glInitNames();
+		gl.glPushName(0);
+		
+		gl.glMatrixMode(GL.GL_PROJECTION);
+		gl.glPushMatrix();
+		gl.glLoadIdentity();
+		
+		int[] view = new int[4];
+		gl.glGetIntegerv(GL.GL_VIEWPORT, view, 0);
+		IntBuffer vbuf = BufferUtil.newIntBuffer(4);
+		vbuf.put(view);
+		vbuf.rewind();
+		
+		glu.gluPickMatrix(x, y, 1, 1, vbuf);
+		setPerspective(view[2], view[3]);
+		
+		gl.glMatrixMode(GL.GL_MODELVIEW);
+		render(gl);
+		gl.glMatrixMode(GL.GL_PROJECTION);
+		gl.glPopMatrix();
+		
+		int hits = gl.glRenderMode(GL.GL_RENDER);
+		gl.glMatrixMode(GL.GL_MODELVIEW);
+		
+		System.out.println("HIts: " + hits);
+		buf.rewind();
+		buf.get(buff);
+		for (int i = 0; i < hits; i++) {
+			int id = buff[i * 4 + 3];
+			if (id > 0) System.out.println("Selected: " + bodies.get(id - 1));
+		}
+	}
+	
+	public void render(GL gl) {
 		gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
 		gl.glLoadIdentity();
 		
@@ -172,19 +226,22 @@ public class Renderer implements GLEventListener, ActionListener {
         ThisRot.get(matrix);
         gl.glMultMatrixf(matrix, 0);
         
-		drawCursor(gl);
+		if (!selectMode) drawCursor(gl);
 		
 		if (origin != null) {
 			Vec3 pos = origin.getPos();
-			//System.out.println(pos);
 			gl.glTranslated(-10/1e7 * pos.x, -10/1e7 * pos.y, pos.z);
 		}
 		
 		Body active = getActiveBody();
+		int i = 0;
 		for (GfxBody b: bodies) {
+			gl.glLoadName(++i);
 			b.render(gl, b.getBody() == active, planetzoom);
 		}
-		ui.refreshWidgets();
+	}
+	
+	public void runSimulation() {
 		if (!paused) {
 			int iters = (int)speed;
 			double laststep = speed - iters;
@@ -193,6 +250,7 @@ public class Renderer implements GLEventListener, ActionListener {
 			}
 			world.run(laststep*world.dt);
 		}
+		ui.refreshWidgets();
 	}
 	
 	public void pause() {
@@ -200,6 +258,10 @@ public class Renderer implements GLEventListener, ActionListener {
 	}
 	public void cont() {
 		paused = false;
+	}
+	
+	public void togglePause() {
+		paused = !paused;
 	}
 	
 	private void drawCursor(GL gl) {
@@ -293,19 +355,19 @@ static GLfloat	LightPos[] = {4.0f, 4.0f, 6.0f, 1.0f};				// Light Position
 		gl.setSwapInterval(1);
 
 		gl.glViewport(0, 0, width, height);
+		
 		gl.glMatrixMode(GL.GL_PROJECTION);
 		gl.glLoadIdentity();
-
-		glu.gluPerspective(
-				45.0f, 
-				(double) width / (double) height, 
-				1f,
-				300000.0f);
-
+		setPerspective(width, height);
+		
 		gl.glMatrixMode(GL.GL_MODELVIEW);
 		gl.glLoadIdentity();
-        arcBall.setBounds((float) width, (float) height);
-
+		
+        arcBall.setBounds((float)width, (float)height);
+	}
+	
+	void setPerspective(double width, double height) {
+		glu.gluPerspective(45, width / height, 1, 300000);
 	}
 	
 	public void resetOrigin() {

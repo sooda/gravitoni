@@ -58,28 +58,28 @@ class Matrix4f {
         M00 = M11 = M22 = M33 = 1.0f;
     }
 
-    void setRotation(Quat4f q1) {
+    void setRotation(Quat thisQuat) {
         float n, s;
         float xs, ys, zs;
         float wx, wy, wz;
         float xx, xy, xz;
         float yy, yz, zz;
 
-        n = (q1.x * q1.x) + (q1.y * q1.y) + (q1.z * q1.z) + (q1.w * q1.w);
+        n = (float)((thisQuat.x * thisQuat.x) + (thisQuat.y * thisQuat.y) + (thisQuat.z * thisQuat.z) + (thisQuat.w * thisQuat.w));
         s = (n > 0.0f) ? (2.0f / n) : 0.0f;
 
-        xs = q1.x * s;
-        ys = q1.y * s;
-        zs = q1.z * s;
-        wx = q1.w * xs;
-        wy = q1.w * ys;
-        wz = q1.w * zs;
-        xx = q1.x * xs;
-        xy = q1.x * ys;
-        xz = q1.x * zs;
-        yy = q1.y * ys;
-        yz = q1.y * zs;
-        zz = q1.z * zs;
+        xs = (float)thisQuat.x * s;
+        ys = (float)thisQuat.y * s;
+        zs = (float)thisQuat.z * s;
+        wx = (float)thisQuat.w * xs;
+        wy = (float)thisQuat.w * ys;
+        wz = (float)thisQuat.w * zs;
+        xx = (float)thisQuat.x * xs;
+        xy = (float)thisQuat.x * ys;
+        xz = (float)thisQuat.x * zs;
+        yy = (float)thisQuat.y * ys;
+        yz = (float)thisQuat.y * zs;
+        zz = (float)thisQuat.z * zs;
 
         M00 = 1.0f - (yy + zz);
         M01 = xy - wz;
