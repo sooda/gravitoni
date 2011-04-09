@@ -16,13 +16,15 @@ public class GfxBody {
 	private int texture;
 	private GLUquadric qua;
 	private ArrayList<Vec3> posHistory = new ArrayList<Vec3>();
+	private Renderer rendr;
 	
-	GfxBody(Body original, GL gl, GLUquadric q) {
+	GfxBody(Body original, GL gl, GLUquadric q, Renderer r) {
 		body = original;
 		loadTexture(gl);
 		qua = q;
+		rendr=r;
 	}
-	
+
 	public void loadTexture(GL gl) {
 		texture = genTexture(gl);
         gl.glBindTexture(GL.GL_TEXTURE_2D, texture);
@@ -70,32 +72,50 @@ public class GfxBody {
 		}
 		
 		gl.glPushMatrix();
+		if (rendr.getOrigin() != null) {
+			Vec3 opos = rendr.getOrigin().getBody().getPos();
+			gl.glTranslated(-10/1e7 * opos.x, -10/1e7 * opos.y, opos.z);
+		}
 		gl.glTranslated(10/1e7 * pos.x, 10/1e7 * pos.y, 10/1e7 * pos.z);
 		gl.glScaled(zoom, zoom, zoom);
 		glu.gluSphere(qua, r, 20, 20);
-		
 		renderVectors(gl);
 		gl.glPopMatrix();
+		
 		renderHistory(gl);
 
 	}
 	
 	private void renderHistory(GL gl) {
 		gl.glDisable(GL.GL_TEXTURE_2D);
-		gl.glColor4f(1, 1, 1, 1);
 		//gl.glPushMatrix();
 		// blend?
 		//gl.glLineWidth(2);
 		gl.glBegin(GL.GL_LINE_STRIP);
 		//System.out.println("----------- " + posHistory.size());
-		for (int i = 0; i < posHistory.size(); i++) {
+		GfxBody origin = rendr.getOrigin();
+		if (origin != null) {
+			Vec3 pos = origin.getBody().getPos();
+			//gl.glTranslated(10/1e7 * pos.x, 10/1e7 * pos.y, -pos.z);
+		}
+		int n = posHistory.size();
+		for (int i = 0; i < n; i++) {
 			Vec3 p = posHistory.get(i);
+			GfxBody o = rendr.getOrigin();
+			if (o != null) {
+				Vec3 op = o.getPosAt(i);
+				if (op != null) p = p.clone().sub(op);
+			}
 			//System.out.println(i + ":" + p);
+			gl.glColor4d(1 - (double)i / n, (double)i / n, 0, 1);
 			gl.glVertex3d(10/1e7 *p.x, 10/1e7 *p.y, p.z);
 		}
 		gl.glEnd();
 		
 		//gl.glPopMatrix();
+	}
+	public Vec3 getPosAt(int i) {
+		return i >= 0 && i < posHistory.size() ? posHistory.get(i) : null;
 	}
 	
 	private void renderVectors(GL gl) {

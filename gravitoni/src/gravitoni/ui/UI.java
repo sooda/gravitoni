@@ -28,7 +28,7 @@ public class UI extends JFrame implements ChangeListener,ActionListener {
 		super("Eippää, behold maailmankaikkeus!");
 		this.world = world;
 		canvas = new GLCanvas();
-		canvas.setPreferredSize(new Dimension(640, 480));
+		canvas.setPreferredSize(new Dimension(800, 600));
 		
 		renderer = new Renderer(world, this, canvas);
 		

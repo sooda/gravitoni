@@ -27,7 +27,7 @@ public class UserInputHandler implements KeyListener, MouseMotionListener, Mouse
 				break;
 		
 			case KeyEvent.VK_SPACE:
-				renderer.resetOrigin();
+				renderer.originActive();
 				break;
 				
 			case KeyEvent.VK_C:
@@ -36,6 +36,10 @@ public class UserInputHandler implements KeyListener, MouseMotionListener, Mouse
 				
 			case KeyEvent.VK_E:
 				renderer.toggleEclPlane();
+				break;
+				
+			case KeyEvent.VK_R:
+				renderer.resetOrigin();
 				break;
 				
 			case KeyEvent.VK_LESS:

@@ -26,7 +26,7 @@ public class Renderer implements GLEventListener, ActionListener {
 	private World world;
 	private ArrayList<GfxBody> bodies = new ArrayList<GfxBody>();
 	private int activeBody = -1;
-	private Body origin = null;
+	private GfxBody origin = null;
 	private GLCanvas canvas;
 	
 	private double speed = 1;
@@ -157,13 +157,13 @@ public class Renderer implements GLEventListener, ActionListener {
 	}
 
 
-	public Body getActiveBody() {
-		return activeBody == -1 ? null : bodies.get(activeBody).getBody();
+	public GfxBody getActiveBody() {
+		return activeBody == -1 ? null : bodies.get(activeBody);
 	}
 	
 	public void setSpeed(double speed) {
 		System.out.println("SPD "+speed);
-		speed = Math.exp(3 * speed);
+		speed = Math.exp(5 * speed);
 		this.speed = speed;
 	}
 	
@@ -241,15 +241,15 @@ public class Renderer implements GLEventListener, ActionListener {
 	
 	private void drawBodies(GL gl) {
 		if (origin != null) {
-			Vec3 pos = origin.getPos();
-			gl.glTranslated(-10/1e7 * pos.x, -10/1e7 * pos.y, pos.z);
+			Vec3 pos = origin.getBody().getPos();
+			//gl.glTranslated(-10/1e7 * pos.x, -10/1e7 * pos.y, pos.z);
 		}
 		
-		Body active = getActiveBody();
+		GfxBody active = getActiveBody();
 		int i = 0;
 		for (GfxBody b: bodies) {
 			gl.glLoadName(++i);
-			b.render(gl, b.getBody() == active, planetzoom);
+			b.render(gl, b == active, planetzoom);
 		}
 	}
 	
@@ -318,7 +318,7 @@ public class Renderer implements GLEventListener, ActionListener {
     	glu.gluQuadricTexture(qua, true);
     	
 		for (Body b: world.getBodies()) {
-			bodies.add(new GfxBody(b, gl, qua));
+			bodies.add(new GfxBody(b, gl, qua, this));
 		}
 		
     	/*
@@ -381,8 +381,18 @@ static GLfloat	LightPos[] = {4.0f, 4.0f, 6.0f, 1.0f};				// Light Position
 		glu.gluPerspective(45, width / height, 1, 300000);
 	}
 	
-	public void resetOrigin() {
+	public void originActive() {
 		origin = getActiveBody();
+	}
+	
+	public void resetOrigin() {
+        LastRot.setIdentity();
+        ThisRot.setIdentity();
+        ThisRot.get(matrix);
+	}
+	
+	public GfxBody getOrigin() {
+		return origin;
 	}
     
 	public void nextActive() {
