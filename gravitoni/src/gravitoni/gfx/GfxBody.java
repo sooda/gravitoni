@@ -1,6 +1,7 @@
 package gravitoni.gfx;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.glu.GLU;
@@ -14,6 +15,7 @@ public class GfxBody {
 	private GLU glu = new GLU();
 	private int texture;
 	private GLUquadric qua;
+	private ArrayList<Vec3> posHistory = new ArrayList<Vec3>();
 	
 	GfxBody(Body original, GL gl, GLUquadric q) {
 		body = original;
@@ -53,9 +55,8 @@ public class GfxBody {
 	}
 	
 	void render(GL gl, boolean selected, double zoom) {
-		gl.glPushMatrix();
-		
 		Vec3 pos = body.getPos();
+		posHistory.add(pos.clone());
 		// System.out.println("Hox! " + b.getName() + "; " + (1/1e7*pos.x) + ", " + (1/1e7*pos.y) + ", " + pos.z + "   " + (1/1e3 * b.getRadius()));
 		double r = .01/1e3 * body.getRadius();
 		
@@ -68,10 +69,36 @@ public class GfxBody {
 			//gl.glEnable(GL.GL_TEXTURE_GEN_T);
 		}
 		
-		gl.glTranslated(10/1e7 * pos.x, 10/1e7 * pos.y, 0);
+		gl.glPushMatrix();
+		gl.glTranslated(10/1e7 * pos.x, 10/1e7 * pos.y, 10/1e7 * pos.z);
 		gl.glScaled(zoom, zoom, zoom);
 		glu.gluSphere(qua, r, 20, 20);
 		
+		renderVectors(gl);
+		gl.glPopMatrix();
+		renderHistory(gl);
+
+	}
+	
+	private void renderHistory(GL gl) {
+		gl.glDisable(GL.GL_TEXTURE_2D);
+		gl.glColor4f(1, 1, 1, 1);
+		//gl.glPushMatrix();
+		// blend?
+		//gl.glLineWidth(2);
+		gl.glBegin(GL.GL_LINE_STRIP);
+		//System.out.println("----------- " + posHistory.size());
+		for (int i = 0; i < posHistory.size(); i++) {
+			Vec3 p = posHistory.get(i);
+			//System.out.println(i + ":" + p);
+			gl.glVertex3d(10/1e7 *p.x, 10/1e7 *p.y, p.z);
+		}
+		gl.glEnd();
+		
+		//gl.glPopMatrix();
+	}
+	
+	private void renderVectors(GL gl) {
 		gl.glDisable(GL.GL_TEXTURE_2D);
 		gl.glPushMatrix();
 		gl.glColor3d(1, 1.0, 0);
@@ -83,9 +110,8 @@ public class GfxBody {
 		spdamount = Math.log(1+spdamount);
 		//spdamount *= 0.05;// / body.getRadius();
 		gl.glRotated(180 / Math.PI * Math.acos(cos), cross.x, cross.y, cross.z);
+		double r = .01/1e3 * body.getRadius();
 		glu.gluCylinder(qua, r - 1, 0, (1 + spdamount) * r, 100, 100);
-		gl.glPopMatrix();
-		
 		gl.glPopMatrix();
 	}
 	

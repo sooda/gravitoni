@@ -34,7 +34,6 @@ public class Renderer implements GLEventListener, ActionListener {
 	private GLU glu = new GLU();
 	
 	private UI ui;
-	private JMenuBar menuBar;
 	private JPopupMenu popup;	
 	
     private Matrix4f LastRot = new Matrix4f(); // transformation since last operations
@@ -48,8 +47,8 @@ public class Renderer implements GLEventListener, ActionListener {
     private double zoom = 2000, planetzoom = 1;    
     
     private boolean paused = false;
-
-    
+    private boolean showCursor = true;
+    private boolean showEclPlane = true;
     
     private boolean selectMode = false;
     private Point selectPt;
@@ -179,6 +178,15 @@ public class Renderer implements GLEventListener, ActionListener {
 		}
 	}
 	
+    public void toggleCursor() {
+    	showCursor = !showCursor;
+    }
+    
+    public void toggleEclPlane() {
+    	showEclPlane = !showEclPlane;
+    }
+    
+	
 	public void select(GL gl, int x, int y) {
 		int[] buff = new int[64];
 		IntBuffer buf = BufferUtil.newIntBuffer(64);		
@@ -226,8 +234,12 @@ public class Renderer implements GLEventListener, ActionListener {
         ThisRot.get(matrix);
         gl.glMultMatrixf(matrix, 0);
         
-		if (!selectMode) drawCursor(gl);
-		
+		if (!selectMode && showCursor) drawCursor(gl);
+		if (showEclPlane) drawEclPlane(gl);
+		drawBodies(gl);
+	}
+	
+	private void drawBodies(GL gl) {
 		if (origin != null) {
 			Vec3 pos = origin.getPos();
 			gl.glTranslated(-10/1e7 * pos.x, -10/1e7 * pos.y, pos.z);
@@ -265,7 +277,6 @@ public class Renderer implements GLEventListener, ActionListener {
 	}
 	
 	private void drawCursor(GL gl) {
-		gl.glPushMatrix();
 		gl.glDisable(GL.GL_TEXTURE_2D);
 		
 		gl.glColor3d(0, 0, 1);
@@ -280,12 +291,12 @@ public class Renderer implements GLEventListener, ActionListener {
 		gl.glRotated(90, 0, 1, 0);
 		glu.gluCylinder(qua, 20, 1, 200, 24, 240);
 		gl.glRotated(-90, 0, 1, 0);
-		
+	}
+	private void drawEclPlane(GL gl) {
 		gl.glColor3d(.5,.5,.5);
 		glu.gluQuadricDrawStyle(qua, GLU.GLU_LINE);
 		glu.gluDisk(qua, 0, 800, 36, 1);
 		glu.gluQuadricDrawStyle(qua, GLU.GLU_FILL);
-		gl.glPopMatrix();
 	}
 
 	public void displayChanged(GLAutoDrawable drawable, boolean modeChanged, boolean deviceChanged) {

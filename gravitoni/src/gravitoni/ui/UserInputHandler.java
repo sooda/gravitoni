@@ -21,49 +21,21 @@ public class UserInputHandler implements KeyListener, MouseMotionListener, Mouse
 	}
 	
 	public void keyPressed(KeyEvent e) {
-		//double amount = 30, ramount = 1;
 		switch (e.getKeyCode()) {
-		/*
-			case KeyEvent.VK_W:
-				navigator.walk(0, 0, amount);
-				break;
-			case KeyEvent.VK_S:
-				navigator.walk(0, 0, -amount);
-				break;
-			case KeyEvent.VK_A:
-				navigator.walk(amount, 0, 0);
-				break;
-			case KeyEvent.VK_D:
-				navigator.walk(-amount, 0, 0);
-				break;
-				
-			case KeyEvent.VK_Z:
-				navigator.walk(0, amount, 0);
-				break;
-			case KeyEvent.VK_X:
-				navigator.walk(0, -amount, 0);
-				break;
-				
-			case KeyEvent.VK_LEFT:
-				navigator.rotate(0, -ramount, 0);
-				break;
-			case KeyEvent.VK_RIGHT:
-				navigator.rotate(0, ramount, 0);
-				break;
-			case KeyEvent.VK_UP:
-				navigator.rotate(-ramount, 0, 0);
-				break;
-			case KeyEvent.VK_DOWN:
-				navigator.rotate(ramount, 0, 0);
-				break;
-			*/
 			case KeyEvent.VK_P:
 				renderer.togglePause();
 				break;
 		
 			case KeyEvent.VK_SPACE:
-				// navigator.reset();
 				renderer.resetOrigin();
+				break;
+				
+			case KeyEvent.VK_C:
+				renderer.toggleCursor();
+				break;
+				
+			case KeyEvent.VK_E:
+				renderer.toggleEclPlane();
 				break;
 				
 			case KeyEvent.VK_LESS:
