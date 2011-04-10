@@ -55,6 +55,10 @@ public class UI extends JFrame implements ChangeListener,ActionListener {
 		animator.start();
 	}
 	
+	public SettingPane getSettings() {
+		return settings;
+	}
+	
 	private void insertContents() {
 		JPanel detailView = new JPanel();
 		//detailView.add(new JLabel("Sinep"), BorderLayout.NORTH);

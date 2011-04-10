@@ -102,6 +102,9 @@ public class UserInputHandler implements KeyListener, MouseMotionListener, Mouse
 	public void mouseExited(MouseEvent e) {
 	}
 	public void mouseReleased(MouseEvent e) {
+		if (SwingUtilities.isMiddleMouseButton(e)) {
+			renderer.currPanPos = null;
+		}
 	}
 
 	public void mouseWheelMoved(MouseWheelEvent e) {

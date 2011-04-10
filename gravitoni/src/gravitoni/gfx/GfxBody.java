@@ -58,7 +58,6 @@ public class GfxBody {
 	
 	void render(GL gl, boolean selected, double zoom) {
 		Vec3 pos = body.getPos();
-		posHistory.add(pos.clone());
 		// System.out.println("Hox! " + b.getName() + "; " + (1/1e7*pos.x) + ", " + (1/1e7*pos.y) + ", " + pos.z + "   " + (1/1e3 * b.getRadius()));
 		double r = .01/1e3 * body.getRadius();
 		
@@ -83,6 +82,7 @@ public class GfxBody {
 		gl.glPopMatrix();
 		
 		renderHistory(gl);
+		posHistory.add(pos.clone());
 
 	}
 	

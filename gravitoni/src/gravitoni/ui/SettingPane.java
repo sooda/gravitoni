@@ -48,6 +48,12 @@ public class SettingPane extends JPanel {
 				((DistanceWidget)pane).setBodies(a, b);
 		}
 	}
+	public void setSelected(Body b) {
+		for (Widget pane : widgets) {
+			if (pane instanceof BodyWidget)
+				((BodyWidget)pane).setSelected(b);
+		}
+	}
 	public void refresh() {
 		for (Widget w: widgets) {
 			w.update();

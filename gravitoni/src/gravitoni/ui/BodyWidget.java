@@ -47,4 +47,15 @@ public class BodyWidget extends Widget implements ActionListener {
 		Body b = ui.world.getBodies().get(i);
 		tf.setText(b.getName() + ": " + b.getPos());
 	}
+	
+	public void setSelected(Body body) {
+		int i = 0;
+		for (Body b: ui.world.getBodies()) {
+			if (b == body) {
+				boks.setSelectedIndex(i);
+				break;
+			}
+			i++;
+		}
+	}
 }

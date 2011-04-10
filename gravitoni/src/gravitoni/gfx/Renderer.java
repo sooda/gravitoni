@@ -5,7 +5,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.nio.Buffer;
+import java.nio.ByteBuffer;
+import java.nio.DoubleBuffer;
+import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.nio.LongBuffer;
+import java.nio.ShortBuffer;
 import java.util.ArrayList;
 
 import gravitoni.simu.*;
@@ -52,6 +58,10 @@ public class Renderer implements GLEventListener, ActionListener {
     
     private boolean selectMode = false;
     private Point selectPt;
+    
+    private GL thisgl = null;
+    
+    public Point startPanPos = null, currPanPos = null;
 	
 	public Renderer(World world, UI ui, GLCanvas canvas) {
 		this.world = world;
@@ -104,18 +114,51 @@ public class Renderer implements GLEventListener, ActionListener {
         }
 	}
 	
-    public void startPan(Point p) {
+	public void startPan(Point p) {   
+    	startPanPos = p;
+    	canvas.display();
+    	startPan2(startPanPos);
+    }
+    
+    public void startPan2(Point p) {
     	synchronized(matrixLock) {
     		panStart = p;
     		LastRot.set(ThisRot);
     	}
     }
     public void pan(Point p) {
+    	//startPanPos = p;
+    	currPanPos = p;
     	synchronized(matrixLock) {
-	        ThisRot.setTranslation(p.x - panStart.x, -(p.y - panStart.y), 0);
+    		double dx = p.x - panStart.x, dy = -(p.y - panStart.y);
+    		double scale = zoom / 750;
+    		dx *= scale;
+    		dy *= scale;
+	        ThisRot.setTranslation(dx, dy, 0);
 	    	ThisRot.mul(ThisRot, LastRot);
     	}
     }
+    
+	public void resetOrigin() {
+        LastRot.setIdentity();
+        ThisRot.setIdentity();
+        ThisRot.get(matrix);
+	}
+	public void zoom(double amount) {
+		if (amount > 0) zoom *= 1.1 * amount;
+		else zoom /= 1.1 * -amount;
+		/*synchronized(matrixLock) {
+			Matrix4f r = new Matrix4f();
+			r.setTranslation(0, 0, 100 * amount);
+			ThisRot.mul(r, ThisRot);
+		}
+		*/
+	}
+	
+	public void zoomBodies(double amount) {
+		if (amount > 0) planetzoom *= 1.1 * amount;
+		else planetzoom /= 1.1 * -amount;		
+	}
 
 	class PopupListener extends MouseInputAdapter implements PopupMenuListener {
 	    public void mousePressed(MouseEvent e) {
@@ -156,11 +199,51 @@ public class Renderer implements GLEventListener, ActionListener {
 		}
 	}
 
-
-	public GfxBody getActiveBody() {
-		return activeBody == -1 ? null : bodies.get(activeBody);
-	}
 	
+	public Vec3 hasselhoff(GL gl, Point p) {
+    	double[] modelview = new double[16];
+    	double[] projection = new double[16];
+    	int[] viewport = new int[4];
+    	double[] objpos = new double[4];
+    	gl.glGetDoublev(GL.GL_MODELVIEW_MATRIX, modelview, 0);
+    	gl.glGetDoublev(GL.GL_PROJECTION_MATRIX, projection, 0);
+    	gl.glGetIntegerv(GL.GL_VIEWPORT, viewport, 0);
+    	
+    	/*System.out.println("mw");
+    	pmat(modelview);
+    	System.out.println("pr");
+    	pmat(projection);
+    	System.out.println("vp");
+    	for (int i = 0; i < 4; i++) System.out.println(viewport[i]);
+    	*/
+    	double x,y,z;
+    	
+    	Point pp = new Point(p.x, viewport[3] - p.y);
+    	glu.gluUnProject(pp.x, pp.y, 0 /* z */, modelview, 0, projection, 0, viewport, 0, objpos, 0);x=objpos[0];y=objpos[1];z=objpos[2];
+    	System.out.println(x+" "+y+" "+z+" "+"        "+(x/z)+" "+(y/z));
+
+    	glu.gluUnProject(pp.x, pp.y, 0.5 /* z */, modelview, 0, projection, 0, viewport, 0, objpos, 0);x=objpos[0];y=objpos[1];z=objpos[2];
+    	System.out.println(x+" "+y+" "+z+" "+"        "+(x/z)+" "+(y/z));
+
+    	glu.gluUnProject(pp.x, pp.y, 1 /* z */, modelview, 0, projection, 0, viewport, 0, objpos, 0);x=objpos[0];y=objpos[1];z=objpos[2];
+    	System.out.println(x+" "+y+" "+z+" "+"        "+(x/z)+" "+(y/z));
+    	
+    	glu.gluUnProject(pp.x, pp.y, 2 /* z */, modelview, 0, projection, 0, viewport, 0, objpos, 0);x=objpos[0];y=objpos[1];z=objpos[2];
+    	System.out.println(x+" "+y+" "+z+" "+"        "+(x/z)+" "+(y/z));
+
+    	glu.gluUnProject(pp.x, pp.y, 0 /* z */, modelview, 0, projection, 0, viewport, 0, objpos, 0);x=objpos[0];y=objpos[1];z=objpos[2];
+    	return new Vec3(x,y,z);
+	}
+    
+    private void pmat(double[] m) {
+    	for (int i = 0; i < 4; i++) {
+    		for (int j = 0; j < 4; j++)
+    			System.out.print(m[4*i+j] + " ");
+    		System.out.println("");
+    	}
+    }
+
+
 	public void setSpeed(double speed) {
 		System.out.println("SPD "+speed);
 		speed = Math.exp(5 * speed);
@@ -169,6 +252,7 @@ public class Renderer implements GLEventListener, ActionListener {
 	
 	public void display(GLAutoDrawable drawable) {
 		final GL gl = drawable.getGL();
+		thisgl = gl;
 		if (selectMode) {
 			select(gl, selectPt.x, canvas.getHeight() - selectPt.y);
 			selectMode = false;
@@ -222,8 +306,16 @@ public class Renderer implements GLEventListener, ActionListener {
 		buf.get(buff);
 		for (int i = 0; i < hits; i++) {
 			int id = buff[i * 4 + 3];
-			if (id > 0) System.out.println("Selected: " + bodies.get(id - 1));
+			if (id > 0) {
+				pick(bodies.get(id - 1));
+				break;
+			}
 		}
+	}
+	
+	private void pick(GfxBody b) {
+		System.out.println("Picked " + b);
+		ui.getSettings().setSelected(b.getBody());
 	}
 	
 	public void render(GL gl) {
@@ -233,7 +325,24 @@ public class Renderer implements GLEventListener, ActionListener {
 		gl.glTranslated(0, 0, -zoom);
         ThisRot.get(matrix);
         gl.glMultMatrixf(matrix, 0);
-        
+		/*if (startPanPos != null) {
+			Vec3 v = hasselhoff(gl, startPanPos);;
+			panStart = new Point((int)(10000*v.x), (int)(10000*v.y));
+			System.out.println("Begin " + panStart.x + " " + panStart.y);
+			startPanPos = null;
+			LastRot.set(ThisRot);
+			//startPan2(startPanPos);
+			//startPanPos = null;
+		}
+		if (currPanPos != null) {
+			Vec3 v = hasselhoff(gl, currPanPos);
+			Point p = new Point((int)(10000*v.x), (int)(10000*v.y));
+			double scaler=0.0001;
+	        ThisRot.setTranslation(scaler*(p.x - panStart.x), scaler*-(p.y - panStart.y), 0);
+	    	ThisRot.mul(ThisRot, LastRot);
+	        panStart=p;
+		}
+        */
 		if (!selectMode && showCursor) drawCursor(gl);
 		if (showEclPlane) drawEclPlane(gl);
 		drawBodies(gl);
@@ -253,6 +362,30 @@ public class Renderer implements GLEventListener, ActionListener {
 		}
 	}
 	
+	private void drawCursor(GL gl) {
+		gl.glDisable(GL.GL_TEXTURE_2D);
+		
+		gl.glColor3d(0, 0, 1);
+		glu.gluCylinder(qua, 20, 1, 200, 24, 240);
+		
+		gl.glColor3d(0, 1, 0);
+		gl.glRotated(90, 1, 0, 0);
+		glu.gluCylinder(qua, 20, 1, 200, 24, 240);
+		gl.glRotated(-90, 1, 0, 0);
+		
+		gl.glColor3d(1, 0, 0);
+		gl.glRotated(90, 0, 1, 0);
+		glu.gluCylinder(qua, 20, 1, 200, 24, 240);
+		gl.glRotated(-90, 0, 1, 0);
+	}
+	
+	private void drawEclPlane(GL gl) {
+		gl.glColor3d(.5,.5,.5);
+		glu.gluQuadricDrawStyle(qua, GLU.GLU_LINE);
+		glu.gluDisk(qua, 0, 800, 36, 1);
+		glu.gluQuadricDrawStyle(qua, GLU.GLU_FILL);
+	}
+
 	public void runSimulation() {
 		if (!paused) {
 			int iters = (int)speed;
@@ -276,29 +409,6 @@ public class Renderer implements GLEventListener, ActionListener {
 		paused = !paused;
 	}
 	
-	private void drawCursor(GL gl) {
-		gl.glDisable(GL.GL_TEXTURE_2D);
-		
-		gl.glColor3d(0, 0, 1);
-		glu.gluCylinder(qua, 20, 1, 200, 24, 240);
-		
-		gl.glColor3d(0, 1, 0);
-		gl.glRotated(90, 1, 0, 0);
-		glu.gluCylinder(qua, 20, 1, 200, 24, 240);
-		gl.glRotated(-90, 1, 0, 0);
-		
-		gl.glColor3d(1, 0, 0);
-		gl.glRotated(90, 0, 1, 0);
-		glu.gluCylinder(qua, 20, 1, 200, 24, 240);
-		gl.glRotated(-90, 0, 1, 0);
-	}
-	private void drawEclPlane(GL gl) {
-		gl.glColor3d(.5,.5,.5);
-		glu.gluQuadricDrawStyle(qua, GLU.GLU_LINE);
-		glu.gluDisk(qua, 0, 800, 36, 1);
-		glu.gluQuadricDrawStyle(qua, GLU.GLU_FILL);
-	}
-
 	public void displayChanged(GLAutoDrawable drawable, boolean modeChanged, boolean deviceChanged) {
 		// unimplemented in jogl?
 	}
@@ -378,17 +488,16 @@ static GLfloat	LightPos[] = {4.0f, 4.0f, 6.0f, 1.0f};				// Light Position
 	}
 	
 	void setPerspective(double width, double height) {
-		glu.gluPerspective(45, width / height, 1, 300000);
+		glu.gluPerspective(45, width / height, 1, 3000000);
 	}
 	
+
 	public void originActive() {
 		origin = getActiveBody();
 	}
 	
-	public void resetOrigin() {
-        LastRot.setIdentity();
-        ThisRot.setIdentity();
-        ThisRot.get(matrix);
+	public GfxBody getActiveBody() {
+		return activeBody == -1 ? null : bodies.get(activeBody);
 	}
 	
 	public GfxBody getOrigin() {
@@ -397,19 +506,10 @@ static GLfloat	LightPos[] = {4.0f, 4.0f, 6.0f, 1.0f};				// Light Position
     
 	public void nextActive() {
 		if (++activeBody == bodies.size()) activeBody = -1;
+		System.out.println("Selected: " + getActiveBody());
 	}
 	public void prevActive() {
 		if (--activeBody == -2) activeBody = bodies.size() - 1;
+		System.out.println("Selected: " + getActiveBody());
 	}
-
-	public void zoom(double amount) {
-		if (amount > 0) zoom *= 1.1 * amount;
-		else zoom /= 1.1 * -amount;
-	}
-	
-	public void zoomBodies(double amount) {
-		if (amount > 0) planetzoom *= 1.1 * amount;
-		else planetzoom /= 1.1 * -amount;		
-	}
-
 }
