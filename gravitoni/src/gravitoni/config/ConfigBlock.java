@@ -8,12 +8,19 @@ import java.util.Hashtable;
 
 public class ConfigBlock {
 	private Hashtable<String, String> table = new Hashtable<String, String>();
+	private String name;
 	
-	public ConfigBlock() {	
+	public ConfigBlock(String name) {
+		this.name = name;
 	}
 	
-	public ConfigBlock(ConfigBlock orig) {
+	public ConfigBlock(String name, ConfigBlock orig) {
+		this(name);
 		merge(orig);
+	}
+	
+	public String getName() {
+		return name;
 	}
 	
 	public void add(String key, String value) {
@@ -34,16 +41,6 @@ public class ConfigBlock {
 	
 	public Vec3 getVec(String key) {
 		Vec3 v = Vec3.parse(table.get(key));
-		/*
-		String origin = table.get("origin");
-		if (origin != null) {
-			System.out.println(v);
-			System.out.println(Vec3.parse(origin));
-			v.add(Vec3.parse(origin));
-			System.out.println("ORIGIN HAZ!");
-			System.out.println(v);
-		}
-		*/
 		return v;
 	}
 	

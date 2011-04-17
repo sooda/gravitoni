@@ -1,8 +1,7 @@
 package gravitoni.config;
 
-import gravitoni.simu.Vec3;
-
 import java.io.*;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
@@ -17,15 +16,16 @@ import java.util.Scanner;
  *
  */
 
+/** A configuration set, containing blocks of variables, and TODO: a list of other configurations. */
 public class Config {
 	private Scanner scn = null;
-	private ConfigBlock globals = new ConfigBlock();
+	private ConfigBlock globals = new ConfigBlock("(globals)");
 	private HashMap<String, ArrayList<ConfigBlock>> blocks = new HashMap<String, ArrayList<ConfigBlock>>();
 	private ArrayList<ConfigBlock> allBlocks = new ArrayList<ConfigBlock>();
-	private ConfigBlock activeBlock = globals;
+	private ConfigBlock activeBlock;
 	private enum State { NOTHING, COMMENT, BLOCK, VARNAME };
 	private State state = State.NOTHING;
-	private String mySource;
+	private ArrayDeque<ConfigBlock> blockStack = new ArrayDeque<ConfigBlock>(); // the outer blocks 
 	
 	/**
 	 * Read everything from rdr.
@@ -33,7 +33,6 @@ public class Config {
 	 * @param rdr Input data.
 	 */
 	public Config(Reader rdr) {
-		mySource = rdr.toString();
 		scn = new Scanner(rdr);
 		read();
 	}
@@ -45,7 +44,6 @@ public class Config {
 	 * @throws FileNotFoundException
 	 */
 	public Config(String configFile) throws FileNotFoundException {
-		mySource = "file:" + configFile;
 		scn = new Scanner(new FileReader(configFile));
 		read();
 	}
@@ -54,6 +52,9 @@ public class Config {
 	 * For internal use, read all lines from this.scn.
 	 */
 	public void read() {
+		blockStack.clear();
+		// blockStack.push(globals);
+		activeBlock = globals;
 		while (scn.hasNextLine()) {
 			parseLine(scn.nextLine());
 		}
@@ -94,7 +95,7 @@ public class Config {
 	/**
 	 * Get all blocks matching the given name.
 	 * 
-	 * @param key The block name. (TODO: tee paremmat kommentit)
+	 * @param key The block name to look for.
 	 * @return A list of the blocks that has the given key, or null if nothing was found.
 	 */
 	public ArrayList<ConfigBlock> getBlocks(String key) {
@@ -158,7 +159,9 @@ public class Config {
 				blks = new ArrayList<ConfigBlock>();
 				blocks.put(blockName, blks);
 			}
-			activeBlock = new ConfigBlock();
+			//System.out.println("Going to block " + blockName);
+			blockStack.push(activeBlock);
+			activeBlock = new ConfigBlock(blockName);
 			blks.add(activeBlock);
 			allBlocks.add(activeBlock);
 			return;
@@ -167,7 +170,11 @@ public class Config {
 		// block ends
 		if (line.equals("}")) {
 			// TODO: how about nested blocks! BUG!1
-			activeBlock = globals;
+			if (blockStack.size() == 0) {
+				throw new RuntimeException("One does not simply descend out from global variable block");
+			}
+			activeBlock = blockStack.pop();
+			//System.out.println("Back to block " + activeBlock);
 			return;
 		}
 		
@@ -179,12 +186,12 @@ public class Config {
 		if (data[0].equals("include")) {
 			String[] opts = data[1].split(" ");
 			String fName = opts[0];
-			ConfigBlock baseDefaults = new ConfigBlock();
+			ConfigBlock baseDefaults = new ConfigBlock("[defaults]");
 			for (int i = 1; i < opts.length; i++) {
 				if (opts[i].indexOf('=') != -1) {
 					String[] pair = opts[i].split("=", 2);
 					baseDefaults.add(pair[0], pair[1]);
-					System.out.println(mySource + "Adding defaults: " + opts[i]);
+					System.out.println("Adding defaults: " + opts[i]);
 					// TODO: origin pitäs saada privateks niin ettei merget mergaa pääglobaaliksi
 				}
 			}

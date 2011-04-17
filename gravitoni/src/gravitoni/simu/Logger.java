@@ -27,7 +27,7 @@ public class Logger {
 		ConfigBlock defaults = cfg.getFirstBlock("log.defaults");
 		for (ConfigBlock blk: cfg.getBlocks().get("log")) {
 			if (defaults != null) {
-				ConfigBlock orig = new ConfigBlock(defaults);
+				ConfigBlock orig = new ConfigBlock("log", defaults);
 				orig.merge(blk);
 				blk = orig;
 			}
