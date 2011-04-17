@@ -30,6 +30,7 @@ public class Gravitoni {
 	}
 	
 	public void loadConfig(Config cfg) {
+		System.out.println("Can haz config: >>>>>>>>>>\n" + cfg + "<<<<<<<<<<\n");
 		world.loadConfig(cfg);
 	}
 	

@@ -31,14 +31,14 @@ public class World {
 	
 	public void loadConfig(Config cfg) {
 
-		ConfigBlock globals = cfg.getGlobals();
+		ConfigBlock globals = cfg.getVars();
 		globals.apply(this, World.class);
 
-		if (cfg.hasBlocks("body")) {
-			for (ConfigBlock blk: cfg.getBlocks("body")) {
+		if (cfg.hasSections("body")) {
+			for (Config blk: cfg.getSubsections("body")) {
 				Body b = null;
 				try {
-					b = new Body(blk);
+					b = new Body(blk.getVars());
 					bodies.add(b);
 				} catch (Exception e) {
 					System.out.println("BAD BAD BAD." + e);

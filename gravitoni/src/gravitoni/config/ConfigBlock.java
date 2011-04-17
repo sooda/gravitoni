@@ -6,6 +6,7 @@ import java.lang.reflect.Field;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
+/** A block of configuration variable pairs of name/value, that can be parsed into several types */
 public class ConfigBlock {
 	private Hashtable<String, String> table = new Hashtable<String, String>();
 	private String name;
@@ -61,14 +62,11 @@ public class ConfigBlock {
 	}
 	
 	public void apply(Object obj, Class<?> cls) {
-		System.out.println("Doing at " + this);
 		try {
 			for (Field f : cls.getDeclaredFields()) {
-				//System.out.println("Trying: " + f.getName());
 				if (f.isAnnotationPresent(ConfigVar.class)) {
 					ConfigVar ann = f.getAnnotation(ConfigVar.class);
 					String setting = ann.value();
-					//System.out.println("CONFIG: found " + setting + "/" + f.getName() + " for " + obj.getClass().getName());
 					f.setAccessible(true);
 					try {
 						if (f.getType().equals(int.class)) {

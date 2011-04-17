@@ -24,14 +24,14 @@ public class Logger {
 	}
 	
 	public void loadConfig(Config cfg) {
-		ConfigBlock defaults = cfg.getFirstBlock("log.defaults");
-		for (ConfigBlock blk: cfg.getBlocks().get("log")) {
+		Config defaults = cfg.getFirstSection("log.defaults");
+		for (Config blk: cfg.getSubsections().get("log")) {
 			if (defaults != null) {
-				ConfigBlock orig = new ConfigBlock("log", defaults);
+				Config orig = defaults.clone();
 				orig.merge(blk);
 				blk = orig;
 			}
-			add(blk);
+			add(blk.getVars());
 		}
 	}
 	
