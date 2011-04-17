@@ -50,7 +50,7 @@ public class Renderer implements GLEventListener, ActionListener {
     private ArcBall arcBall = new ArcBall(640.0f, 480.0f);
     private Point panStart;
     
-    private double zoom = 2000, planetzoom = 1;    
+    private double zoom = 350000, planetzoom = 1;    
     
     private boolean paused = false;
     private boolean showCursor = true;
@@ -246,7 +246,7 @@ public class Renderer implements GLEventListener, ActionListener {
 
 	public void setSpeed(double speed) {
 		System.out.println("SPD "+speed);
-		speed = Math.exp(5 * speed);
+		speed = Math.exp(10 * speed);
 		this.speed = speed;
 	}
 	

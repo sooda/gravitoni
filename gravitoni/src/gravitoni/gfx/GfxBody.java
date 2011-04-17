@@ -31,7 +31,7 @@ public class GfxBody {
         
         TextureReader.Texture teximg = null;
         try {
-            teximg = TextureReader.readTexture("textures/" + body.getCfg().get("texture"));
+            teximg = TextureReader.readTexture("textures/" + body.getCfg().getVars().get("texture"));
         } catch (IOException e) {
             e.printStackTrace();
             throw new RuntimeException(e);
@@ -73,9 +73,9 @@ public class GfxBody {
 		gl.glPushMatrix();
 		if (rendr.getOrigin() != null) {
 			Vec3 opos = rendr.getOrigin().getBody().getPos();
-			gl.glTranslated(-10/1e7 * opos.x, -10/1e7 * opos.y, opos.z);
+			gl.glTranslated(-1e-6 * opos.x, -1e-6 * opos.y, opos.z);
 		}
-		gl.glTranslated(10/1e7 * pos.x, 10/1e7 * pos.y, 10/1e7 * pos.z);
+		gl.glTranslated(1e-6 * pos.x, 1e-6 * pos.y, 1e-6 * pos.z);
 		gl.glScaled(zoom, zoom, zoom);
 		glu.gluSphere(qua, r, 20, 20);
 		renderVectors(gl);
@@ -88,16 +88,8 @@ public class GfxBody {
 	
 	private void renderHistory(GL gl) {
 		gl.glDisable(GL.GL_TEXTURE_2D);
-		//gl.glPushMatrix();
 		// blend?
-		//gl.glLineWidth(2);
 		gl.glBegin(GL.GL_LINE_STRIP);
-		//System.out.println("----------- " + posHistory.size());
-		GfxBody origin = rendr.getOrigin();
-		if (origin != null) {
-			Vec3 pos = origin.getBody().getPos();
-			//gl.glTranslated(10/1e7 * pos.x, 10/1e7 * pos.y, -pos.z);
-		}
 		int n = posHistory.size();
 		for (int i = 0; i < n; i++) {
 			Vec3 p = posHistory.get(i);
@@ -106,14 +98,12 @@ public class GfxBody {
 				Vec3 op = o.getPosAt(i);
 				if (op != null) p = p.clone().sub(op);
 			}
-			//System.out.println(i + ":" + p);
 			gl.glColor4d(1 - (double)i / n, (double)i / n, 0, 1);
-			gl.glVertex3d(10/1e7 *p.x, 10/1e7 *p.y, p.z);
+			gl.glVertex3d(1e-6 *p.x, 1e-6 * p.y, 1e-6 * p.z);
 		}
 		gl.glEnd();
-		
-		//gl.glPopMatrix();
 	}
+	
 	public Vec3 getPosAt(int i) {
 		return i >= 0 && i < posHistory.size() ? posHistory.get(i) : null;
 	}

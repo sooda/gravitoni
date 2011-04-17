@@ -8,8 +8,8 @@ public class World {
 	private ArrayList<Body> bodies = new ArrayList<Body>();
 	private Integrator integrator = new BadRK4(this);
 	
-	@ConfigVar("G")
-	private double G = 0;
+	//@ConfigVar("G")
+	public static final double G = 6.67e-11;
 	@ConfigVar("dt")
 	public double dt = 0;
 	private double time = 0;
@@ -38,13 +38,14 @@ public class World {
 			for (Config blk: cfg.getSubsections("body")) {
 				Body b = null;
 				try {
-					b = new Body(blk.getVars());
+					b = new Body(blk);
 					bodies.add(b);
 				} catch (Exception e) {
 					System.out.println("BAD BAD BAD." + e);
 					e.printStackTrace();
 				}
 			}
+			for (Body b: bodies) b.init(this);
 		}
 		
 		logger.loadConfig(cfg);
@@ -81,5 +82,12 @@ public class World {
 			s += "\n" + body.toString();
 		}
 		return s.substring(1);
+	}
+
+	public Body getBody(String name) {
+		for (Body b: bodies) {
+			if (b.getName().equals(name)) return b;
+		}
+		return null;
 	}
 }
