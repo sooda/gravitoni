@@ -1,4 +1,4 @@
-package gravitoni.ui;
+package gravitoni.simu;
 
 import gravitoni.gfx.Renderer;
 
