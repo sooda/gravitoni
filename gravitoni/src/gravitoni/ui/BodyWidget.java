@@ -8,6 +8,8 @@ import java.awt.event.ActionListener;
 import javax.swing.JComboBox;
 import javax.swing.JTextField;
 
+
+/** Widget for displaying some basic information about bodies */
 @SuppressWarnings("serial")
 public class BodyWidget extends Widget implements ActionListener {
 	private UI ui;
@@ -27,13 +29,13 @@ public class BodyWidget extends Widget implements ActionListener {
 		boks = new JComboBox(items);
 		boks.addActionListener(this);
 		add(boks);
-		tf=new JTextField("Moi");
+		tf = new JTextField("Moi");
 		tf.setPreferredSize(new Dimension(100, 20));
 		add(tf);
 	}
 
 	public void actionPerformed(ActionEvent e) {
-		System.out.println("Moroooo");
+		System.out.println("No terve");
 		update();
 	}
 	public void update() {

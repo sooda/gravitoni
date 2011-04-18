@@ -6,16 +6,17 @@ import javax.swing.JTextField;
 
 import gravitoni.simu.Body;
 
+/** Widget for displaying the distance between two bodies */
 @SuppressWarnings("serial")
 public class DistanceWidget extends Widget {
 	private Body a, b;
 	private JTextField tf1 = new JTextField("Rai rai");
 	private JTextField tf2 = new JTextField("Rai rai");
 	private JTextField tf3 = new JTextField("Rai rai");
-	private UI ui;
+	//private UI ui;
 	
 	public DistanceWidget(UI ui) {
-		this.ui = ui;
+		//this.ui = ui;
 		setLayout(new GridLayout(3, 1));
 		add(tf1);
 		add(tf2);

@@ -2,10 +2,8 @@ package gravitoni.simu;
 
 import java.util.ArrayList;
 
-/*
- * Velocity Verlet integration.
-*/
 
+/** Velocity verlet integration */
 class Verlet implements Integrator {
 	private World world;
 	

@@ -13,25 +13,45 @@ import com.sun.opengl.util.j2d.TextRenderer;
 import gravitoni.simu.Body;
 import gravitoni.simu.Vec3;
 
+/** Handle 3D graphics for a body. Draw the sphere and its name; remember position history and draw it.  */
 public class GfxBody {
+	/** The physics object */
 	private Body body;
+	
+	/** Helper; we're drawing gluSpheres and gluCylinders. */
 	private GLU glu = new GLU();
+	
+	/** Low-level texture ID */
 	private int texture;
+	
+	/** The quadric object we're drawing on */
 	private GLUquadric qua;
+	
+	/** Last positions */
 	private ArrayList<Vec3> posHistory = new ArrayList<Vec3>();
+	
+	/** We need to ask renderer things about the origin */
 	private Renderer rendr;
+	
+	/** Draws our text */
 	private TextRenderer tr;
+	
+	/** Don't draw in 1:1 scale. */
+	private static final double SCALER = 1e-6;
 	
 	GfxBody(Body original, GL gl, GLUquadric q, Renderer r) {
 		body = original;
 		loadTexture(gl);
 		qua = q;
-		rendr=r;
+		rendr = r;
 		tr = new TextRenderer(new Font("SansSerif", 0, 30));
 	}
 
+	/** Grab our texture based on the config name parameter and setup opengl for it */
 	public void loadTexture(GL gl) {
-		texture = genTexture(gl);
+        final int[] tmp = new int[1];
+        gl.glGenTextures(1, tmp, 0);
+		texture = tmp[0];
         gl.glBindTexture(GL.GL_TEXTURE_2D, texture);
         
         TextureReader.Texture teximg = null;
@@ -51,44 +71,41 @@ public class GfxBody {
     	gl.glTexGeni(GL.GL_T, GL.GL_TEXTURE_GEN_MODE, GL.GL_SPHERE_MAP);
 	}
 	
-	private int genTexture(GL gl) {
-        final int[] tmp = new int[1];
-        gl.glGenTextures(1, tmp, 0);
-        return tmp[0];
-    }
-	
+	/** Get the simubody object */
 	public Body getBody() {
 		return body;
 	}
 	
+	/** Draw everyting we need */
 	void render(GL gl, boolean selected, double zoom) {
 		Vec3 pos = body.getPos();
-		// System.out.println("Hox! " + b.getName() + "; " + (1/1e7*pos.x) + ", " + (1/1e7*pos.y) + ", " + pos.z + "   " + (1/1e3 * b.getRadius()));
 		double r = .01/1e3 * body.getRadius();
 		
 		gl.glColor4d(1, 1, 1, 1);
-		gl.glEnable(GL.GL_TEXTURE_2D);
-		gl.glBindTexture(GL.GL_TEXTURE_2D, texture);
 		if (selected) {
 			gl.glDisable(GL.GL_TEXTURE_2D);
-			//gl.glEnable(GL.GL_TEXTURE_GEN_S);
-			//gl.glEnable(GL.GL_TEXTURE_GEN_T);
+		} else {
+			gl.glEnable(GL.GL_TEXTURE_2D);
+			gl.glBindTexture(GL.GL_TEXTURE_2D, texture);			
 		}
 		
 		gl.glPushMatrix();
 		if (rendr.getOrigin() != null) {
 			Vec3 opos = rendr.getOrigin().getBody().getPos();
-			gl.glTranslated(-1e-6 * opos.x, -1e-6 * opos.y, opos.z);
+			gl.glTranslated(-SCALER * opos.x, -SCALER * opos.y, opos.z);
 		}
-		gl.glTranslated(1e-6 * pos.x, 1e-6 * pos.y, 1e-6 * pos.z);
+		
+		gl.glTranslated(SCALER * pos.x, SCALER * pos.y, SCALER * pos.z);
 		gl.glScaled(zoom, zoom, zoom);
+		
 		glu.gluSphere(qua, r, 20, 20);
 		renderVectors(gl);
 		gl.glPopMatrix();
-		tr.begin3DRendering(); // 800, 600);
+		
+		tr.begin3DRendering();
 		Vec3 color = body.getCfg().getFirstSection("gfx").getVars().getVec("color");
 		tr.setColor((float)color.x, (float)color.y, (float)color.z, 0.7f);
-		tr.draw3D(body.getName(), 1e-6f * (float)(pos.x + r), 1e-6f * (float)(pos.y + r), 1e-6f * (float)(pos.z + r), 300);
+		tr.draw3D(body.getName(), (float)(SCALER * (pos.x + r)), (float)(SCALER * (pos.y + r)), (float)(SCALER * (pos.z + r)), 300);
 		tr.end3DRendering();
 		
 		renderHistory(gl);
@@ -96,6 +113,7 @@ public class GfxBody {
 
 	}
 	
+	/** Draw the history lines */
 	private void renderHistory(GL gl) {
 		gl.glDisable(GL.GL_TEXTURE_2D);
 		// blend?
@@ -117,10 +135,12 @@ public class GfxBody {
 		gl.glEnd();
 	}
 	
+	/** Get the position we were at the given iteration. Needed for drawing history with this as origin */
 	public Vec3 getPosAt(int i) {
 		return i >= 0 && i < posHistory.size() ? posHistory.get(i) : null;
 	}
 	
+	/** Draw the velocity and acceleration vectors */
 	private void renderVectors(GL gl) {
 		gl.glDisable(GL.GL_TEXTURE_2D);
 		gl.glPushMatrix();

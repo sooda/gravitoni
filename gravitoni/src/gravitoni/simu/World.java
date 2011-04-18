@@ -4,19 +4,23 @@ import gravitoni.config.*;
 
 import java.util.ArrayList;
 
+/** The whole state of the universe */
 public class World {
 	private ArrayList<Body> bodies = new ArrayList<Body>();
 	private Integrator integrator = new BadRK4(this);
 	
-	//@ConfigVar("G")
+	//@ConfigVar("G") -- it's sane to have at least this here...
 	public static final double G = 6.67e-11;
+	
+	/** Timestep from the configuration file */
 	@ConfigVar("dt")
 	public double dt = 0;
+	
+	/** Current time */
 	private double time = 0;
 	
 	private gravitoni.simu.Logger logger = new Logger(this);
 	
-	@ConfigVar("G")
 	public void add(Body body) {
 		bodies.add(body);
 	}
@@ -28,9 +32,9 @@ public class World {
 	public double getTime() {
 		return time;
 	}
-	
-	public void loadConfig(Config cfg) {
 
+	/** Load basic options and the bodies from the cfg section. */
+	public void loadConfig(Config cfg) {
 		ConfigBlock globals = cfg.getVars();
 		globals.apply(this, World.class);
 
@@ -41,7 +45,7 @@ public class World {
 					b = new Body(blk);
 					bodies.add(b);
 				} catch (Exception e) {
-					System.out.println("BAD BAD BAD." + e);
+					System.out.println("BAD BAD BAD body." + e);
 					e.printStackTrace();
 				}
 			}
@@ -51,12 +55,14 @@ public class World {
 		logger.loadConfig(cfg);
 	}
 	
+	/** Run the world 'dt' seconds forward */
 	public void run(double dt) {
 		integrator.run(dt);
 		time += dt;
 		logger.log();
 	}
 	
+	/** Calculate acceleration for the given body at the given position at current time (TODO: at time N: move all in the integrator) */
 	public Vec3 acceleration(Body body, Vec3 bodyPos) {
 		Vec3 total = new Vec3();
 		for (Body b: bodies) {
@@ -70,7 +76,8 @@ public class World {
 		//System.out.println("Acceleration:" + body.getName() + ":" + total);
 		return total;
 	}
-	
+
+	/** Calculate acceleration for the given body at its current position at current time */
 	public Vec3 acceleration(Body body) {
 		return acceleration(body, body.getPos());
 	}
@@ -84,10 +91,10 @@ public class World {
 		return s.substring(1);
 	}
 
+	/** Find a body by its name */
 	public Body getBody(String name) {
-		for (Body b: bodies) {
+		for (Body b: bodies)
 			if (b.getName().equals(name)) return b;
-		}
 		return null;
 	}
 }

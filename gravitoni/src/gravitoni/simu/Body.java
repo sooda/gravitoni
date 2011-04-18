@@ -4,6 +4,7 @@ import gravitoni.config.Config;
 import gravitoni.config.ConfigBlock;
 import gravitoni.config.ConfigVar;
 
+/** A single body floating around in the universe. */
 public class Body {
 	@ConfigVar("position")
 	private Vec3 pos = new Vec3();
@@ -22,6 +23,7 @@ public class Body {
 	
 	private Config cfg;
 	
+	/** Construct a new body from the given configuration, but don't take the kepler parameters into account yet */
 	public Body(Config cfg) {
 		ConfigBlock vars = cfg.getVars();
 		vars.apply(this, Body.class);
@@ -32,6 +34,7 @@ public class Body {
 		this.cfg = cfg;
 	}
 	
+	/** Initialization pass 2: if this has kepler coordinates, apply them */
 	public void init(World world) {
 		if (cfg.hasSections("kepler")) {
 			Kepler elements = new Kepler(cfg.getFirstSection("kepler").getVars());
@@ -45,6 +48,7 @@ public class Body {
 		System.out.println("init'd: " + this);
 	}
 	
+	/** For transforming from kepler to cartesian coordinates */
 	class Kepler {
 		@ConfigVar("a")
 		private double a; // semimajor
@@ -79,6 +83,7 @@ public class Body {
 			return deg / 180 * Math.PI;
 		}
 		
+		/** Put the cartesian coordinates in pos and vel. */
 		public void transform(Vec3 pos, Vec3 vel, Body centerBody) {
 			double M = centerBody.getMass();
 			// standard gravitational parameter µ
@@ -126,7 +131,6 @@ public class Body {
 			do {
 				E = e * Math.sin(E) + ma;
 				err = ma - (E - e * Math.sin(E));
-				//System.out.println(err + " ");
 			} while (Math.abs(err) >= eps);
 			return E;
 		}
@@ -159,7 +163,6 @@ public class Body {
 	public void setState(Vec3 pos, Vec3 vel) {
 		this.pos.set(pos);
 		this.vel.set(vel);
-		//System.out.println("Set state!!!!!1111111111111" + pos + ";" + vel);
 	}
 	
 	public void setState(State state) {

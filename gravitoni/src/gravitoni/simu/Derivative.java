@@ -1,5 +1,6 @@
 package gravitoni.simu;
 
+/** Takes position and velocity derivatives and simplifies the code */
 public class Derivative {
 	public Vec3 pos, vel;
 	

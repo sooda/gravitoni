@@ -24,38 +24,46 @@ import java.util.Scanner;
  *  
  */
 public class Config {
+	/** My type name. */
 	private String name = "";
-	private Scanner scn = null;
-	private ConfigBlock myVars = new ConfigBlock("(globals)"); // TODO: find out names for the blocks / create names for actual configs
-	private HashMap<String, ArrayList<Config>> subsections = new HashMap<String, ArrayList<Config>>(); // name-ordered
-	private ArrayList<Config> allSubsections = new ArrayList<Config>(); // all configs that follow straight from this one
-	private Config activeSection;
-	private enum State { NOTHING, COMMENT, BLOCK, VARNAME };
-	private State state = State.NOTHING; // what are we parsing currently
-	private ArrayDeque<Config> sectionStack = new ArrayDeque<Config>(); // the outer blocks while parsing current 
 	
-	public ConfigBlock getBlock() {
-		return myVars;
-	}
+	/** For scanning the configuration stream. */
+	private Scanner scn = null;
+	
+	/** My own name/variable pairs. */
+	private ConfigBlock myVars = new ConfigBlock();
+	
+	/** Name-keyed arrays of subsections. */
+	private HashMap<String, ArrayList<Config>> subsections = new HashMap<String, ArrayList<Config>>();
+	
+	/** Active section while parsing a file. */
+	private Config activeSection;
+	
+	/** Comment parsing state. This would include more stuff if we had a better tokenizer. */
+	private enum State { CODE, COMMENT };
+	
+	/** Are we in a code or comment block currently? */
+	private State state = State.CODE;
+	
+	/** The upper config sections while parsing a subconfiguration */
+	private ArrayDeque<Config> sectionStack = new ArrayDeque<Config>(); 
 	
 	public void setName(String n) {
 		name = n;
 	} 
+
 	public String getName() {
 		return name;
 	}
 	
-	/** Empty config. Mainly for local private recursing */
-	public Config() {
-		
+	/** Empty config with no source. Mainly for local private recursing. */
+	public Config(String name) {
+		this.name = name;
 	}
 	
-	/**
-	 * Read everything from rdr.
-	 *  
-	 * @param rdr Input data.
-	 */
-	public Config(Reader rdr) {
+	/** Read everything from rdr. */
+	public Config(String name, Reader rdr) {
+		this(name);
 		scn = new Scanner(rdr);
 		read();
 	}
@@ -63,12 +71,10 @@ public class Config {
 	/**
 	 * Open the given file and read everything from it.
 	 *  
-	 * @param configFile The file name.
 	 * @throws FileNotFoundException
 	 */
-	public Config(String configFile) throws FileNotFoundException {
-		scn = new Scanner(new FileReader(configFile));
-		read();
+	public Config(String name, String configFile) throws FileNotFoundException {
+		this(name, new FileReader(configFile));
 	}
 	
 	/**
@@ -76,7 +82,6 @@ public class Config {
 	 */
 	public void read() {
 		sectionStack.clear();
-		// blockStack.push(globals);
 		activeSection = this;
 		while (scn.hasNextLine()) {
 			parseLine(scn.nextLine());
@@ -104,17 +109,14 @@ public class Config {
 	}
 	
 	/**
-	 * Find out if we have these blocks.
-	 * 
-	 * @param blockName The key to look for.
-	 * @return true, if there's at least one block of the given name.
+	 * Find out if we have these sections.
 	 */
-	public boolean hasSections(String blockName) {
-		return subsections.containsKey(blockName);
+	public boolean hasSections(String key) {
+		return subsections.containsKey(key);
 	}
 	
 	/**
-	 * Find the first block of the given key.
+	 * Find the first block of the given key. Don't care about others.
 	 * 
 	 * @param name The one to look for
 	 * @return null, if not found.
@@ -125,20 +127,16 @@ public class Config {
 		return blks.get(0);
 	}
 	
-	/** Strip out comments, handle the state machine */
+	/** Strip out comments, handle the comment state machine. */
 	private String doComments(String line) {
-		// TODO: single-line comments
-		// handle it to work with multilines correctly
-		//int comments = line.indexOf("//");
-		//if (comments != -1) line = line.substring(0, comments);
-		// multi-line
+		// TODO: single-line comments in between :(
 		int startPos, endPos;
 		do {
 			startPos = line.indexOf("/*");
 			endPos = line.indexOf("*/");
 			if (state == State.COMMENT) { // a comment has been started beforehand
 				if (endPos == -1) return ""; // does not end here, whole line is a comment
-				state = State.NOTHING; // comment ended
+				state = State.CODE; // comment ended
 				line = line.substring(endPos + 2);
 			} else if (startPos != -1) { // not in a comment, but one is starting somewhere?
 				if (endPos != -1) { // starts and ends here..
@@ -153,6 +151,7 @@ public class Config {
 		return line;
 	}
 	
+	/** Add the given section to the list of 'key' named sections. Create the list, if there's not one yet. */
 	private void addSection(String key, Config section) {
 		ArrayList<Config> sects = subsections.get(key);
 		if (sects == null) {
@@ -160,24 +159,25 @@ public class Config {
 			subsections.put(key, sects);
 		}
 		sects.add(section);
-		allSubsections.add(section);
 	}
 	
+	/** Handle the stack and create a new configuration section by the given line. */
 	private void descendToSection(String line) {
-		String blockName = line.substring(0, line.length() - 1).trim();
-		sectionStack.push(activeSection);
-		Config newSection = new Config();
-		newSection.setName(blockName);
-		activeSection.addSection(blockName, newSection);
-		activeSection = newSection;
+		String sectName = line.substring(0, line.length() - 1).trim(); // off goes the '{'
+		sectionStack.push(activeSection); // remember where we came from...
+		Config newSection = new Config(sectName);
+		activeSection.addSection(sectName, newSection);
+		activeSection = newSection; // and set the current configuration to the new one.
 	}
 	
+	/** Handle the stack while quitting the parsing of a section. */
 	private void ascendFromSection() {	
 		if (sectionStack.size() == 0)
-			throw new RuntimeException("One does not simply ascend out from the topmost block");
+			throw new RuntimeException("One does not simply ascend out from the topmost config section!");
 		activeSection = sectionStack.pop();
 	}
 	
+	/** Assuming there's a name/value var pair in the line, handle it (or start an include, if it's one). */
 	private boolean handlePair(String line) {
 		String[] data = line.split(" ", 2);
 		if (data.length != 2)			
@@ -191,10 +191,11 @@ public class Config {
 		return true;
 	}
 	
+	/** Handle an include directive. Read the given file and merge it to currently handled section. */
 	private void mergeInclude(String line) {
 		String[] opts = line.split(" ");
 		String fName = opts[0];
-		ConfigBlock baseVars = new ConfigBlock("[defaults]");
+		ConfigBlock baseVars = new ConfigBlock();
 		// read options (e.g. origins)
 		for (int i = 1; i < opts.length; i++) {
 			if (opts[i].indexOf('=') != -1) {
@@ -204,17 +205,16 @@ public class Config {
 		}
 		Config cfg = null;
 		try {
-			cfg = new Config(fName);
+			cfg = new Config("(merge)", fName);
 		} catch (FileNotFoundException e) {
 			System.out.println("Warning: couldn't load " + fName);
 			return;
 		}
 		// TODO: better options handling
 		// currently, we can't merge baseVars to cfg, because 
-		// it'd overwrite this's globals too, which is not what we want
+		// it'd overwrite activeSection's globals too, which is not what we want
 		// options are used only for a few special cases, so for now, just handle them here
 		if (cfg.getSubsections("body") != null) {
-			//cfg.mergeGlobals(baseVars); // this would be neater, but can't be done 
 			for (Config blk : cfg.getSubsections("body")) {
 				if (baseVars.get("origin") != null) 
 					blk.getVars().add("origin", baseVars.get("origin"));
@@ -225,6 +225,7 @@ public class Config {
 		activeSection.merge(cfg);
 	}
 	
+	/** Whaddya got? */
 	public ConfigBlock getVars() {
 		return myVars;
 	}
@@ -233,8 +234,7 @@ public class Config {
 	 * For internal use, parse the given line string and do whatever we need to.
 	 * 
 	 * This works in quite a weird way, instantiating other Configs. 
-	 * Should maybe be recursive (or rather, read() should)
-	 * @param line
+	 * Should maybe be recursive (or rather, read() should), or we could have a static factory method.
 	 */
 	private void parseLine(String line) {
 		String origLine = line;
@@ -246,7 +246,7 @@ public class Config {
 		
 		//System.out.println(name + " PARSING:"+line);
 		
-		if (line.endsWith("{")) { // beginning of a new cfg
+		if (line.endsWith("{")) { // beginning of a new cfg section
 			descendToSection(line);
 		} else if (line.equals("}")) { // cfg ends
 			ascendFromSection();
@@ -259,9 +259,7 @@ public class Config {
 	}
 	
 	/**
-	 * Merge the given block to this' globals.
-	 * 
-	 * @param other
+	 * Merge the given block to this' variables.
 	 */
 	public void mergeGlobals(ConfigBlock other) {
 		myVars.merge(other);
@@ -270,20 +268,15 @@ public class Config {
 	/**
 	 * Merge everything from the given configuration to this.
 	 * 
-	 * Merge globals, and add all config subsections that the given config has.
+	 * Merge globals, and add all config subsections that the given config has. FIXME: this doesn't make deep copies.
 	 * 
 	 * @param other The configuration to merge to this.
 	 */
 	public void merge(Config other) {
-		//System.out.println("Merging: " + other);
 		mergeGlobals(other.myVars);
-		
-		for (String key: other.subsections.keySet()) {
-			for (Config blk: other.subsections.get(key)) {
+		for (String key: other.subsections.keySet())
+			for (Config blk: other.subsections.get(key))
 				addSection(key, blk);
-			}
-		}
-		//System.out.println("After merge: " + this);
 	}
 	
 	/**
@@ -301,9 +294,9 @@ public class Config {
 		return ret + "}\n}\n";
 	}
 	
+	/** Make another. */
 	public Config clone() {
-		Config c = new Config();
-		c.setName(name);
+		Config c = new Config(name);
 		c.merge(this);
 		return c;
 	}

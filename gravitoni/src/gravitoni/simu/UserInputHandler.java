@@ -12,6 +12,7 @@ import java.awt.event.MouseWheelListener;
 import javax.swing.SwingUtilities;
 import javax.swing.event.MouseInputListener;
 
+/** Handle keypresses and mouse inputs from the opengl canvas and pass them on to the renderer. */
 public class UserInputHandler implements KeyListener, MouseMotionListener, MouseInputListener, MouseWheelListener {
 	private Renderer renderer;
 	private boolean shiftDown = false;
@@ -27,7 +28,7 @@ public class UserInputHandler implements KeyListener, MouseMotionListener, Mouse
 				break;
 		
 			case KeyEvent.VK_SPACE:
-				renderer.originActive();
+				renderer.setOriginActive();
 				break;
 				
 			case KeyEvent.VK_C:
@@ -92,9 +93,7 @@ public class UserInputHandler implements KeyListener, MouseMotionListener, Mouse
     }
 
 	public void mouseMoved(MouseEvent e) {
-		//System.out.println(e.getX() + " " + e.getY());
 	}
-	
 	public void mouseClicked(MouseEvent e) {
 	}
 	public void mouseEntered(MouseEvent e) {
@@ -102,9 +101,6 @@ public class UserInputHandler implements KeyListener, MouseMotionListener, Mouse
 	public void mouseExited(MouseEvent e) {
 	}
 	public void mouseReleased(MouseEvent e) {
-		if (SwingUtilities.isMiddleMouseButton(e)) {
-			renderer.currPanPos = null;
-		}
 	}
 
 	public void mouseWheelMoved(MouseWheelEvent e) {

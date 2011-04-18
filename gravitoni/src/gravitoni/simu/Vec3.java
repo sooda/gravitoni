@@ -1,9 +1,6 @@
 package gravitoni.simu;
 
-/*
- * To prevent unwanted garbage collection, the functions modify the object itself rather than returning a new one.
- * I don't know how much effect it has, but just to be safe...
- */
+/** A 3D vector with basic operations. The operations modify this object itself and return a reference to this. */
 public class Vec3 {
 	public double x, y, z;
 	
@@ -137,7 +134,7 @@ public class Vec3 {
 	/** Parse str and try to find a Vec3 in the form x,y,z */
 	public static Vec3 parse(String str) throws NumberFormatException {
 		String[] parts = str.split(" *, *");
-		if (parts.length != 3) throw new NumberFormatException("Bad: " + str);
+		if (parts.length != 3) throw new NumberFormatException("Bad string for vector: " + str);
 		return new Vec3(Double.parseDouble(parts[0]), Double.parseDouble(parts[1]), Double.parseDouble(parts[2]));
 	}
 }

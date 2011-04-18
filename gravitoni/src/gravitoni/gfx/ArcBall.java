@@ -1,17 +1,12 @@
 package gravitoni.gfx;
 
-
-
 import gravitoni.simu.Vec3;
-
 import java.awt.*;
 
 /**
- * Created by IntelliJ IDEA.
- * User: pepijn
- * Date: Aug 7, 2005
- * Time: 5:18:33 PM
- * To change this template use File | Settings | File Templates.
+ * Rotation "arcball" handler for rotating the 3D scene.
+ * 
+ * This is mostly by some "pepijn" in 2005. I adapted it to use Vec3's.
  */
 class ArcBall {
     private static final float Epsilon = 1.0e-5f;

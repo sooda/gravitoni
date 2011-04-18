@@ -21,39 +21,66 @@ import javax.swing.event.*;
 
 import com.sun.opengl.util.BufferUtil;
 
+/** Renderer is the uppermost level of 3D drawing. 
+ * 
+ * This contains the GfxBodies and asks them to render themselves when needed. 
+ * Also handles general OpenGL stuff. */
 public class Renderer implements GLEventListener, ActionListener {
 	private World world;
 	private ArrayList<GfxBody> bodies = new ArrayList<GfxBody>();
+	
+	/** Index to the active one in bodies list. Can be changed with keyboard. */
 	private int activeBody = -1;
+	/** Relative origin. If null, global world origin is used. */
 	private GfxBody origin = null;
 	private GLCanvas canvas;
 	
+	/** How frequently should we update the graphics when simulating? */
 	private double speed = 1;
 	private GLUquadric qua;
 	private GLU glu = new GLU();
 	
 	private UI ui;
+	
+	/** Popup menu for the canvas' right-click. */
 	private JPopupMenu popup;	
 	
-    private Matrix4f LastRot = new Matrix4f(); // transformation since last operations
-    private Matrix4f ThisRot = new Matrix4f(); // current state with current pan/rotation
+	/** Current camera transformation since last operations. */
+    private Matrix4f currCam = new Matrix4f();
+    
+	/** Last camera transformation how it was before the current drag. */
+    private Matrix4f lastCam = new Matrix4f();
+    
+    /** Lock for rotations as the matrices are used from drawing and user input threads. */
     private final Object matrixLock = new Object();
+    
+    /** Raw matrix for opengl */
     private float[] matrix = new float[16];
 
-    private ArcBall arcBall = new ArcBall(640.0f, 480.0f);
+    /** Rotation */
+    private ArcBall arcBall = new ArcBall(800f, 600f);
+    /** Panning start mouse position */
     private Point panStart;
     
-    private double zoom = 350000, planetzoom = 1;    
+    /** How small the world should look like */
+    private double zoom = 350000;
+    
+    /** How large do the planets look like */
+    private double planetzoom = 1;    
     
     private boolean paused = false;
+    /** Cursor visible in the world origin? */
     private boolean showCursor = true;
+    
+    /** Show sun's equator helper plane? */
     private boolean showEclPlane = true;
     
+    /** When selecting, drawing is done in a funny way */
     private boolean selectMode = false;
+    
+    /** Where we picked with the mouse? */
     private Point selectPt;
     
-    public Point startPanPos = null, currPanPos = null;
-	
 	public Renderer(World world, UI ui, GLCanvas canvas) {
 		this.world = world;
 		this.ui = ui;
@@ -78,7 +105,7 @@ public class Renderer implements GLEventListener, ActionListener {
 		popup.add(itm);
 		itm.addActionListener(this);
 		
-		itm = new JMenuItem("AZomgf");
+		itm = new JMenuItem("Zomgf");
 		itm.setEnabled(false);
 		popup.add(itm);
 		itm.addActionListener(this);
@@ -88,52 +115,58 @@ public class Renderer implements GLEventListener, ActionListener {
 		popup.addPopupMenuListener(l);
 	}
 	
+	/** Start rotation dragging (mouse down) */
 	public void startDrag(Point p) {
         synchronized(matrixLock) {
-            LastRot.set(ThisRot);
+            lastCam.set(currCam);
         }
         arcBall.click(p);
 		
 	}
+	
+	/** Rotation drag */
 	public void drag(Point p) {
         Quat ThisQuat = new Quat();
 
         arcBall.drag(p, ThisQuat);
         synchronized(matrixLock) {
-            ThisRot.setRotation(ThisQuat);
-            ThisRot.mul(ThisRot, LastRot);
+            currCam.setRotation(ThisQuat);
+            currCam.mul(currCam, lastCam);
         }
 	}
 	
+	/** Start mouse panning (moving) */
 	public void startPan(Point p) {   
-    	startPanPos = p;
     	canvas.display();
     	synchronized(matrixLock) {
     		panStart = p;
-    		LastRot.set(ThisRot);
+    		lastCam.set(currCam);
     	}
     }
     
+	/** Pan the view */
     public void pan(Point p) {
-    	currPanPos = p;
     	synchronized(matrixLock) {
     		double dx = p.x - panStart.x, dy = -(p.y - panStart.y);
     		double scale = zoom / 750;
     		dx *= scale;
     		dy *= scale;
-	        ThisRot.setTranslation(dx, dy, 0);
-	    	ThisRot.mul(ThisRot, LastRot);
+	        currCam.setTranslation(dx, dy, 0);
+	    	currCam.mul(currCam, lastCam);
     	}
     }
     
+    /** Zero the camera matrices */
 	public void resetOrigin() {
-        LastRot.setIdentity();
-        ThisRot.setIdentity();
-        ThisRot.get(matrix);
+        lastCam.setIdentity();
+        currCam.setIdentity();
+        currCam.get(matrix);
 	}
+	
+	/** Zoom in if amount > 0, out if amount < 0 */
 	public void zoom(double amount) {
 		if (amount > 0) zoom *= 1.1 * amount;
-		else zoom /= 1.1 * -amount;
+		else if (amount < 0) zoom /= 1.1 * -amount;
 	}
 	
 	public void zoomBodies(double amount) {
@@ -141,6 +174,7 @@ public class Renderer implements GLEventListener, ActionListener {
 		else planetzoom /= 1.1 * -amount;		
 	}
 
+	/** Handle the popup events from the canvas */
 	class PopupListener extends MouseInputAdapter implements PopupMenuListener {
 	    public void mousePressed(MouseEvent e) {
 	        maybeShowPopup(e);
@@ -162,16 +196,15 @@ public class Renderer implements GLEventListener, ActionListener {
 		}
 
 		public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-			System.out.println("popupcont");
 			cont();
 		}
 
 		public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-			System.out.println("popuppause");
 			pause();
 		}
 	}
 	
+	/** Popup menu clicks come here */
 	public void actionPerformed(ActionEvent e) {
 		String cmd = e.getActionCommand();
 		System.out.println("Tottoroo " + e);
@@ -180,12 +213,13 @@ public class Renderer implements GLEventListener, ActionListener {
 		}
 	}
 
+	/** This is called from the UI scrollbar */
 	public void setSpeed(double speed) {
-		System.out.println("SPD "+speed);
 		speed = Math.exp(10 * speed);
 		this.speed = speed;
 	}
-	
+
+	/** Redraw the scene */
 	public void display(GLAutoDrawable drawable) {
 		final GL gl = drawable.getGL();
 		if (selectMode) {
@@ -205,7 +239,8 @@ public class Renderer implements GLEventListener, ActionListener {
     	showEclPlane = !showEclPlane;
     }
     
-	
+	/** Handle picking, ie selecting with mouse. 
+	 * Go to GL_SELECT mode, render, find out the picked object and get back to GL_RENDER. */
 	public void select(GL gl, int x, int y) {
 		int[] buff = new int[64];
 		IntBuffer buf = BufferUtil.newIntBuffer(64);		
@@ -248,17 +283,19 @@ public class Renderer implements GLEventListener, ActionListener {
 		}
 	}
 	
+	/** Do something when a body is picked with the mouse */
 	private void pick(GfxBody b) {
 		System.out.println("Picked " + b);
 		ui.getSettings().setSelected(b.getBody());
 	}
 	
+	/** Actually draw the scene */
 	public void render(GL gl) {
 		gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
 		gl.glLoadIdentity();
 		
 		gl.glTranslated(0, 0, -zoom);
-        ThisRot.get(matrix);
+        currCam.get(matrix);
         gl.glMultMatrixf(matrix, 0);
 
 		if (!selectMode && showCursor) drawCursor(gl);
@@ -269,35 +306,39 @@ public class Renderer implements GLEventListener, ActionListener {
 	private void drawBodies(GL gl) {
 		int i = 0;
 		for (GfxBody b: bodies) {
-			gl.glLoadName(++i); // for selections
+			gl.glLoadName(++i); // for picking
 			b.render(gl, b == getActiveBody(), planetzoom);
 		}
 	}
 	
+	/** Cursor is three arrows in world origin */
 	private void drawCursor(GL gl) {
 		gl.glDisable(GL.GL_TEXTURE_2D);
 		
+		float size = 40000, base = 1000;
+		
 		gl.glColor3d(0, 0, 1);
-		glu.gluCylinder(qua, 20, 1, 200, 24, 240);
+		glu.gluCylinder(qua, base, 1, size, 24, 240);
 		
 		gl.glColor3d(0, 1, 0);
 		gl.glRotated(90, 1, 0, 0);
-		glu.gluCylinder(qua, 20, 1, 200, 24, 240);
+		glu.gluCylinder(qua, base, 1, size, 24, 240);
 		gl.glRotated(-90, 1, 0, 0);
 		
 		gl.glColor3d(1, 0, 0);
 		gl.glRotated(90, 0, 1, 0);
-		glu.gluCylinder(qua, 20, 1, 200, 24, 240);
+		glu.gluCylinder(qua, base, 1, size, 24, 240);
 		gl.glRotated(-90, 0, 1, 0);
 	}
 	
 	private void drawEclPlane(GL gl) {
 		gl.glColor3d(.5,.5,.5);
 		glu.gluQuadricDrawStyle(qua, GLU.GLU_LINE);
-		glu.gluDisk(qua, 0, 800, 36, 1);
+		glu.gluDisk(qua, 0, 800000, 36, 1);
 		glu.gluQuadricDrawStyle(qua, GLU.GLU_FILL);
 	}
 
+	/** Simulate some time depending on the speed TODO: radat kans kuntoon */
 	public void runSimulation() {
 		if (!paused) {
 			int iters = (int)speed;
@@ -325,6 +366,7 @@ public class Renderer implements GLEventListener, ActionListener {
 		// unimplemented in jogl?
 	}
 
+	/** Initialize opengl */
 	public void init(GLAutoDrawable drawable) {
 		final GL gl = drawable.getGL();
 		
@@ -343,11 +385,12 @@ public class Renderer implements GLEventListener, ActionListener {
 			bodies.add(new GfxBody(b, gl, qua, this));
 		}
 		
-        LastRot.setIdentity();
-        ThisRot.setIdentity();
-        ThisRot.get(matrix);    
+        lastCam.setIdentity();
+        currCam.setIdentity();
+        currCam.get(matrix);    
 	}
 	
+	/** Opengl canvas size changed (not used, I guess) */
 	public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
 		final GL gl = drawable.getGL();
 		
@@ -366,11 +409,11 @@ public class Renderer implements GLEventListener, ActionListener {
 	}
 	
 	void setPerspective(double width, double height) {
-		glu.gluPerspective(45, width / height, 10, 15000000);
+		glu.gluPerspective(45, width / height, 100, 15000000);
 	}
 	
-
-	public void originActive() {
+	/** Set the relative origin to be the selected body */
+	public void setOriginActive() {
 		origin = getActiveBody();
 	}
 	
@@ -386,6 +429,7 @@ public class Renderer implements GLEventListener, ActionListener {
 		if (++activeBody == bodies.size()) activeBody = -1;
 		System.out.println("Selected: " + getActiveBody());
 	}
+	
 	public void prevActive() {
 		if (--activeBody == -2) activeBody = bodies.size() - 1;
 		System.out.println("Selected: " + getActiveBody());

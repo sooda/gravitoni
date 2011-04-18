@@ -17,6 +17,7 @@ import javax.swing.table.AbstractTableModel;
 import javax.media.opengl.GLCanvas;
 import com.sun.opengl.util.Animator;
 
+/** Main window frame. Contains the GL canvas, renderer, world, settingpane and numeric inspector. */
 @SuppressWarnings("serial")
 public class UI extends JFrame implements ChangeListener,ActionListener {
 	protected GLCanvas canvas;
@@ -24,7 +25,7 @@ public class UI extends JFrame implements ChangeListener,ActionListener {
 	protected Renderer renderer;
 	protected World world;
 	protected SettingPane settings;
-	private JTabbedPane tabukki;
+	private JTabbedPane tabukki; // TODO: numeric inspector :P
 	private LolModel lollero;
 	
 	public UI(World world) {
@@ -61,7 +62,7 @@ public class UI extends JFrame implements ChangeListener,ActionListener {
 		animator.start();
 	}
 	
-	private void reload(World w) {
+	private void reload(World w) { // TODO: :(
 		removeAll();
 		world = w;
 		doit();
@@ -75,6 +76,7 @@ public class UI extends JFrame implements ChangeListener,ActionListener {
 		return settings;
 	}
 	
+	/** Build the swing elements */
 	private void insertContents() {
 		JPanel detailView = new JPanel();
 		lollero = new LolModel(world);
@@ -122,6 +124,7 @@ public class UI extends JFrame implements ChangeListener,ActionListener {
 		item.addActionListener(this);
 	}
 	
+	/** For menu bar */
 	public void actionPerformed(ActionEvent e) {
 		String cmd = e.getActionCommand();
 		if ("Quit".equals(cmd)) {
@@ -151,7 +154,7 @@ public class UI extends JFrame implements ChangeListener,ActionListener {
 			return;
 		}
 		World newWorld = new World();
-		Config cfg = new Config(r);
+		Config cfg = new Config("(main)", r);
 		newWorld.loadConfig(cfg);
 		reload(newWorld);
 	}

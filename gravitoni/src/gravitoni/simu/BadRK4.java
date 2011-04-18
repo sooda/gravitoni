@@ -16,8 +16,8 @@ k_4 = f(t + h, y + h k3)
 f = ma, a = f / m
 */
 
-/* This assumes that the surrounding world is stationary between timesteps.
- * It's faster to implement, but has more error. Will do better afterwards. 
+/** This assumes that the surrounding world is stationary between timesteps:
+ * Faster to implement, but has more error, will do better afterwards. 
  */
 class BadRK4 implements Integrator {
 	private World world;

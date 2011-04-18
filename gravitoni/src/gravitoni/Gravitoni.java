@@ -6,9 +6,13 @@ import gravitoni.config.*;
 import gravitoni.simu.*;
 import gravitoni.ui.*;
 
+/** Starting entry point for the whole program. 
+ * 
+ * This doesn't actually do anything interesting. Just parses a few cli arguments, reads config and starts world/ui. */
 public class Gravitoni {
 	private World world = new World();
 
+	/** Parse command line arguments and start cli/gui program. */
 	public static void main(String[] args) {
 		try {
 			if (args.length == 0) new Gravitoni().run();
@@ -19,26 +23,31 @@ public class Gravitoni {
 		}
 	}
 	
+	/** For GUI. No configs yet. */
 	public Gravitoni() {
 	}
 	
+	/** New program with a configuration file. */
 	public Gravitoni(String configFile) throws FileNotFoundException {
 		FileReader rdr = new FileReader(configFile);
-		loadConfig(new Config(rdr));
+		loadConfig(new Config("main", rdr));
 	}
 	
+	/** Feed the config to world loader. */
 	public void loadConfig(Config cfg) {
 		System.out.println("Can haz config: >>>>>>>>>>\n" + cfg + "<<<<<<<<<<\n");
 		world.loadConfig(cfg);
 	}
 	
+	/** Run the GUI. */
 	public void run() {
 		new UI(world);
 	}
 	
-	public void run(double steps) {
+	/** Run for a specific amount of time. */
+	public void run(double seconds) {
 		double dt = world.dt;
-		for (int i = 0; i < steps; i++) {
+		for (int i = 0; i * dt < seconds; i++) {
 			world.run(dt);
 		}
 	}

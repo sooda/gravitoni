@@ -1,8 +1,8 @@
 package gravitoni.ui;
 
-
 import javax.swing.JSlider;
 
+/** Widget for going forwards and backwards in time. */
 @SuppressWarnings("serial")
 public class TimeWidget extends Widget {
 	private UI ui;
@@ -21,10 +21,8 @@ public class TimeWidget extends Widget {
 	    add(slider);
 	}
 
-	@Override
+	// TODO: go back, go N forwards and stop simulation!!!
 	public void update() {
-		// TODO Auto-generated method stub
-		
 	}
 
 }

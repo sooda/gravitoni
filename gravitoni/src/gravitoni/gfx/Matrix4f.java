@@ -1,13 +1,7 @@
 package gravitoni.gfx;
 
 
-/**
- * Created by IntelliJ IDEA.
- * User: pepijn
- * Date: Aug 7, 2005
- * Time: 6:01:31 PM
- * To change this template use File | Settings | File Templates.
- */
+/** A 4x4 matrix. Not my code, from a tutorial (and apparently from javax.vecmath, Java 3D) */
 class Matrix4f {
     float M00;
     float M10;
