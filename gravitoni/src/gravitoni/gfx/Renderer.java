@@ -4,14 +4,7 @@ import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.nio.Buffer;
-import java.nio.ByteBuffer;
-import java.nio.DoubleBuffer;
-import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.nio.LongBuffer;
-import java.nio.ShortBuffer;
 import java.util.ArrayList;
 
 import gravitoni.simu.*;
@@ -58,8 +51,6 @@ public class Renderer implements GLEventListener, ActionListener {
     
     private boolean selectMode = false;
     private Point selectPt;
-    
-    private GL thisgl = null;
     
     public Point startPanPos = null, currPanPos = null;
 	
@@ -117,17 +108,13 @@ public class Renderer implements GLEventListener, ActionListener {
 	public void startPan(Point p) {   
     	startPanPos = p;
     	canvas.display();
-    	startPan2(startPanPos);
-    }
-    
-    public void startPan2(Point p) {
     	synchronized(matrixLock) {
     		panStart = p;
     		LastRot.set(ThisRot);
     	}
     }
+    
     public void pan(Point p) {
-    	//startPanPos = p;
     	currPanPos = p;
     	synchronized(matrixLock) {
     		double dx = p.x - panStart.x, dy = -(p.y - panStart.y);
@@ -147,12 +134,6 @@ public class Renderer implements GLEventListener, ActionListener {
 	public void zoom(double amount) {
 		if (amount > 0) zoom *= 1.1 * amount;
 		else zoom /= 1.1 * -amount;
-		/*synchronized(matrixLock) {
-			Matrix4f r = new Matrix4f();
-			r.setTranslation(0, 0, 100 * amount);
-			ThisRot.mul(r, ThisRot);
-		}
-		*/
 	}
 	
 	public void zoomBodies(double amount) {
@@ -199,51 +180,6 @@ public class Renderer implements GLEventListener, ActionListener {
 		}
 	}
 
-	
-	public Vec3 hasselhoff(GL gl, Point p) {
-    	double[] modelview = new double[16];
-    	double[] projection = new double[16];
-    	int[] viewport = new int[4];
-    	double[] objpos = new double[4];
-    	gl.glGetDoublev(GL.GL_MODELVIEW_MATRIX, modelview, 0);
-    	gl.glGetDoublev(GL.GL_PROJECTION_MATRIX, projection, 0);
-    	gl.glGetIntegerv(GL.GL_VIEWPORT, viewport, 0);
-    	
-    	/*System.out.println("mw");
-    	pmat(modelview);
-    	System.out.println("pr");
-    	pmat(projection);
-    	System.out.println("vp");
-    	for (int i = 0; i < 4; i++) System.out.println(viewport[i]);
-    	*/
-    	double x,y,z;
-    	
-    	Point pp = new Point(p.x, viewport[3] - p.y);
-    	glu.gluUnProject(pp.x, pp.y, 0 /* z */, modelview, 0, projection, 0, viewport, 0, objpos, 0);x=objpos[0];y=objpos[1];z=objpos[2];
-    	System.out.println(x+" "+y+" "+z+" "+"        "+(x/z)+" "+(y/z));
-
-    	glu.gluUnProject(pp.x, pp.y, 0.5 /* z */, modelview, 0, projection, 0, viewport, 0, objpos, 0);x=objpos[0];y=objpos[1];z=objpos[2];
-    	System.out.println(x+" "+y+" "+z+" "+"        "+(x/z)+" "+(y/z));
-
-    	glu.gluUnProject(pp.x, pp.y, 1 /* z */, modelview, 0, projection, 0, viewport, 0, objpos, 0);x=objpos[0];y=objpos[1];z=objpos[2];
-    	System.out.println(x+" "+y+" "+z+" "+"        "+(x/z)+" "+(y/z));
-    	
-    	glu.gluUnProject(pp.x, pp.y, 2 /* z */, modelview, 0, projection, 0, viewport, 0, objpos, 0);x=objpos[0];y=objpos[1];z=objpos[2];
-    	System.out.println(x+" "+y+" "+z+" "+"        "+(x/z)+" "+(y/z));
-
-    	glu.gluUnProject(pp.x, pp.y, 0 /* z */, modelview, 0, projection, 0, viewport, 0, objpos, 0);x=objpos[0];y=objpos[1];z=objpos[2];
-    	return new Vec3(x,y,z);
-	}
-    
-    private void pmat(double[] m) {
-    	for (int i = 0; i < 4; i++) {
-    		for (int j = 0; j < 4; j++)
-    			System.out.print(m[4*i+j] + " ");
-    		System.out.println("");
-    	}
-    }
-
-
 	public void setSpeed(double speed) {
 		System.out.println("SPD "+speed);
 		speed = Math.exp(10 * speed);
@@ -252,7 +188,6 @@ public class Renderer implements GLEventListener, ActionListener {
 	
 	public void display(GLAutoDrawable drawable) {
 		final GL gl = drawable.getGL();
-		thisgl = gl;
 		if (selectMode) {
 			select(gl, selectPt.x, canvas.getHeight() - selectPt.y);
 			selectMode = false;
@@ -325,40 +260,17 @@ public class Renderer implements GLEventListener, ActionListener {
 		gl.glTranslated(0, 0, -zoom);
         ThisRot.get(matrix);
         gl.glMultMatrixf(matrix, 0);
-		/*if (startPanPos != null) {
-			Vec3 v = hasselhoff(gl, startPanPos);;
-			panStart = new Point((int)(10000*v.x), (int)(10000*v.y));
-			System.out.println("Begin " + panStart.x + " " + panStart.y);
-			startPanPos = null;
-			LastRot.set(ThisRot);
-			//startPan2(startPanPos);
-			//startPanPos = null;
-		}
-		if (currPanPos != null) {
-			Vec3 v = hasselhoff(gl, currPanPos);
-			Point p = new Point((int)(10000*v.x), (int)(10000*v.y));
-			double scaler=0.0001;
-	        ThisRot.setTranslation(scaler*(p.x - panStart.x), scaler*-(p.y - panStart.y), 0);
-	    	ThisRot.mul(ThisRot, LastRot);
-	        panStart=p;
-		}
-        */
+
 		if (!selectMode && showCursor) drawCursor(gl);
 		if (showEclPlane) drawEclPlane(gl);
 		drawBodies(gl);
 	}
 	
 	private void drawBodies(GL gl) {
-		if (origin != null) {
-			Vec3 pos = origin.getBody().getPos();
-			//gl.glTranslated(-10/1e7 * pos.x, -10/1e7 * pos.y, pos.z);
-		}
-		
-		GfxBody active = getActiveBody();
 		int i = 0;
 		for (GfxBody b: bodies) {
-			gl.glLoadName(++i);
-			b.render(gl, b == active, planetzoom);
+			gl.glLoadName(++i); // for selections
+			b.render(gl, b == getActiveBody(), planetzoom);
 		}
 	}
 	
@@ -431,45 +343,11 @@ public class Renderer implements GLEventListener, ActionListener {
 			bodies.add(new GfxBody(b, gl, qua, this));
 		}
 		
-    	/*
-    	 * 
-    	 * static GLfloat	LightAmb[] = {0.7f, 0.7f, 0.7f, 1.0f};				// Ambient Light
-static GLfloat	LightDif[] = {1.0f, 1.0f, 1.0f, 1.0f};				// Diffuse Light
-static GLfloat	LightPos[] = {4.0f, 4.0f, 6.0f, 1.0f};				// Light Position
-    	 * 
-    	glLightfv(GL_LIGHT0, GL_AMBIENT, LightAmb);				// Set The Ambient Lighting For Light0
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, LightDif);				// Set The Diffuse Lighting For Light0
-	glLightfv(GL_LIGHT0, GL_POSITION, LightPos);				// Set The Position For Light0
-
-	glEnable(GL_LIGHT0);							// Enable Light 0
-	glEnable(GL_LIGHTING);							// Enable Lighting
-	
-    	 */
-		
         LastRot.setIdentity();
         ThisRot.setIdentity();
-        ThisRot.get(matrix);
-
-        
+        ThisRot.get(matrix);    
 	}
 	
-	/*private int genTexture(GL gl) {
-        final int[] tmp = new int[1];
-        gl.glGenTextures(1, tmp, 0);
-        return tmp[0];
-    }
-	private void makeRGBTexture(GL gl, GLU glu, TextureReader.Texture img, 
-            int target, boolean mipmapped) {
-        
-        if (mipmapped) {
-            glu.gluBuild2DMipmaps(target, GL.GL_RGB8, img.getWidth(), 
-                    img.getHeight(), GL.GL_RGB, GL.GL_UNSIGNED_BYTE, img.getPixels());
-        } else {
-            gl.glTexImage2D(target, 0, GL.GL_RGB, img.getWidth(), 
-                    img.getHeight(), 0, GL.GL_RGB, GL.GL_UNSIGNED_BYTE, img.getPixels());
-        }
-    }
-    */
 	public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
 		final GL gl = drawable.getGL();
 		
@@ -488,7 +366,7 @@ static GLfloat	LightPos[] = {4.0f, 4.0f, 6.0f, 1.0f};				// Light Position
 	}
 	
 	void setPerspective(double width, double height) {
-		glu.gluPerspective(45, width / height, 1, 3000000);
+		glu.gluPerspective(45, width / height, 10, 15000000);
 	}
 	
 

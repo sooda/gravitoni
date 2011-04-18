@@ -33,8 +33,8 @@ public class Body {
 	}
 	
 	public void init(World world) {
-		if (cfg.hasSections("orb")) {
-			Kepler elements = new Kepler(cfg.getFirstSection("orb").getVars());
+		if (cfg.hasSections("kepler")) {
+			Kepler elements = new Kepler(cfg.getFirstSection("kepler").getVars());
 			elements.transform(pos, vel, world.getBody(elements.center));
 			ConfigBlock vars = cfg.getVars();
 			if (vars.has("origin"))

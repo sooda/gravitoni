@@ -2,7 +2,6 @@ package gravitoni.ui;
 
 import java.awt.GridLayout;
 
-import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import gravitoni.simu.Body;

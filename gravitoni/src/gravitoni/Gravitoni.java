@@ -6,8 +6,6 @@ import gravitoni.config.*;
 import gravitoni.simu.*;
 import gravitoni.ui.*;
 
-import java.util.ArrayList;
-
 public class Gravitoni {
 	private World world = new World();
 

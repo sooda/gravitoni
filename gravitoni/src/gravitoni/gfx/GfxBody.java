@@ -1,11 +1,14 @@
 package gravitoni.gfx;
 
+import java.awt.Font;
 import java.io.IOException;
 import java.util.ArrayList;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.glu.GLU;
 import javax.media.opengl.glu.GLUquadric;
+
+import com.sun.opengl.util.j2d.TextRenderer;
 
 import gravitoni.simu.Body;
 import gravitoni.simu.Vec3;
@@ -17,12 +20,14 @@ public class GfxBody {
 	private GLUquadric qua;
 	private ArrayList<Vec3> posHistory = new ArrayList<Vec3>();
 	private Renderer rendr;
+	private TextRenderer tr;
 	
 	GfxBody(Body original, GL gl, GLUquadric q, Renderer r) {
 		body = original;
 		loadTexture(gl);
 		qua = q;
 		rendr=r;
+		tr = new TextRenderer(new Font("SansSerif", 0, 30));
 	}
 
 	public void loadTexture(GL gl) {
@@ -31,7 +36,7 @@ public class GfxBody {
         
         TextureReader.Texture teximg = null;
         try {
-            teximg = TextureReader.readTexture("textures/" + body.getCfg().getVars().get("texture"));
+            teximg = TextureReader.readTexture("textures/" + body.getCfg().getFirstSection("gfx").getVars().get("texture"));
         } catch (IOException e) {
             e.printStackTrace();
             throw new RuntimeException(e);
@@ -80,6 +85,11 @@ public class GfxBody {
 		glu.gluSphere(qua, r, 20, 20);
 		renderVectors(gl);
 		gl.glPopMatrix();
+		tr.begin3DRendering(); // 800, 600);
+		Vec3 color = body.getCfg().getFirstSection("gfx").getVars().getVec("color");
+		tr.setColor((float)color.x, (float)color.y, (float)color.z, 0.7f);
+		tr.draw3D(body.getName(), 1e-6f * (float)(pos.x + r), 1e-6f * (float)(pos.y + r), 1e-6f * (float)(pos.z + r), 300);
+		tr.end3DRendering();
 		
 		renderHistory(gl);
 		posHistory.add(pos.clone());
@@ -91,6 +101,7 @@ public class GfxBody {
 		// blend?
 		gl.glBegin(GL.GL_LINE_STRIP);
 		int n = posHistory.size();
+		Vec3 color = body.getCfg().getFirstSection("gfx").getVars().getVec("color");
 		for (int i = 0; i < n; i++) {
 			Vec3 p = posHistory.get(i);
 			GfxBody o = rendr.getOrigin();
@@ -98,7 +109,9 @@ public class GfxBody {
 				Vec3 op = o.getPosAt(i);
 				if (op != null) p = p.clone().sub(op);
 			}
-			gl.glColor4d(1 - (double)i / n, (double)i / n, 0, 1);
+			//gl.glColor4d(1 - (double)i / n, (double)i / n, 0, 1);
+			double ii = (double)i / n, jj = 1 - ii;
+			gl.glColor3d(jj * color.x + ii * 0.5, jj * color.y + ii * 0.5, jj * color.z + ii * 0.5);
 			gl.glVertex3d(1e-6 *p.x, 1e-6 * p.y, 1e-6 * p.z);
 		}
 		gl.glEnd();

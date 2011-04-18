@@ -7,7 +7,6 @@ import gravitoni.simu.World;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.io.File;
 import java.io.FileReader;
 
 import javax.swing.*;
