@@ -7,8 +7,7 @@ import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
-import javax.swing.JSeparator;
-import javax.swing.SwingConstants;
+
 
 @SuppressWarnings("serial")
 public class SettingPane extends JPanel {

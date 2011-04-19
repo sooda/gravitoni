@@ -6,7 +6,7 @@ import java.util.ArrayList;
 /** The whole state of the universe */
 public class World {
 	private ArrayList<Body> bodies = new ArrayList<Body>();
-	private Integrator integrator = new BadRK4(this);
+	private Integrator integrator = new RK4(this);
 	
 	//@ConfigVar("G") -- it's sane to have at least this here...
 	public static final double G = 6.67e-11;

@@ -52,13 +52,13 @@ class BadRK4 implements Integrator {
 		Derivative k4 = eval(body, dt, k3);
 
 		// 1/6 * h * (k1 + 2 k2 + 2 k3 + k4)
-		k2.pos.add(k3.pos).mul(2);
-		k1.pos.add(k2.pos).add(k4.pos).mul(1.0 / 6.0 * dt);
+		k2.dpos.add(k3.dpos).mul(2);
+		k1.dpos.add(k2.dpos).add(k4.dpos).mul(1.0 / 6.0 * dt);
 		
-		k2.vel.add(k3.vel).mul(2);
-		k1.vel.add(k2.vel).add(k4.vel).mul(1.0 / 6.0 * dt);
+		k2.dvel.add(k3.dvel).mul(2);
+		k1.dvel.add(k2.dvel).add(k4.dvel).mul(1.0 / 6.0 * dt);
 		Vec3 pos = body.getPos().clone(), vel = body.getVel().clone();
-		return new State(pos.add(k1.pos), vel.add(k1.vel));
+		return new State(pos.add(k1.dpos), vel.add(k1.dvel));
 	}
 	
 	/**
@@ -68,9 +68,9 @@ class BadRK4 implements Integrator {
 	 */
 	public Derivative eval(Body body, double dt, Derivative diff) {
 		Vec3 vel = body.getVel().clone();
-		if (diff != null) vel.add(diff.vel.clone().mul(dt)); // v += dv/dt * dt
+		if (diff != null) vel.add(diff.dvel.clone().mul(dt)); // v += dv/dt * dt
 		Vec3 newPos = body.getPos().clone();
-		if (diff != null) newPos.add(diff.pos.clone().mul(dt)); // acc(t=dt, x=x0+dt*v)
+		if (diff != null) newPos.add(diff.dpos.clone().mul(dt)); // acc(t=dt, x=x0+dt*v)
 		// newPos.add(body.getVel().clone().mul(dt));
 		Derivative ret = new Derivative(vel, body.acceleration(world, newPos));
 		// Derivative ret = new Derivative(vel, world.acceleration(body, newPos)); 

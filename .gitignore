@@ -28,3 +28,4 @@ gravitoni/*.log
 aikataulu.txt
 gravitoni/doc/api
 *.swp
+*-swp

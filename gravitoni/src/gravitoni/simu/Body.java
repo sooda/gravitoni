@@ -140,16 +140,37 @@ public class Body {
 		}
 	}
 	
+	/** Calculate speed influence of the given body to this body at the given position */
+	private Vec3 speedCalc(Body b, Vec3 bPos, Vec3 myPos) {
+		// F = GmM / r² = ma -> a = G M / r² = G M * r_u / |r²|
+		Vec3 v = bPos.clone().sub(myPos); // difference vector r
+		double dist = v.len(); // absolute distance |r|
+		v.unit().mul(World.G * b.getMass() / (dist * dist)); // r_u * G M / |r²| 
+		return v;
+	}
+	
 	/** Calculate my acceleration in the given universe at the given position */
 	public Vec3 acceleration(World world, Vec3 location) {
 		Vec3 total = new Vec3();
 		for (Body b: world.getBodies()) {
 			if (b == this) continue;
-			// F = GmM / r² = ma -> a = G M / r² = G M * r_u / |r²|
-			Vec3 v = b.getPos().clone().sub(location);
-			double dist = v.len();
-			v.unit().mul(World.G * b.getMass() / (dist * dist));
-			total.add(v);
+			total.add(speedCalc(b, b.getPos(), location));
+		}
+		//System.out.println("Acceleration:" + body.getName() + ":" + total);
+		return total;
+	}
+	
+	/** For integrator microsteps: given the current locations of all bodies... */
+	public Vec3 acceleration(World world, Vec3[] locations, int myIdx) {
+		Vec3 total = new Vec3();
+		int i = 0;
+		for (Body b: world.getBodies()) {
+			if (b == this) {
+				i++;
+				continue;
+			}
+			total.add(speedCalc(b, locations[i], locations[myIdx]));
+			i++;
 		}
 		//System.out.println("Acceleration:" + body.getName() + ":" + total);
 		return total;
