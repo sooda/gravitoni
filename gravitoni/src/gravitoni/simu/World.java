@@ -41,7 +41,10 @@ public class World {
 			for (Config blk: cfg.getSubsections("body")) {
 				Body b = null;
 				try {
-					b = new Body(blk);
+					if (blk.getVars().has("rocket"))
+						b = new Rocket(blk);
+					else
+						b = new Body(blk);
 					bodies.add(b);
 				} catch (Exception e) {
 					System.out.println("BAD BAD BAD body." + e);

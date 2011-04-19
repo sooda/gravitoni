@@ -98,7 +98,7 @@ public class Renderer implements GLEventListener, ActionListener {
 		canvas.addMouseMotionListener(ih);
 		canvas.addMouseListener(ih);
 		canvas.addMouseWheelListener(ih);
-		setSpeed(0.3);
+		setSpeed(0);
 	}
 	
 	void buildMenu(GLCanvas canvas) {

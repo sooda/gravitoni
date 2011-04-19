@@ -22,8 +22,11 @@ gravitoni/src/demos
 gravitoni/src/tests
 *.pdf
 *.ps
-../teknosuunnitelma/*.png
+teknosuunnitelma/*.png
+dokumentti/*.png
 gravitoni/lib32
 gravitoni/lib64
 gravitoni/*.log
 aikataulu.txt
+gravitoni/doc/api
+*.swp
