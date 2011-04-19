@@ -196,6 +196,14 @@ public class Body {
 		return vel;
 	}
 	
+	public void setPos(Vec3 p) {
+		pos = p;
+	}
+	
+	public void setVel(Vec3 v) {
+		vel = v;
+	}
+	
 	public String getName() {
 		return name;
 	}
@@ -215,5 +223,9 @@ public class Body {
 	
 	public String toString() {
 		return name + "\t" + mass + "\t" + pos + "\t" + vel + "\t";
+	}
+
+	public void setName(String n) {
+		name = n;
 	}
 }

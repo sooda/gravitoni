@@ -12,6 +12,7 @@ digraph G {
         ]
         subgraph clusterAnimalImpl {
                 label = "simu"
+				BadRK4 [ label = "{BadRK4|- \l}" ]
 				Body [ label = "{Body|- \l}" ]
 				CsvWriter [ label = "{CsvWriter|- \l}" ]
 				Derivative [ label = "{Derivative|- \l}" ]
@@ -81,14 +82,17 @@ digraph G {
         
         
         RK4 -> Integrator
+        BadRK4 -> Integrator
         Body -> World
         CsvWriter -> LogWriter
         Derivative -> RK4
+        Derivative -> BadRK4
         GnuplotWriter -> LogWriter
         Integrator -> World
         Logger -> World
         LogWriter -> Logger
         State -> RK4
+        State -> Bad4
         State -> Verlet
         Vec3 -> RK4
         Vec3 -> Body

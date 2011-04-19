@@ -30,6 +30,7 @@ class Verlet implements Integrator {
 	/**
 	 * Calculate new state for one body.
 	 */
+	// TODO: vectorize :(
 	private State runOne(Body body, double dt) {
 		// x(t+dt) = x(t) + v(t)dt + 0.5a(t)dt^2
 		// a(t+dt) = accfunc(x(t+dt))
@@ -38,7 +39,7 @@ class Verlet implements Integrator {
 		Vec3 vt = body.getVel();
 		Vec3 at = body.acceleration(world);
 
-		Vec3 xnew = xt.clone() .add(vt.clone().mul(dt)) .add(at.clone().mul(0.5 * dt * dt));
+		Vec3 xnew = xt.clone().add(vt.clone().mul(dt)) .add(at.clone().mul(0.5 * dt * dt));
 		Vec3 anew = body.acceleration(world, xnew);
 		Vec3 vnew = vt.clone().add(at.add(anew).mul(0.5 * dt));
 

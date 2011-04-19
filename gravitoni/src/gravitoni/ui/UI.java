@@ -2,6 +2,7 @@ package gravitoni.ui;
 
 import gravitoni.config.Config;
 import gravitoni.gfx.Renderer;
+import gravitoni.simu.Body;
 import gravitoni.simu.World;
 
 import java.awt.*;
@@ -118,10 +119,14 @@ public class UI extends JFrame implements ActionListener {
 		addMenuItem(menu, "Open");
 		addMenuItem(menu, "Pause");
 		addMenuItem(menu, "Unpause");
+		addMenuItem(menu, "New body");
 		addMenuItem(menu, "Quit");
+		
+		/*menu = new JMenu("Bodies");
+		menuBar.add(menu);
+		addMenuItem(menu, "New body");
+		addMenuItem(menu, "Remove body");*/
 		setJMenuBar(menuBar);
-		//JRadioButtonMenuItem rbMenuItem;
-		//JCheckBoxMenuItem cbMenuItem;
 	}
 	
 	private void addMenuItem(JMenu menu, String name) {
@@ -134,8 +139,6 @@ public class UI extends JFrame implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		String cmd = e.getActionCommand();
 		if ("Quit".equals(cmd)) {
-			//setVisible(false);
-			//dispose();
 			WindowEvent wev = new WindowEvent(this, WindowEvent.WINDOW_CLOSING);
 			Toolkit.getDefaultToolkit().getSystemEventQueue().postEvent(wev);
 		} else if ("Pause".equals(cmd)) {
@@ -147,6 +150,12 @@ public class UI extends JFrame implements ActionListener {
 			if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
 				openConfig(fc.getSelectedFile().getAbsolutePath());
 			}
+		} else if ("New body".equals(cmd)) {
+			tabPane.setSelectedIndex(0);
+			int i = 1;
+			while (world.getBody("newbody" + i) != null) i++;
+			world.getBodies().add(new Body(Config.fromString("name newbody" + i)));
+			details.refresh();
 		}
 	}
 	

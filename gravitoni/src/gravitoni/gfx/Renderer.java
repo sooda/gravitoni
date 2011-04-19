@@ -225,6 +225,13 @@ public class Renderer implements GLEventListener, ActionListener {
 	/** Redraw the scene */
 	public void display(GLAutoDrawable drawable) {
 		final GL gl = drawable.getGL();
+		
+		// if new bodies have been added in the UI, we need to add them here because we need the GL instance
+		if (bodies.size() < world.getBodies().size()) {
+			for (int i = bodies.size(); i < world.getBodies().size(); i++)
+				bodies.add(new GfxBody(world.getBodies().get(i), gl, qua, this));
+		}
+		
 		if (selectMode) {
 			select(gl, selectPt.x, canvas.getHeight() - selectPt.y);
 			selectMode = false;

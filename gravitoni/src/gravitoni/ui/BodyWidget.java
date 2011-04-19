@@ -44,7 +44,6 @@ public class BodyWidget extends Widget implements ActionListener {
 	}
 
 	public void actionPerformed(ActionEvent e) {
-		System.out.println("No terve");
 		update();
 	}
 	public void update() {

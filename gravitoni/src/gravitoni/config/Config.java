@@ -61,6 +61,10 @@ public class Config {
 		this.name = name;
 	}
 	
+	public static Config fromString(String cfg) {
+		return new Config("main", new StringReader(cfg));
+	}
+	
 	/** Read everything from rdr. */
 	public Config(String name, Reader rdr) {
 		this(name);

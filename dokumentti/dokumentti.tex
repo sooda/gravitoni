@@ -158,7 +158,7 @@ Tavallisille planeetoille riittää Body-luokka. Rakettiluokka Rocket periytyy Bod
 
 Varsinainen maailmankaikkeuden toiminnallisuus on World-luokassa. Se varastoi listassa Body-oliot ja hoitaa interaktion simulaatiossa muiden luokkien välillä ja integroi pyydettäessä. Metodi loadConfig ottaa konfiguraatio-osion, josta haetaan Bodyjä vastaavat lohkot joilla instantioidaan Body-olioita. Metodi run ajaa integraattoria yhden parametrina tulevan aika-askeleen määrän verran. Integraattorin käyttämä metodi acceleration palauttaa tietyn hetken kiihtyvyyden annetulle planeetalle.
 
-Worldilla on Integrator-rajapinnan toteuttava jäsenolio joka hoitelee itse algoritmin. Se kyselee Worldilta kiihtyvyyksiä tiettyinä ajanhetkinä eri kappaleille, ja siirtää kappaleita niiden mukaan. RK4 on oletuksena toimiva integraattori, mutta esimerkin vuoksi on tehty myös Verlet. Integratorin selventämiseksi simussa on myös luokat State ja Derivative, jotka säilövät sijainteja ja kiihtyvyyksiä ilman erityisempää toiminnallisuutta.
+Worldilla on Integrator-rajapinnan toteuttava jäsenolio joka hoitelee itse algoritmin. Se kyselee Worldilta kiihtyvyyksiä tiettyinä ajanhetkinä eri kappaleille, ja siirtää kappaleita niiden mukaan. RK4 on oletuksena toimiva integraattori, mutta esimerkin vuoksi on tehty myös Verlet, sekä huonompi RK4 joka pitää muuta maailmaa paikallaan laskiessa yhdelle kappaleelle kiihtyvyyttä ajanhetkellä t+dt uudessa paikassa (luokka BadRK4). Integratorin selventämiseksi simussa on myös luokat State ja Derivative, jotka säilövät sijainteja ja kiihtyvyyksiä ilman erityisempää toiminnallisuutta.
 
 World osaa myös lokittaa ajon yhteydessä. Logger-luokka hoitaa kaiken lokittamisen kokonaisuudessaan, ja maailma kutsuu log()-metodia tarvittaessa. Loggerin sisällä on LogWriterista periytyviä olioita kuten GnuplotWriter ja CsvWriter. Nämä eri tyyppiset lokikirjoittimet kirjoittavat eri tyyppistä dataa tiedostoon nimensä mukaan.
 
@@ -215,7 +215,7 @@ k_1 &= f(t_n, y_n)
 \\
 k_2 &= f(t_n + \tfrac{1}{2}h, y_n +  \tfrac{1}{2} h k_1)
 \\
-k_3 &= f(t_n + \tfrac{1}{2}h, y_n +   \tfrac{1}{2} h k_2)
+k_3 &= f(t_n + \tfrac{1}{2}h, y_n +  \tfrac{1}{2} h k_2)
 \\
 k_4 &= f(t_n + h, y_n + h k_3)
 \end{align}
@@ -223,9 +223,20 @@ k_4 &= f(t_n + h, y_n + h k_3)
 
 $k_1$ on kulmakerroin nykyhetkellä; $k_2$ on Eulerin menetelmällä laskettu puolikkaan aika-askeleen jälkeen; $k_3$ vastaava, mutta kulmakertoimen $k_2$ avulla; $k_4$ lopussa eli aika-askeleen päässä nykyhetkestä $k_3$:lla. Näiden painotettu keskiarvo määrää oletetun derivaatan kohdassa $n$.
 
-Koska maailman tila on yhtenäinen eri kappaleiden suhteen ja kyseessä on periaatteessa yksi suuri tilavektori, ei kappaleiden tiloja päivitellä vaiheiden välillä erikseen, vaan kaikkien kappaleiden tilat lasketaan askeleiden välillä. Teknisesti tilavektori on hahmottamissyistä hajautettu erillisiin kappaleluokkiin. Esimerkiksi siis $k_2$:n laskemisessa yhtä kappaletta varten muuta maailmaa ei pidetä paikallaan, vaan vaikutus lasketaan kaikelle.
+Koska maailman tila on yhtenäinen eri kappaleiden suhteen ja kyseessä on periaatteessa yksi suuri tilavektori, ei kappaleiden tiloja päivitellä vaiheiden välillä erikseen, vaan kaikkien kappaleiden tilat lasketaan askeleiden välillä. Teknisesti tilavektori on hahmottamissyistä hajautettu erillisiin kappaleluokkiin. Esimerkiksi siis $k_2$:n laskemisessa yhtä kappaletta varten muuta maailmaa ei pidetä paikallaan, vaan vaikutus lasketaan kaikelle. Toisin sanoen muuttujat $y$ ovat vektoreita. Luokka BadRK4 on esimerkin vuoksi toteutettu väärällä tavalla, eli yhtä kappaletta siirrettäessä pidetään muuta maailmaa mikroaskelien kohdilla paikallaan. Luokka RK4 toimii oikein.
 
-Hobla habla Verlet. Däkkää Dormand-Prince.
+Vaihtelun vuoksi toteutettiin myös ns. Velocity Verlet.
+
+\begin{align}
+\vec{x}(t + \Delta t) = \vec{x}(t) + \vec{v}(t)\, \Delta t + \frac{1}{2} \,\vec{a}(t) \Delta t^2
+\\
+\vec{v}(t + \Delta t) = \vec{v}(t) + \frac{\vec{a}(t) + \vec{a}(t + \Delta t)}{2} \Delta t
+\end{align}
+
+Tämä on helppo muuttaa koodiksi siten, että uusi paikka lasketaan ensin, sitten uuden paikan kohdassa lasketaan kiihtyvyys uudessa kohdassa, ja lopuksi uuden nopeuden laskemiseen käytetään vanhaa ja uutta kiihtyvyyttä.
+
+
+TODO: koodissa paskasti. ei vektoreina.
 
 
 \subsection{Muuta}
@@ -246,6 +257,7 @@ TODO: Historiadata vois olla linklistissä.
 
 Asetusryhmän (Config) sisältämät toiset ryhmät varastoidaan sekä taulukoita sisältävässä hashmapissa että kaikki kerrallaan yhdessä taulukossa. Hashmapista saa taulukollisen tietyn nimisiä ryhmiä, koska tätä tarvitaan jossain (esim. haetaan kaikki body-ryhmät). Näin ryhmiä ei tarvitse hakea kaikkien ryhmien sisältävästä taulukosta aina, kun niitä tietyllä nimellä tarvitaan.
 
+Raakoja taulukoita käytetään integraattorissa, kun tarvitaan useita väliaikaistaulukoita joiden koko ei muutu miksikään, vaan ne alustetaan valmiiksi oikean kokoisiksi.
 
 % Minkälaiset kokoelmatyypit/tietorakenteet soveltuvat parhaiten ohjelmassa tarvittavan tiedon varastoimiseen ja käsittelyyn? Miksi? Mitä muita valintamahdollisuuksia olisi ollut? Tarvitsitteko dynaamisia rakenteita (so. muuttuvan kokoisia, esim. listat (ArrayList)) vai riittivätkö esim. taulukot? Jos käytitte Javan valmiita tietorakenteita, ei niiden tarkkaa määrittelyä tarvitse esittää. Jos taas ohjelmoitte itse jonkin tietorakenteen, on sen toimintatapa selostettava.
 
@@ -307,7 +319,7 @@ include conf/earth.conf
 include conf/moon.conf origin=body:Earth vorigin=body:Earth
 \end{verbatimtab}
 
-Include-sana lukee toisen tiedoston ja sisällyttää sen siihen kohtaan, missä se sijaitsi alkuperäisessä. Tämä hoidetaan Configin merge-metodilla.
+Include-sana lukee toisen tiedoston ja sisällyttää sen siihen kohtaan, missä se sijaitsi alkuperäisessä. Tämä hoidetaan Configin merge-metodilla. Includaamiselle voi antaa erityisparametreja, toistaiseksi origin ja vorigin, joilla säädetään sen alla olevia globaaleja muuttujia. Näin alitiedostolle saadaan suhteellinen alkuorigo, eikä esim. kuun sijaintia tarvitse laskea maan koordinaateista käsin. origin=body:Earth käy, sekä myös koordinaattipohjainen muoto origin=pos:10,20,30. Myös nopeusorigon voi asettaa; se on vorigin.
 
 Asetusryhmällä on jokin nimi (esim. body, kepler tai log) ja se on aina jonkin toisen asetusryhmän sisällä, poislukien ylimmän tason ladattava tiedosto joka ei ole minkään sisällä. Ryhmän sisältö ympäröidään aaltosuluilla. Parserissa ei ole kovinkaan paljon älyä, joten avaavan aaltosulun on oltava rivin lopussa, ja sulkevan on oltava rivin ainoa merkki. Välilyöntejä, tabeja ja kommentteja ei tosin lasketa tähän.
 
@@ -382,6 +394,9 @@ Mielenkiintoista olisi ollut saada jostain suuri läjä eri kappaleiden tietoja (l
 Simulaatiosta tuli lueskeltua muutama RK4-artikkeli. Keplerkoordinaattien muunnoksesta tuli luettua nippelitietoa sieltä sun täältä. Taivaankappaleiden ratakonffitiedot ovat Wikipediasta kunkin kappaleen omalta sivulta, joita on turha erikseen luetella kaikkia. Javan API tarjosi ohjeita Swingissä. Swingin tutoriaalit olivat myös hyödyksi. OpenGL:n saloja tuli heräteltyä muistista muutamalla pienellä oppaalla sekä api-speksillä.
 
 \begin{itemize}
+\item \url{http://en.wikipedia.org/wiki/Verlet_integration}
+\item \url{http://en.wikipedia.org/wiki/Runge-Kutta_methods}
+
 \item \url{http://microsat.sm.bmstu.ru/e-library/Ballistics/kepler.pdf}
 \item \url{http://ccar.colorado.edu/ASEN5070/handouts/kep2cart_2002.doc}
 \item \url{http://www.colorado.edu/ASEN/asen3200/download.html}
