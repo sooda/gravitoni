@@ -1,0 +1,405 @@
+\documentclass[a4paper,11pt]{article}
+
+\frenchspacing
+\usepackage[finnish]{babel}
+\usepackage[latin1]{inputenc}
+\usepackage[pdftex]{graphicx}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{verbatim}
+\usepackage{moreverb}
+%\pagestyle{myheadings}
+%\markright{Lols\hfill Foobaa\hfill}
+\begin{document}
+
+\thispagestyle{empty}
+
+\vspace*{3cm}
+
+\begin{center}
+
+{ \Huge Aurinkokuntasimulaattori \\[1cm] }
+{ \huge T-106.1243 Ohjelmoinnin jatkokurssi L1 \\
+Projektin loppudokumentti \\ Aihe 129 \\[0.5cm] }
+{ \Large Gravitoni -- GRaafinen Aurinkokunnan VIsualisaattori TOsi Nätisti Integroiden }
+
+\end{center}
+
+\vfill
+
+\begin{flushright}
+
+Konsta Hölttä\\
+79149S\\
+AUT 4. vk\\
+konsta.holtta@aalto.fi\\
+xx.4.2011
+\end{flushright}
+
+\newcommand{\kuvaa}[4]{%
+	\begin{figure}[h!]%
+		\centering \includegraphics[width=#1\textwidth]{#2}%
+		\caption{#3 \label{#4}}%
+	\end{figure}%
+}
+\newcommand{\kuva}[2]{\kuvaa{0.6}{#1}{#2}{fig:#1}}
+
+\newpage
+
+\section{Yleiskuvaus}
+
+% Yleinen kuvaus siitä, mitä on luotu. Tähän osioon voi monissa tapauksissa pitkälti lainata suunnitelmasta. Jos osioon on tullut olennaisia muutoksia suunnitelmaan nähden, niistä tulee mainita tässä. Jos aihe on mahdollista toteuttaa usealla eri vaikeusasteella, ilmaise myös, minkä tasoisena työ on lopulta mielestäsi toteutettu.
+
+Ohjelma simuloi taivaankappaleiden ja satelliittien liikkeitä. Ennalta aseteltujen kappaleiden ratoja lasketaan eteenpäin fysiikan lakien mukaisesti, ja radat voidaan tallentaa tiedostoon sekä laskentaa voi tarkastella reaaliajassa graafisella käyttöliittymällä kolmiulotteisessa maailmassa OpenGL:n avulla kuvakulmaa reaaliajassa säädellen. Jo simuloitua aikajanaa voi kelata taaksepäin sekä simulointia voi jatkaa koska tahansa loppupisteestä eteenpäin.
+
+Simulaatio painottuu gravitaatiovoimiin ja pienet häiriötekijät kuten ilmanvastus jätetään huomiotta. Algoritmi on kuitenkin tarkka ja todenmukainen, ja helposti laajennettavissa ulkoisten voimien lisäämiseksi. Integrointiin käytetään RK4:ää, mutta integrointimenetelmää on helppo vaihtaa jos siihen tulee tarvetta.
+
+Törmäykselle voidaan valita eri käsittelytapoja: simulaatio loppuu törmäyksen sattuessa, törmäykset jätetään huomiotta, kappaleet kimpoavat toisistaan tai kappaleet hajoavat törmäyksessä pienemmiksi. Mukana on myös raketteja, joita voi laukoa kiertoradoille tietyllä alkunopeudella. Tämä ominaisuus tekee ohjelmasta pelin, jossa pyritään esim. optimoimaan raketin moottorin käyttämä polttoaine, raketin kulkeman matkan pituus tms.
+
+Ohjelma toimii joko täysin itsenäisesti ilman käyttöliittymää vain lokiin tulostaen tai graafisen käyttöliittymän kautta ohjattuna. Kappaleiden ominaisuudet voidaan lukea asetustiedostosta sekä niitä voidaan lisätä käyttöliittymästä jälkeenpäin. Samaan asetustiedostoon sisällytetään myös säännöt ohjelman automaattiajoon, jolloin itsenäistä simulointia voidaan konfiguroida etukäteen painelematta nappuloita ohjelmasta.
+
+Työn vaikeustaso on haastava.
+
+
+\section{Käyttöohje}
+
+Ohjelman voi käynnistää ajamaan pelkkää simulaatiota komentorivillä tai lisäksi graafista käyttöliittymää. Komentorivimoodissa asetukset luetaan normaalisti, mutta maailma simuloidaan loppuun saakka eikä ohjelma ota muita syötteitä; gui-tilassa taas avataan ikkuna ja maailmaan voi vaikuttaa ja sitä voi tarkastella monin tavoin.
+
+Tällä hetkellä kaikkein tärkein ohjelman toimintaan vaikuttava asia on sille annettava asetustiedosto, josta TODO tietoa myöhemmin.
+
+\subsection{Komentorivi}
+
+Komentoriviltä ohjelmalle annetaan vain tiedostonimi ja simulaation loppuaika sekunteina. Simulaatiota tapahtuu joko tähän ajanhetkeen saakka tai kunnes asetuksissa määrätty loppuehto täyttyy (esim. törmäys). Esimeriksi seuraava simuloi vuoden verran eteenpäin:
+
+\begin{verbatim}
+java Gravitoni conf/all.conf 31536000
+\end{verbatim}
+
+Komentorivin ajosta ainoa kiinnostava tuloste on lokitiedostot, jotka määrätään asetuksissa.
+
+\subsection{GUI}
+
+Graafisessa näkymässä maailmaa voi tarkastella joustavammin ja siihen voi vaikuttaa kesken kaiken. Näkymässä on kaksi tilaa: testailunäkymä (kuva \ref{fig:testailutila}) ja asetusnäkymä (kuva \ref{fig:konffitila}). Testailunäkymässä avaruuden tila näkyy opengl-canvasissa ja joitain nippelitietoja kappaleista näkee vasemmalla infopaneelissa. Asetusnäkymässä maailman tilaa voi katsella excel-tyyliin numeerisesti.
+
+GUI-tila käynnistetään muuten samoin kuin komentorivi, mutta askelmäärä jätetään huomiotta. Asetustiedostokaan ei ole pakollinen.
+
+\subsubsection{Katselutila}
+
+Katselutilan pääpaino on 3d-näkymässä, jota voi raahailla hiirellä eestaas ja josta voi valita planeettoja. Se tottelee seuraavia käyttäjän komentoja:
+
+\begin{itemize}
+\item Hiiren rulla zoomaa koko näkymää
+\item Hiiren rulla shift pohjassa zoomaa kappaleiden kokoja
+\item Hiiren raahaus vasen näppäin pohjassa pyörittää näkymää
+\item Hiiren raahaus keskinäppäin pohjassa siirtää näkymää
+\item Nappi >, valitsee seuraavan kappeleen
+\item Nappi <, valitsee edellisen kappaleen
+\item Välilyöntinappi, asettaa valitun kappaleen suhteelliseksi origoksi
+\item Nappi r, resetoi näkymän
+\item Jne TODO jne
+\end{itemize}
+
+Infopaneelista voi seurata/säätää seuraavia asioita:
+
+\begin{itemize}
+\item Nykyisen planeetan sijainti ja nopeus
+\item Kahden valitun planeetan välinen etäisyys
+\item Simulaation nopeus ja aika
+\end{itemize}
+
+
+\subsubsection{Numerotila}
+
+Numerotila on excelin tyyppinen tila, josta näkee nykyhetken tilan laajemmin koko konfiguraatiolle. Eri kappaleiden sijainnit, nopeudet yms. tiedot näkee samanaikaisesti yhdestä taulukosta sekä niitä voi muokata.
+
+
+\section{Ohjelman rakenne}
+
+Rakenne säilyi pääpiirteittäin samanlaisena kun mitä suunniteltiin; jotkut yksityiskohdat vähän elivät eri suuntiin. Koodin rakenne hajautuu neljään pääkategoriaan:
+
+\begin{itemize}
+	\item Konfiguraatiotiedostojen hallinta: geneerinen konffijärjestelmä, joka ei tiedä mihin sitä käytetään.
+	\item Simulaatio integrointeineen: kappaleet jotka sisältävät mm. paikan, nopeuden ja massan; maailma, joka sisältää kappaleet, sekä oheisluokkia mm. integrointiin ja lokittamiseen.
+	\item Käyttöliittymä ja dialogit: käli on pääasiassa yksi ikkuna, jossa on modulaarisesti eri asetuspaneeleita sekä 3d-canvas erillisinä luokkina.
+	\item Graffarenderöinti ja sen käyttöliittymä: renderöijä kyselee kappaleiden tiedot maailmalta ja piirtää ne näytölle, sekä käsittelee mm. näppäimistösyötteet joilla näkymässä voi liikkua.
+\end{itemize}
+
+\subsection{Konfiguraatiot}
+
+Tämä jäi ohjelman kokonaisuuden kannalta varsin pieneksi osaksi, mutta ei sovellu sinänsä suoraan mihinkään kolmesta muusta kategoriasta, ja on siinä määrin geneerinen että tämän erikseen oleminen on vain kaunista. Tässä esitellään itse luokkien toiminta; katso tiedostoformaatin tarkka muoto kohdasta \ref{TODO OMGLOL} Tiedostot.
+
+Config-luokka vastaa yhtä asetusryhmää, jolla on jokin tyyppinimi ja joka on konffitiedostossa aaltosulkujen sisällä. Asetusryhmän sisällä voi olla asetuksia (nimi/arvo-pari; esim. kappaleen nimi tai sijainti) sekä muita asetusryhmiä. Tämä näkyy siten, että sillä on jäseninään yksi ConfigBlock sekä lista toisia Configeja. Configin voi yhdistää toiseen merge-metodilla, jolloin yhdistettävän sisältämän ConfigBlockin sekä Config-listan asiat liittyvät yhdistäjään.
+
+ConfigBlock on yksi asetusläjälohko, joka sisältää yleensä yhdelle asialle (esim. Body) kuuluvat ominaisuudet. Se sisältää ne nimi/arvo-parit, joita voi hakea mm. funktiolla get (palauttaa Stringin) tai getDouble (yrittää parsia arvon doubleksi ja palauttaa sen). Sen taianomainen apply-metodi toimii annotaatioilla ja sillä voidaan lukea lohkon arvot suoraan johonkin olioon.
+
+\subsection{Simulaatio}
+
+Grafiikka-agnostinen simulaatio-osio on projektin matemaattisin osa ja se missä itse simulogiikka tapahtuu lokittamisen kera. Komentorivitilassa softa käyttää ainoastaan konffitiedostoja ja simulaatiota.
+
+Vektoriluokka Vec kuvaa kaikkia kolmiulotteisia matemaattisia vektoreita. Näitä ovat mm. kappaleiden sijainnit, nopeudet ja kiihtyvyydet. Veciä hyväksikäytetään myös mm. grafiikkakoodissa rgb-värien varastointiin. Vec sisältää vektorien perusominaisuudet kuten toiseen vektoriin summaamisen sekä piste- ja ristitulon ja lisäksi apumetodeita kuten sijoittamisen toisesta vektorista tai olion kloonausmetodin.
+
+Kappaleen perusluokka on Body joka varastoi yhden kappaleen kaikki tiedot. Bodyllä kiihtyvyysfunktio blää blää. Kappaleen päätarkoitus on erotella eri lentävien objektien ominaisuudet eri olioihin.
+
+Tavallisille planeetoille riittää Body-luokka. Rakettiluokka Rocket periytyy Bodystä, ja sillä on kiihtyvyysfunktiossa lisäksi vakiovoima tai muuttuva bla blah joka kuvaa polttoainetta.
+
+Varsinainen maailmankaikkeuden toiminnallisuus on World-luokassa. Se varastoi listassa Body-oliot ja hoitaa interaktion simulaatiossa muiden luokkien välillä ja integroi pyydettäessä. Metodi loadConfig ottaa konfiguraatio-osion, josta haetaan Bodyjä vastaavat lohkot joilla instantioidaan Body-olioita. Metodi run ajaa integraattoria yhden parametrina tulevan aika-askeleen määrän verran.
+
+Worldilla on Integrator-rajapinnan toteuttava jäsenolio joka hoitelee itse algoritmin. Se kyselee Worldilta kiihtyvyyksiä tiettyinä ajanhetkinä eri kappaleille, ja siirtää kappaleita niiden mukaan. RK4 on oletuksena toimiva integraattori, mutta esimerkin vuoksi on tehty mös Verlet. Integratorin selventämiseksi simussa on myös luokat State ja Derivative, jotka säilövät sijainteja ja kiihtyvyyksiä ilman erityisempää toiminnallisuutta.
+
+World osaa myös lokittaa ajon yhteydessä. Logger-luokka hoitaa kaiken lokittamisen kokonaisuudessaan, ja maailma kutsuu log()-metodia tarvittaessa. Loggerin sisällä on LogWriterista periytyviä olioita kuten GnuplotWriter ja ExcelWriter. Nämä eri tyyppiset lokikirjoittimet kirjoittavat eri tyyppistä dataa tiedostoon nimensä mukaan.
+
+
+\subsection{Käyttöliittymä}
+
+Kuten käyttöohjeessa mainittiin, käyttöliittymä on kaksiosainen. Pääikkunaa kuvaa UI-luokka; se hoitaa ikkunan korkeimman tason asiat ja sisältää asetusnäkymän (TODO: asetusnäkymä omaks luokaks). Näiden kahden näkymän välillä siirrytään välilehtijutulla. Asetushässäkkä on taulukkoinputti joka hanskaa worldin bodyt.
+
+3D-näkymän asiat hoidetaan grafiikan puolella glcanvasissa TODO EIPÄS KUN GLEVENTLISTENERISSÄ JOKA KUUNTELEE SITÄ CANVASIA, joka on UI:n sisällä myös. Tässä näkymässä on myös SettingPane, joka sisältää Widgettejä.
+
+BodyWidget: kappaleen tiedot. Koostuu valikosta, josta valitaan käsiteltävä kappale, sekä muutamasta tekstilaatikosta joista näkee kappaleen paikan yms. Käsiteltävän kappaleen voi klikata myös 3d-näkymästä, jolloin laatikon valittu elementti vaihtuu samalla.
+
+DistanceWidget: etäisyyden laskenta. Valitaan kaksi kappaletta kuten BodyWidgetistä, ja näiden välinen etäisyys näkyy tekstilaatikossa. Kappaleet tähänkin voi valita 3d-näytöltä.
+
+TimeWidget: simulaation ajan säätö. Troloo.
+
+SettingPane hoitaa widgettien puuhat eteenpäin tylsillä proxymetodeillaan. Käyttöliittymäjutut ovat tylsiä ja hoidetaan Swingillä ihan normaalisti.
+
+
+\subsection{Grafiikat}
+
+Grafiikkojen renderöinti keskittyy GLCanvas-luokasta periytyvään Renderer-luokkaan, joka hoitaa kappaleiden piirtelyn. Renderer sisältää GfxBody-olioita, joiden piirtometodeita kutsuu tarvittaessa (draw() tjsp). Renderer rekisteröi muutamia syötteenkäsittelijöitä UserInputHandler-luokkaan, joka hoitaa hiiren ja näppiksen interaktion. Näkymän katselusuunta muuttuu maailmaa pyörittäessä, zoomatessa ja siirtäessä. Nämä hoituvat erityisen kameramatriisin avulla, jota tuo handler pyytää päivittämään kun käyttäjä niin toivoo.
+
+UserInputHandler toteuttaa erinäisiä tapahtumakuuntelijainterfaceja. Kun jotain näppäintä painetaan, se tekee jotain tarvittaessa. Hiiren napin mennessä pohjaan alkaa pyöritys- tai pannausoperaatio, ja kun hiirtä raahataan, handleri pyytää Rendereriä päivittämään näkymän kameraa muuttuneiden parametrien suhteen.
+
+Koska maailman pyörittelyoperaatio vaatii hieman erikoista toimintalogiikkaa, se on ulkoistettu ArcBall-luokalle (joka on pienin muutoksin kopioitu raa'asti NeHe:n esimerkeistä (VAI ONKO?)). Kun pyöritys alkaa, ArcBallille kerrotaan hiiren alkusijainti. ArcBall projisoi tämän pisteen tietyn sikamageen pallon pinnalle ja ottaa pintapisteen muistiin. Kun hiirtä raahataan, pyörittely lasketaan kvaternioilla uuden hiiripisteen projisoituun paikkaan. Tästä lisää algoritmit-osiossa. Maailman pyörittelyn avuksi grafiikkapuolella on luokat Quat (kvaternio) ja Matrix4f (4x4 matriisi).
+
+GfxBody on erillinen luokka, joka sisältää viittauksen Bodyyn jota se esittää. GfxBody ei periydy Bodystä, koska nämä ovat kuitenkin varsin eri asiat; piirrettävä objekti on tavallaan kääre Bodylle, eikä mikään Body erikoistoiminnoilla. Tämä myös selventää ohjelman toimintaa muualta, kun ei tarvitse tarkistaa, annetaanko simulaattorille listaa GfxBodyistä UI:n tapauksessa tai Bodyistä CLI:n tapauksessa. Periyttäminen ei itseasiassa olisi edes mahdollista, koska Bodyjen tilalla voi olla Rocketeja. GfxBody lukee asetuksista lisämääreitä kappaleelle: väri ja tekstuuri. Tekstuuria käytetään kappaleen piirtämiseen ja väriä liikehistoriakäppyrään; nämä selkeyttävät kappaleiden erottamista toisistaan. GfxBodyn päätehtävä on piirtää kappale liikehistorioineen, jonka se myös varastoi tiettyyn rajaan asti.
+
+TextureReader on myös muualta lainattua koodia, ja sen tehtävä on eristää tekstuuritiedostojen lukeminen muualle.
+
+% Ohjelman erottelu tärkeimpiin osakokonaisuuksiinsa, toteutuneen luokkajaon esittely. Minkälaisilla luokilla kuvaatte ohjelman ongelma-aluetta? Mitä ongelman osaa kukin luokka mallintaa? Mitkä ovat luokkien väliset suhteet? Entä millaisia luokkia käytätte ohjelman käyttöliittymän kuvaamiseen?
+
+% Tässä kannattaa esittäkää myös mahdollisia muita ratkaisumalleja ja perustella valittu ratkaisu. Jos suinkin mahdollista, liittäkää mukaan jonkinlainen graafinen luokkakaavio (voitte käyttää esim. UML-luokkakaavionotaatiota, mutta se ei ole millään muotoa pakollista). Esitelkää luokkien keskeiset metodit. Huom. oleellista on vain se, mitä metodeilla tehdään, ei se, miten ne sisäisesti toimivat.
+
+\section{Algoritmit}
+
+\subsection{Simulaatio}
+
+Pääalgoritmi on neljännen asteen Runge-Kutta-menetelmä (RK4). Kappaleiden tilat $y$ ja aika $t$ muuttuvat seuraavasti (alaindeksit y:lle ja t:lle kuvaavat integrointikierrosten indeksejä):
+
+%\begin{equation}
+\begin{align}
+y_{n+1} &= y_n + \tfrac{1}{6} h \left(k_1 + 2k_2 + 2k_3 + k_4 \right) \\
+t_{n+1} &= t_n + h
+\end{align}
+%\end{equation}
+
+Arvot $k_i$ kertovat tietoja kulmakertoimesta ja määräytyvät seuraavasti:
+
+%\begin{equation}
+\begin{align} 
+k_1 &= f(t_n, y_n)
+\\
+k_2 &= f(t_n + \tfrac{1}{2}h, y_n +  \tfrac{1}{2} h k_1)
+\\
+k_3 &= f(t_n + \tfrac{1}{2}h, y_n +   \tfrac{1}{2} h k_2)
+\\
+k_4 &= f(t_n + h, y_n + h k_3)
+\end{align}
+%\end{equation}
+
+$k_1$ on kulmakerroin nykyhetkellä; $k_2$ on Eulerin menetelmällä laskettu puolikkaan aika-askeleen jälkeen; $k_3$ vastaava, mutta kulmakertoimen $k_2$ avulla; $k_4$ lopussa eli aika-askeleen päässä nykyhetkestä $k_3$:lla. Näiden painotettu keskiarvo määrää oletetun derivaatan kohdassa $n$.
+
+Koska maailman tila on yhtenäinen eri kappaleiden suhteen ja kyseessä on periaatteessa yksi suuri tilavektori, ei kappaleiden tiloja päivitellä vaiheiden välillä erikseen, vaan kaikkien kappaleiden tilat lasketaan askeleiden välillä. Teknisesti tilavektori on hahmottamissyistä hajautettu erillisiin kappaleluokkiin. Esimerkiksi siis $k_2$:n laskemisessa yhtä kappaletta varten muuta maailmaa ei pidetä paikallaan, vaan vaikutus lasketaan kaikelle.
+
+Hobla habla Verlet. Däkkää Dormand-Prince.
+
+
+\subsection{Muuta}
+
+Asetustiedostot jaetaan tavallaan rekursiivisesti, mutta kuitenkin iteratiivisesti. Alkuperäinen jostain tekstivirrasta ladattava Config luo muita Config-olioita, jos niitä tulee tiedostossa vastaan. Näitä ei kuitenkaan ladata niiden Configien latausfunktioissa, vaan ylimmän tason Config instantioi kaikki. Koska Configeja voi näin olla sisäkkäin, pidetään eri asetusryhmien tasoista muistia pinossa (Deque). Nykytasolla käsiteltävä Config on erikseen muistissa, ja kun uuden asetusryhmän alku tulee vastaan, nykyryhmä laitetaan pinoon ja uudeksi nykyryhmäksi tulee tämä uusi. Kun ryhmä loppuu tietovirrassa, nykyryhmäksi popataan pinon päältä uusi. Tätä ei tehty rekursiivisesti, koska aluksi ConfigBlockit ladattiin vähän hassusti iteratiivisesti ja kiireessä oikea rekursio olisi vaatinut enemmän aikaa.
+
+Grafiikan piirrossa suhteellinen origo on mainitsemisen arvoinen ominaisuus. Globaalin koordinaatiston origo on vaihdettavissa johonkin planeettaan, jolloin eri planeettojen sijainnit ja radat piirretään suhteessa siihen, missä tämä origokappale oli kuhunkin aikaan. Näin jos aurinko liikkuu globaalin koordinaatiston suhteen, voidaan se asettaa origoksi jolloin muiden planeettojen paikat ja radat nähdään selvemmin, kun kokonaisuus ei vaella pikkuhiljaa.
+
+% Sanallinen kuvaus käyttämistänne algoritmeista, eli siitä miten ohjelma suorittaa tarvittavat tehtävät. Esim. miten tarvittava matemaattinen laskenta tapahtuu? (kaavat mukaan) Miten algoritminne löytää lyhimmän tiereitin kahden kaupungin välille? Miten toteuttamanne pelin tekoäly toimii? Kaavioita tms. voi käyttää apuna tarpeen mukaan. Mitä muita ratkaisuvaihtoehtoja olisi ollut? Perustelkaa valintanne: Verratkaa toteutusta johonkin toiseen ratkaisuun, ja selittäkää miksi päädyitte juuri tähän.
+
+% Tässä kohdassa on siis tarkoitus selostaa ne periaatteet, joilla ongelmat on ratkaistu, ei sitä, miten algoritmit koodataan. Siis ei luokkien tai metodien kuvauksia tai muitakaan Javaan tai ohjelmakoodiin liittyviä seikkoja tänne. Pseudokoodiesitys keskeisimmistä ei-tunnetuista algoritmeista on kuitenkin hyvä olla sanallisen kuvauksen tukena. HUOM! Jokaisessa työssä on aina algoritmeja, toiset ehkä yksinkertaisempia kuin toiset, moni aivan itse alusta saakka keksittyjä. Kuvaa tässä niistä muutama kaikkein olennaisin.
+
+\section{Tietorakenteet}
+
+Kappaleita voi lisäillä kesken kaiken, joten niitä varastoidaan ArrayListeissä eikä ihan perustaulukoissa. Sama kappaleiden historiadatalle yms. Suora indeksointi on suhteellisen harvaa ja kappaleita lähinnä iteroidaan läpi, joten tilalle sopisi myös linkitetty lista. Sen hyvistä puolista ei tosin juuri ole hyötyä, koska keskeltä ei poisteta tai lisäillä olioita juuri koskaan.
+
+TODO: Historiadata vois olla linklistissä.
+
+Asetusryhmän (Config) sisältämät toiset ryhmät varastoidaan sekä taulukoita sisältävässä hashmapissa että kaikki kerrallaan yhdessä taulukossa. Hashmapista saa taulukollisen tietyn nimisiä ryhmiä, koska tätä tarvitaan jossain (esim. haetaan kaikki body-ryhmät). Näin ryhmiä ei tarvitse hakea kaikkien ryhmien sisältävästä taulukosta aina, kun niitä tietyllä nimellä tarvitaan.
+
+
+% Minkälaiset kokoelmatyypit/tietorakenteet soveltuvat parhaiten ohjelmassa tarvittavan tiedon varastoimiseen ja käsittelyyn? Miksi? Mitä muita valintamahdollisuuksia olisi ollut? Tarvitsitteko dynaamisia rakenteita (so. muuttuvan kokoisia, esim. listat (ArrayList)) vai riittivätkö esim. taulukot? Jos käytitte Javan valmiita tietorakenteita, ei niiden tarkkaa määrittelyä tarvitse esittää. Jos taas ohjelmoitte itse jonkin tietorakenteen, on sen toimintatapa selostettava.
+
+\section{Tiedostot}
+
+Tiedostoformaatti suunniteltiin helppoa muokattavuutta silmällä pitäen. Koska maailman tiedot kuitenkin kannattaa kirjoittaa ihmisen toimesta tiedostoon eikä naksutella GUIsta, muoto on varsin minimalistinen eikä kovin ihmeellinen.
+
+Esimerkki 1, planeetan määritykset:
+\begin{verbatimtab}[4]
+/* C-tyylisiä kommentteja tuetaan */
+/* Kommentit voivat
+ * olla monirivisiäkin */ /* ja monta per rivi */
+body {
+        name Earth /* kappaleella on nimi */
+        mass 5.9736e24 /* luvut ovat Double.parseDouble-muodossa */
+        radius 6371e3
+        kepler { /* kepler-koordinaatit */
+                center Sun
+                a 149598261e3
+                e 0.01671123
+                i 7.155
+                w 114.20783
+                ma 357.51716
+                O 348.73936
+        }
+        gfx {
+                texture earth.png
+                color 0,0,1
+        }
+}
+\end{verbatimtab}
+
+Esimerkki 2, itse asetustiedosto joka annetaan ohjelmalle:
+\begin{verbatimtab}[4]
+include conf/constants.conf
+dt 864 /* sadasosa päivästä */
+
+log.defaults {
+        type gnuplot
+}
+log {
+        tick 1
+        file full.log
+}
+log {
+        tick 100 /* kerran päivässä */
+        filter Sun /* lokita vain aurinko */
+        file sun.log
+}
+log {
+        tick 10
+        filter Earth
+        file earth.log
+}
+include conf/sun.conf
+include conf/mercury.conf
+include conf/venus.conf
+include conf/earth.conf
+include conf/moon.conf origin=body:Earth vorigin=body:Earth
+\end{verbatimtab}
+
+Include-sana lukee toisen tiedoston ja sisällyttää sen siihen kohtaan, missä se sijaitsi alkuperäisessä. Tämä hoidetaan Configin merge-metodilla.
+
+Asetusryhmällä on jokin nimi (esim. body, kepler tai log) ja se on aina jonkin toisen asetusryhmän sisällä, poislukien ylimmän tason ladattava tiedosto joka ei ole minkään sisällä. Ryhmän sisältö ympäröidään aaltosuluilla. Parserissa ei ole kovinkaan paljon älyä, joten avaavan aaltosulun on oltava rivin lopussa, ja sulkevan on oltava rivin ainoa merkki. Välilyöntejä, tabeja ja kommentteja ei tosin lasketa tähän.
+
+Kappaleille voi antaa sijainti- ja nopeusvektorin, tai sitten kepler-lohkossa keplerblah orbital parameters -jutut, mistä ne päätellään. Kulmat ovat asteissa.
+
+% Selostakaa tässä osiossa myös millaisia tiedostoja ohjelmasi käsittelee, jos mitään. Esim. ovatko ne tekstitiedostoja vai binaaritiedostoja, ja miten tieto on niissä esitetty? Kuvatkaa lopullinen tiedostoformaatti sillä tasolla, että assitentti voi halutessaan helposti luoda ohjelmalle testidataa. Laittakaa liitteeksi joitakin tiedostoja joita ohjelma tarvitsee/on tuottanut.
+
+\section{Testaus}
+
+Ohjelman päätoiminnallisuutta testattiin yksikkötesteillä sekä isompia ja grafiikkaan liittyviä testejä tehtiin käsin.
+
+% Kertokaa miten ohjelmaa testattiin ja kuinka se vastasi suunnitelmassa esitettyä.
+
+% Läpäiseekö ohjelma kaikki suunnitelmassa esitetyt testit? Kuinka ohjelmaa testattiin sitä rakennettaessa? Oliko testauksen suunnittelussa jotain olennaisia aukkoja?
+
+\section{Ohjelman tunnetut puutteet ja viat}
+
+Virhetilanteiden hallinta ei ole erityisen käyttäjäystävällistä. Jotkut paikat heittävät tarkoituksella RuntimeErroreita, koska käyttöliittymän virheilmoitusten hallinta ei erityisemmin kiinnostanut eikä sitä ollut määritelty suunnitelmassa (TODO: tarkistapa). Poikkeusten kuvausviestit ovat kuitenkin järkeviä, kuten esim. jos asetustiedostosta noustaan ylimmänkin tason yläpuolelle (eli siellä on ylimääräinen \}-merkki), lentää virhe viestillä ''One does not simply ascend out from the topmost config section!''.
+%Kuvaa tässä osiossa kaikki tuntemasi puutteet ja viat ohjelmassasi. Kerro miten korjaisit nämä ongelmat jos jatkaisit projektia. Mitä vähemmän assistentti löytää puutteita kohdista joiden väität toimivan sen parempi. Ole siis rehellinen. 
+
+\section{3 parasta ja 3 heikointa kohtaa}
+
+Teknisesti parhaita lienevät asetustiedoston nätti rekursiivisuus ja lokitiedostojen modulaarisuus, keino-origon säätö ja yleinen hienous.
+
+Heikoimpia kohtia ovat käyttöliittymän rumuus ja viimeistelyttömyys, virhetilanteiden hallinnan kankeus käyttäjän näkökulmasta sekä ??.
+
+
+% Assistentti käyttää runsaasti aikaa tutustuessaan ohjelmaasi, mutta ei välttämättä näe toteutustasi samalla tavoin kuin sinä. Jos ohjelmassa on joitakin kohtia joita itse pidät erityisen hyvinä, mainitse tässä niistä 1-3 kappaletta lyhyen perustelun kera. Jos ohjelmassa on kohtia jotka itsekin tiedät heikoiksi, voi mainita myös nämä. Tällöin mahdollisuus että nämä heikot kohdat dominoivat arvostelua vähenee huomattavasti. Tässä voi myös esittää sanallisesti kuinka olisi nämä asiat halutessaan korjannut. 
+
+\section{Poikkeamat suunnitelmasta}
+
+Suunniteltu anaglyfikolmiulotteisuus jäi toteuttamatta, mutta se on helppo lisätä, sillä opengl tukee sitä varsin suoraan. Se onnistuisi renderöimällä kahdesti päällekkäin vaihtamalla kameran sijaintia ja värimaskia välissä.
+
+% Teittekö jotain toisin kuin olitte suunnitellut? Miksi? Osuiko suunnitelmaan laatimasi ajankäyttöarvio oikeaan? Miksei? Entä toteutusjärjestys?
+
+\section{Toteutunut työjärjestys ja aikataulu}
+
+Projektin työjärjestys toteutui varsin oikein, sillä suunnitelmassa ollutta tuli seurattua miettiessä mitä koodaisi seuraavaksi, koska se oli rakenteellisesti hyvä. Aikataulu sen sijaan ei oikein toteutunut, koska lukukauden keskivaiheilla tuli niin merkittävästi muuta kiireellisempää puuhaa, että tämä jäi vähemmälle. Ajankäyttökin meni hieman pieleen, koska asioissa ei tullut keulittua lainkaan niin paljoa kuin mitä suunnitelmassa arvioitiin. Alussa tuli koodattua aika paljon, sitten hyvin vähän ja lopuksi deadlinen lähestyessä tuli loppuspurtti.
+
+Seuraavassa viikkokohtaiset suunnitellut ja toteutuneet asiat:
+
+\begin{description}
+\item[7] Suunniteltu tutustumista ja vaihtoehtojen arviointia yms. Toteutui varsin tarkasti.
+\item[8] Suunniteltu edelleen hahmottelua ja perustoiminnallisuuksia vähän kaikesta. Toteutui hieman jäljessä.
+\item[9] Suunniteltu pientä kehittymistä edellisestä. Tässä otettiin edellistä hieman kiinni; toteutui.
+\item[10] Suunniteltu käytettävyysjuttuja guin ja 3d-näkymän suhteen. Toteutuivat puoliksi tällä ja puoliksi edeltävällä viikolla.
+\item[11] Suunniteltu 3d-näkymään tekstuurit ja navigointi sekä valinta. Ei toteutunut; kotimaan Rankka rokotti kouluhommista.
+\item[12] Suunniteltu lokitiedostot ja numerotilan aloittelu. Toteutui hieman, tuli aloiteltua vähän kaikkea.
+\item[13] Suunniteltu konffien virheellisyyden hallintaa ja konffauspaneelin reagointia muutoksiin. Tuli jatkettua viime viikon asioita ja aloiteltua näitä; toteutui kohtalaisesti.
+\item[14] Suunniteltu 3d-näkymään hienouksia. Toteutui varsin hyvin edellisiin verrattuna.
+\item[15] Suunniteltu viilausta; toteutui suunnitelmien puitteissa aika raskaasti.
+\item[16] Suunniteltu DL:ään viimeiset viilailut, toteutui aggressiivisena koodaamisena ja dokumentaation pohdinnalla.
+\end{description}
+
+% Kerro tässä yleisellä tasolla missä järjestyksessä projekti lopulta toteutettiin (mielellään myös päivämäärät). Missä poikettiin suunnitelmasta? 
+\section{Arvio lopputuloksesta}
+
+% TODO: kiihtyvyysvektorit, suunta- ja nuo silleen et ne näkee, tekstit openglkanvasiin, törmäyshallinta, raketti
+
+Projekti onnistui periaatteessa hyvin vaikka joitain hienouksia jäi toteuttamatta; oleelliset asiat löytyvät ja koodi on helposti laajennettavaa, jolloin kiinnostuksen jatkuessa hienoudet voi toteuttaa helposti vaikka pitkän ajan päästä. Koska perustoiminnallisuuteen ja hyvään koodiin sekä dokumentaatioon tuli kiinnitettyä eniten huomiota, jolloin huonona puolena käyttöliittymämukavuus ja viimeiset viilailut jäivät vähän vähemmälle.
+
+Modulaarisuutta ja laajennettavuutta helpottavat mm. seuraavat ominaisuudet: Lisäasetuksia on helppo lisätä tarvittaessa, koska asetustiedostot ovat varsin käyttöagnostisia ja aidosti rekursiivisia. Lokitiedostotyyppejä voi kirjoittaa lisää lisäämällä Writer-luokkia. Integraattoria voi vaihtaa koodaamalla uuden luokan sitä varten ja vaihtamalla sen World-luokkaan käyttöön. Bodystä voi periä uudenlaisia lentokappaleita helposti. GfxBodyn voi erikoistaa piirtämään joitain muita kappaleita kuin palloja. SettingPaneen voi lisätä uusia ominaisuuksia naputtelemalla Widget-luokkia ja lisäilemällä niille sinne tuen.
+
+Mielenkiintoista olisi ollut saada jostain suuri läjä eri kappaleiden tietoja (luokkaa satoja tai tuhansia kappaleita) ja testata ohjelman suorituskykyä ja todenmukaisuutta niillä.
+
+% "Yhteenveto" ja itsearviointi joka voi toistaa yllämainittujakin asioita.
+
+% Arvioikaa ohjelman laatua, kertokaa sen hyvistä ja huonoista puolista. Onko työssä oleellisia puutteita ja mistä ne johtuvat (mahdollinen hyvä perustelu dokumentissa voi korvata pienet puutteet)? Miten ohjelmaa olisi voinut tai voisi tulevaisuudessa parantaa? Olisiko ratkaisumenetelmien, tietorakenteiden tai luokkajaon valinnan voinut tehdä paremmin? Soveltuuko ohjelman rakenne muutosten tai laajennusten tekemiseen? Miksi tai miksi ei?
+
+\section{Viitteet}
+
+Simulaatiosta tuli lueskeltua muutama RK4-artikkeli. Keplerkoordinaattien muunnoksesta tuli luettua nippelitietoa sieltä sun täältä. Taivaankappaleiden ratakonffitiedot ovat Wikipediasta kunkin kappaleen omalta sivulta, joita on turha erikseen luetella kaikkia. Javan API tarjosi ohjeita Swingissä. Swingin tutoriaalit olivat myös hyödyksi. OpenGL:n saloja tuli heräteltyä muistista muutamalla pienellä oppaalla sekä api-speksillä.
+
+\begin{itemize}
+\item \url{http://microsat.sm.bmstu.ru/e-library/Ballistics/kepler.pdf}
+\item \url{http://ccar.colorado.edu/ASEN5070/handouts/kep2cart_2002.doc}
+\item \url{http://www.colorado.edu/ASEN/asen3200/download.html}
+\item \url{http://en.wikipedia.org/wiki/Kepler's_laws_of_planetary_motion}
+\item \url{http://en.wikipedia.org/wiki/Standard_gravitational_parameter}
+\item \url{
+
+\item \url{http://en.wikipedia.org/wiki/Solar_System}
+\item \url{http://en.wikipedia.org/wiki/Orbital_elements}
+\item \url{http://en.wikipedia.org/wiki/Earth} ym. planeetat
+
+\item \url{http://download.oracle.com/javase/6/docs/api/}
+\item \url{http://download.oracle.com/javase/tutorial/uiswing/components/index.html}
+
+\item \url{http://nehe.gamedev.net/}
+\item \url{http://timelessname.com/jogl/lesson01/}
+\item \url{http://people.eecs.ku.edu/~miller/Courses/JOGL/jogl-1.1.1-docs/}
+
+\item \url{http://paulbourke.net/texture_colour/anaglyph/}
+\item \url{http://paulbourke.net/miscellaneous/stereographics/stereorender/}
+\item \url{http://www.cs.princeton.edu/courses/archive/fall03/cs126/assignments/barnes-hut.html}
+\end{itemize}
+
+\section{Liitteet}
+
+%Kaikkein tärkein projektin liite on projektin koko Java-lähdekoodi.
+
+%Liitteeksi tulee lisäksi ainakin tekstipohjaisissa ohjelmissa laittaa muutama havainnollinen ajoesimerkki, jotka on kätevä tehdä Script-ohjelmalla. Graafisissa töissä ajoesimerkkejä ei vaadita, mutta muutama todellinen kuva ohjelman käytöstä joko erillisenä liitteenä tai käyttöohjeen yhteydessä ei tekisi pahaa. (Kuvia voi UNIX-ympäristössä napsia helposti XV-ohjelmalla (käynnistetään komennolla xv) tai Windows-ympäristössä painamalla Print Screen-nappulaa, mikä kopioi sillä hetkellä näkyvissä olevan näyttökuvan leikepöydälle, josta sen voi liimata vaikkapa Paint-ohjelmaan.)
+
+%Jos olette tehneet ohjelmakoodista Javadoc-dokumentaatiota, niin linkittäkää myös se dokumentin yhteyteen.
+
+
+
+\end{document}
