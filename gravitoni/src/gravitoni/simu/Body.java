@@ -27,24 +27,28 @@ public class Body {
 	public Body(Config cfg) {
 		ConfigBlock vars = cfg.getVars();
 		vars.apply(this, Body.class);
-		if (vars.has("origin"))
-			pos.add(vars.getVec("origin"));
-		if (vars.has("vorigin"))
-			vel.add(vars.getVec("vorigin"));
+		if (vars.has("origin") && vars.get("origin").startsWith("pos:"))
+			pos.add(Vec3.parse(vars.get("origin").substring("pos:".length())));
+		if (vars.has("vorigin") && vars.get("vorigin").startsWith("pos:"))
+			vel.add(Vec3.parse(vars.get("vorigin").substring("pos:".length())));
 		this.cfg = cfg;
 	}
 	
 	/** Initialization pass 2: if this has kepler coordinates, apply them */
 	public void init(World world) {
+		ConfigBlock vars = cfg.getVars();
 		if (cfg.hasSections("kepler")) {
 			Kepler elements = new Kepler(cfg.getFirstSection("kepler").getVars());
 			elements.transform(pos, vel, world.getBody(elements.center));
-			ConfigBlock vars = cfg.getVars();
-			if (vars.has("origin"))
-				pos.add(vars.getVec("origin"));
-			if (vars.has("vorigin"))
-				vel.add(vars.getVec("vorigin"));
+			if (vars.has("origin") && vars.get("origin").startsWith("pos:"))
+				pos.add(Vec3.parse(vars.get("origin").substring("pos:".length())));
+			if (vars.has("vorigin") && vars.get("vorigin").startsWith("pos:"))
+				vel.add(Vec3.parse(vars.get("vorigin").substring("pos:".length())));			
 		}
+		if (vars.has("origin") && vars.get("origin").startsWith("body:"))
+			pos.add(world.getBody(vars.get("origin").substring("body:".length())).getPos());
+		if (vars.has("vorigin") && vars.get("vorigin").startsWith("body:"))
+			vel.add(world.getBody(vars.get("vorigin").substring("body:".length())).getVel());
 		System.out.println("init'd: " + this);
 	}
 	
