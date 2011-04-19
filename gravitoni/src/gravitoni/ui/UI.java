@@ -2,7 +2,6 @@ package gravitoni.ui;
 
 import gravitoni.config.Config;
 import gravitoni.gfx.Renderer;
-import gravitoni.simu.Body;
 import gravitoni.simu.World;
 
 import java.awt.*;
@@ -12,27 +11,27 @@ import java.io.FileReader;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.table.AbstractTableModel;
 
 import javax.media.opengl.GLCanvas;
 import com.sun.opengl.util.Animator;
 
 /** Main window frame. Contains the GL canvas, renderer, world, settingpane and numeric inspector. */
 @SuppressWarnings("serial")
-public class UI extends JFrame implements ChangeListener,ActionListener {
+public class UI extends JFrame implements ChangeListener, ActionListener {
 	protected GLCanvas canvas;
 	protected Animator animator;
 	protected Renderer renderer;
 	protected World world;
 	protected SettingPane settings;
-	private JTabbedPane tabukki; // TODO: numeric inspector :P
-	private LolModel lollero;
+	private JTabbedPane tabPane;
+	private DetailView details;
 	
 	public UI(World world) {
 		super("Eippää, behold maailmankaikkeus!");
 		this.world = world;
 		doit();
 	}
+	
 	private void doit() {
 		canvas = new GLCanvas();
 		canvas.setPreferredSize(new Dimension(800, 600));
@@ -62,7 +61,7 @@ public class UI extends JFrame implements ChangeListener,ActionListener {
 		animator.start();
 	}
 	
-	private void reload(World w) { // TODO: :(
+	private void reload(World w) { // TODO: reload crashes :(
 		removeAll();
 		world = w;
 		doit();
@@ -79,29 +78,35 @@ public class UI extends JFrame implements ChangeListener,ActionListener {
 	/** Build the swing elements */
 	private void insertContents() {
 		JPanel detailView = new JPanel();
-		lollero = new LolModel(world);
-		JTable tbl = new JTable(lollero);
-		tbl.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		tbl.setPreferredScrollableViewportSize(new Dimension(1000, 70));
-		JScrollPane panomies = new JScrollPane(tbl);
-		detailView.add(panomies);
+		details = new DetailView(world);
+		detailView.add(new JScrollPane(details));
 		
 		JPanel quickView = new JPanel();
 	    quickView.add(settings, BorderLayout.WEST);
 		quickView.add(canvas, BorderLayout.EAST);
 		
-		JTabbedPane p = new JTabbedPane();
-		p.addTab("Full details", detailView);
-		p.addTab("Quick view", quickView);
-		p.addChangeListener(new Lisnur());
-		
-		tabukki=p;
-		p.setSelectedComponent(quickView);
-		add(p);
+		tabPane = new JTabbedPane();
+		tabPane.addTab("Full details", detailView);
+		tabPane.addTab("Quick view", quickView);
+		tabPane.setSelectedComponent(quickView);
+		tabPane.addChangeListener(new TabPaneListener());
+		add(tabPane);
 		
 		buildMenu();
 	}
 	
+	
+	class TabPaneListener implements ChangeListener {
+		public void stateChanged(ChangeEvent e) {
+			if (tabPane.getSelectedIndex() == 0) {
+				renderer.pause();
+				details.refresh();
+			} else {
+				renderer.cont();
+			}
+		}
+	}
+
 	private void buildMenu() {
 		JMenuBar menuBar;
 		JMenu menu;
@@ -159,17 +164,6 @@ public class UI extends JFrame implements ChangeListener,ActionListener {
 		reload(newWorld);
 	}
 	
-	class Lisnur implements ChangeListener {
-		public void stateChanged(ChangeEvent e) {
-			if (tabukki.getSelectedIndex() == 0) {
-				renderer.pause();
-			} else {
-				renderer.cont();
-				lollero.update();
-			}
-		}
-	}
-	
 	public void stateChanged(ChangeEvent e) {
 		int val = ((JSlider)e.getSource()).getValue();
 		double zomg = val / 100.0 - 0.5;
@@ -179,50 +173,3 @@ public class UI extends JFrame implements ChangeListener,ActionListener {
 		settings.refresh();
 	}
 }
-
-@SuppressWarnings("serial")
-class LolModel extends AbstractTableModel {
-	private World world;
-	private String[] columns = {"#", "name", "pos.x", "pos.y", "pos.z", "vel.x", "vel.y", "vel.z"};
-	
-	public LolModel(World world) {
-		this.world = world;
-	}
-	
-	public int getColumnCount() {
-		return 1 + 1 + 3 + 3;
-	}
-	
-	public String getColumnName(int col) {
-		return columns[col];
-	}
-
-	@Override
-	public int getRowCount() {
-		return world.getBodies().size();
-	}
-
-	@Override
-	public Object getValueAt(int rowIndex, int columnIndex) {
-		Body body = world.getBodies().get(rowIndex);
-		switch (columnIndex) {
-		case 0:
-			return rowIndex;
-		case 1:
-			return body.getName();
-		case 2:
-		case 3:
-		case 4:
-			return body.getPos().component(columnIndex - 2);
-		case 5:
-		case 6:
-		case 7:
-			return body.getVel().component(columnIndex - 5);
-		}
-		return "?!";
-	}
-	public void update() {
-		fireTableDataChanged();
-	}
-}
-
