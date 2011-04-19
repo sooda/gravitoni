@@ -1,0 +1,120 @@
+digraph G {
+        fontname = "Bitstream Vera Sans"
+        fontsize = 8
+        node [
+                fontname = "Bitstream Vera Sans"
+                fontsize = 8
+                shape = "record"
+        ]
+        edge [
+                fontname = "Bitstream Vera Sans"
+                fontsize = 8
+        ]
+        subgraph clusterAnimalImpl {
+                label = "simu"
+				Body [ label = "{Body|- \l}" ]
+				CsvWriter [ label = "{CsvWriter|- \l}" ]
+				Derivative [ label = "{Derivative|- \l}" ]
+				GnuplotWriter [ label = "{GnuplotWriter|- \l}" ]
+				Integrator [ label = "{Integrator|- \l}" ]
+				Logger [ label = "{Logger|- \l}" ]
+				LogWriter [ label = "{LogWriter|- \l}" ]
+				RK4 [ label = "{RK4|- \l}" ]
+				State [ label = "{State|- \l}" ]
+				Vec3 [ label = "{Vec3|- \l}" ]
+				Verlet [ label = "{Verlet|- \l}" ]
+				World [ label = "{World|- \l}" ]
+        }
+        subgraph clusterAnimalImpl2 {
+			label = "gfx"
+			ArcBall [ label = "{ArcBall|- \l}" ]
+			GfxBody [ label = "{GfxBody|- \l}" ]
+			Matrix4f [ label = "{Matrix4f|- \l}" ]
+			Quat [ label = "{Quat|- \l}" ]
+			Renderer [ label = "{Renderer|- \l}" ]
+			TextureReader [ label = "{TextureReader|- \l}" ]
+			UserInputHandler [ label = "{UserInputHandler|- \l}" ]
+        }
+        subgraph clusterAnimalImpl3 {
+			label = "ui"
+			BodyWidget [ label = "{BodyWidget|- \l}" ]
+			DetailView [ label = "{DetailView|- \l}" ]
+			DistanceWidget [ label = "{DistanceWidget|- \l}" ]
+			SettingPane [ label = "{SettingPane|- \l}" ]
+			TimeWidget [ label = "{TimeWidget|- \l}" ]
+			UI [ label = "{UI|- \l}" ]
+			Widget [ label = "{Widget|- \l}" ]
+        }
+        subgraph clusterAnimalImpl4 {
+			label = "conf"
+			Config [ label = "{Config|- \l}" ]
+			ConfigBlock [ label = "{ConfigBlock|- \l}" ]
+			ConfigVar [ label = "{ConfigVar|- \l}" ]
+        }
+        Gravitoni [ label = "{Gravitoni|lol}" ]
+        edge [
+                arrowhead = "empty"
+        ]
+        edge [
+                arrowhead = "none"
+
+        ]
+        
+        ConfigVar -> ConfigBlock
+        ConfigBlock -> Config
+        
+        Config -> Body
+        Config -> Logger
+        Config -> World
+        Config -> GfxBody
+        
+        
+        ArcBall -> Renderer
+        GfxBody -> Renderer
+        Matrix4f -> Renderer
+        Quat -> ArcBall
+        Quat -> Matrix4f
+        TextureReader -> GfxBody
+        UserInputHandler -> Renderer
+        
+        Renderer -> UI
+        
+        
+        RK4 -> Integrator
+        Body -> World
+        CsvWriter -> LogWriter
+        Derivative -> RK4
+        GnuplotWriter -> LogWriter
+        Integrator -> World
+        Logger -> World
+        LogWriter -> Logger
+        State -> RK4
+        State -> Verlet
+        Vec3 -> RK4
+        Vec3 -> Body
+        Vec3 -> World
+        Verlet -> Integrator
+        
+        Body -> GfxBody
+        Vec3 -> ConfigBlock
+        Vec3 -> ArcBall
+        World -> Renderer
+        World -> UI
+        World -> Gravitoni
+        World -> DetailView
+        
+        
+        BodyWidget -> SettingPane
+        BodyWidget -> Widget
+        DetailView -> UI
+        DistanceWidget -> SettingPane
+        DistanceWidget -> Widget
+        SettingPane -> UI
+        TimeWidget -> UI
+        TimeWidget -> Widget
+        Widget -> UI
+        
+        UI -> Gravitoni
+        
+        /* Gravitoni */
+}

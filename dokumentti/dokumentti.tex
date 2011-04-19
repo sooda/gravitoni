@@ -160,7 +160,7 @@ Varsinainen maailmankaikkeuden toiminnallisuus on World-luokassa. Se varastoi li
 
 Worldilla on Integrator-rajapinnan toteuttava jäsenolio joka hoitelee itse algoritmin. Se kyselee Worldilta kiihtyvyyksiä tiettyinä ajanhetkinä eri kappaleille, ja siirtää kappaleita niiden mukaan. RK4 on oletuksena toimiva integraattori, mutta esimerkin vuoksi on tehty myös Verlet. Integratorin selventämiseksi simussa on myös luokat State ja Derivative, jotka säilövät sijainteja ja kiihtyvyyksiä ilman erityisempää toiminnallisuutta.
 
-World osaa myös lokittaa ajon yhteydessä. Logger-luokka hoitaa kaiken lokittamisen kokonaisuudessaan, ja maailma kutsuu log()-metodia tarvittaessa. Loggerin sisällä on LogWriterista periytyviä olioita kuten GnuplotWriter ja CsvlWriter. Nämä eri tyyppiset lokikirjoittimet kirjoittavat eri tyyppistä dataa tiedostoon nimensä mukaan.
+World osaa myös lokittaa ajon yhteydessä. Logger-luokka hoitaa kaiken lokittamisen kokonaisuudessaan, ja maailma kutsuu log()-metodia tarvittaessa. Loggerin sisällä on LogWriterista periytyviä olioita kuten GnuplotWriter ja CsvWriter. Nämä eri tyyppiset lokikirjoittimet kirjoittavat eri tyyppistä dataa tiedostoon nimensä mukaan.
 
 
 \subsection{Käyttöliittymä}
