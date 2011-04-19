@@ -72,7 +72,8 @@ class BadRK4 implements Integrator {
 		Vec3 newPos = body.getPos().clone();
 		if (diff != null) newPos.add(diff.pos.clone().mul(dt)); // acc(t=dt, x=x0+dt*v)
 		// newPos.add(body.getVel().clone().mul(dt));
-		Derivative ret = new Derivative(vel, world.acceleration(body, newPos)); 
+		Derivative ret = new Derivative(vel, body.acceleration(world, newPos));
+		// Derivative ret = new Derivative(vel, world.acceleration(body, newPos)); 
 		return ret;
 	}
 }

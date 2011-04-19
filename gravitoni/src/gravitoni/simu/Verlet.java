@@ -36,10 +36,10 @@ class Verlet implements Integrator {
 		// v(t+dt) = v(t) + 0.5(a(t) + a(t+dt))dt
 		Vec3 xt = body.getPos();
 		Vec3 vt = body.getVel();
-		Vec3 at = world.acceleration(body);
+		Vec3 at = body.acceleration(world);
 
 		Vec3 xnew = xt.clone() .add(vt.clone().mul(dt)) .add(at.clone().mul(0.5 * dt * dt));
-		Vec3 anew = world.acceleration(body, xnew);
+		Vec3 anew = body.acceleration(world, xnew);
 		Vec3 vnew = vt.clone().add(at.add(anew).mul(0.5 * dt));
 
 		return new State(xnew, vnew);

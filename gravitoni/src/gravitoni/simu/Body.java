@@ -7,21 +7,21 @@ import gravitoni.config.ConfigVar;
 /** A single body floating around in the universe. */
 public class Body {
 	@ConfigVar("position")
-	private Vec3 pos = new Vec3();
+	protected Vec3 pos = new Vec3();
 	
 	@ConfigVar("velocity")
-	private Vec3 vel = new Vec3();
+	protected Vec3 vel = new Vec3();
 	
 	@ConfigVar(value="name", mandatory=true)
-	private String name;
+	protected String name;
 	
 	@ConfigVar("mass")
-	private double mass;
+	protected double mass;
 	
 	@ConfigVar(value="radius", mandatory=true)
-	private double radius;
+	protected double radius;
 	
-	private Config cfg;
+	protected Config cfg;
 	
 	/** Construct a new body from the given configuration, but don't take the kepler parameters into account yet */
 	public Body(Config cfg) {
@@ -134,6 +134,25 @@ public class Body {
 			} while (Math.abs(err) >= eps);
 			return E;
 		}
+	}
+	
+	/** Calculate my acceleration in the given universe at the given position */
+	public Vec3 acceleration(World world, Vec3 location) {
+		Vec3 total = new Vec3();
+		for (Body b: world.getBodies()) {
+			if (b == this) continue;
+			// F = GmM / r² = ma -> a = G M / r² = G M * r_u / |r²|
+			Vec3 v = b.getPos().clone().sub(location);
+			double dist = v.len();
+			v.unit().mul(World.G * b.getMass() / (dist * dist));
+			total.add(v);
+		}
+		//System.out.println("Acceleration:" + body.getName() + ":" + total);
+		return total;
+	}
+	
+	public Vec3 acceleration(World world) {
+		return acceleration(world, pos);
 	}
 	
 	public Config getCfg() {

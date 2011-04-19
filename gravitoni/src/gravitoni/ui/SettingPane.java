@@ -31,17 +31,17 @@ public class SettingPane extends JPanel {
 	    bw = new BodyWidget(ui);
 	    widgets.add(bw);
 	    add(bw);
-	    add(new JSeparator(SwingConstants.HORIZONTAL));
+	    //add(new JSeparator(SwingConstants.HORIZONTAL));
 	    
 	    tw = new TimeWidget(ui);
 	    widgets.add(tw);
 	    add(tw);
-	    add(new JSeparator(SwingConstants.HORIZONTAL));
+	    //add(new JSeparator(SwingConstants.HORIZONTAL));
 	    
 	    dw = new DistanceWidget(ui);
 	    widgets.add(dw);
 	    add(dw);
-	    add(new JSeparator(SwingConstants.HORIZONTAL));
+	    //add(new JSeparator(SwingConstants.HORIZONTAL));
 	}
 	public void updateDistance() {
 		dw.update();

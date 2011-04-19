@@ -60,26 +60,7 @@ public class World {
 		time += dt;
 		logger.log();
 	}
-	
-	/** Calculate acceleration for the given body at the given position at current time (TODO: at time N: move all in the integrator) */
-	public Vec3 acceleration(Body body, Vec3 bodyPos) {
-		Vec3 total = new Vec3();
-		for (Body b: bodies) {
-			if (b == body) continue;
-			// F = GmM / r² = ma -> a = G M / r² = G M * r_u / |r²|
-			Vec3 v = b.getPos().clone().sub(bodyPos);
-			double dist = v.len();
-			v.unit().mul(G * b.getMass() / (dist * dist));
-			total.add(v);
-		}
-		//System.out.println("Acceleration:" + body.getName() + ":" + total);
-		return total;
-	}
 
-	/** Calculate acceleration for the given body at its current position at current time */
-	public Vec3 acceleration(Body body) {
-		return acceleration(body, body.getPos());
-	}
 
 	public String toString() {
 		String s = "";
