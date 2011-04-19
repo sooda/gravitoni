@@ -77,8 +77,9 @@ public class GfxBody {
 	}
 	
 	/** Draw everyting we need */
-	void render(GL gl, boolean selected, double zoom) {
-		Vec3 pos = body.getPos();
+	void render(GL gl, boolean selected, double zoom, int timePercent) {
+		if (posHistory.size() == 0) return;
+		Vec3 pos = posHistory.get((int)(timePercent / 100.0 * (posHistory.size() - 1)));
 		double r = .01/1e3 * body.getRadius();
 		
 		gl.glColor4d(1, 1, 1, 1);
@@ -108,17 +109,16 @@ public class GfxBody {
 		tr.draw3D(body.getName(), (float)(SCALER * (pos.x + r)), (float)(SCALER * (pos.y + r)), (float)(SCALER * (pos.z + r)), 300);
 		tr.end3DRendering();
 		
-		renderHistory(gl);
-		posHistory.add(pos.clone());
-
+		renderHistory(gl, timePercent);
 	}
 	
 	/** Draw the history lines */
-	private void renderHistory(GL gl) {
+	private void renderHistory(GL gl, int timePercent) {
 		gl.glDisable(GL.GL_TEXTURE_2D);
 		// blend?
 		gl.glBegin(GL.GL_LINE_STRIP);
 		int n = posHistory.size();
+		n = (int)(timePercent / 100.0 * n);
 		Vec3 color = body.getCfg().getFirstSection("gfx").getVars().getVec("color");
 		for (int i = 0; i < n; i++) {
 			Vec3 p = posHistory.get(i);
@@ -160,6 +160,21 @@ public class GfxBody {
 	
 	public String toString() {
 		return "[gfx] " + body;
+	}
+
+	/** Update the position history; this should be called after simulating a step. */
+	public void update() {
+		// TODO: Reduce memory usage in a better way.
+		// Now just don't store really tiny steps.
+		// Very small vibrations in the movement won't get noticed because of this now, 
+		// as the limitation is essentially kind of a low-pass filter.
+		if (posHistory.size() != 0) {
+			Vec3 lastPos = posHistory.get(posHistory.size() - 1);
+			double travel = body.getPos().clone().sub(lastPos).len();
+			if (travel < 0.5 * body.getRadius()) 
+				return;
+		}
+		posHistory.add(body.getPos().clone());
 	}
 	
 }

@@ -17,7 +17,7 @@ import com.sun.opengl.util.Animator;
 
 /** Main window frame. Contains the GL canvas, renderer, world, settingpane and numeric inspector. */
 @SuppressWarnings("serial")
-public class UI extends JFrame implements ChangeListener, ActionListener {
+public class UI extends JFrame implements ActionListener {
 	protected GLCanvas canvas;
 	protected Animator animator;
 	protected Renderer renderer;
@@ -51,6 +51,7 @@ public class UI extends JFrame implements ChangeListener, ActionListener {
 					public void run() {
 						System.out.println("Closing");
 						animator.stop();
+						world.stop();
 						System.exit(0);
 					}
 				}).start();
@@ -164,12 +165,15 @@ public class UI extends JFrame implements ChangeListener, ActionListener {
 		reload(newWorld);
 	}
 	
-	public void stateChanged(ChangeEvent e) {
-		int val = ((JSlider)e.getSource()).getValue();
-		double zomg = val / 100.0 - 0.5;
-		renderer.setSpeed(zomg);
-	}
 	public void refreshWidgets() {
 		settings.refresh();
+	}
+	
+	public Renderer getRenderer() {
+		return renderer;
+	}
+	
+	public World getWorld() {
+		return world;
 	}
 }

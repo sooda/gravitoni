@@ -61,7 +61,7 @@ public class Logger {
 	/** Close the writer streams */
 	public void close() {
 		for (LogWriter writer : writers) {
-			writer.close(); // TODO: put this to work
+			writer.close();
 		}	
 	}
 }

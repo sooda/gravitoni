@@ -129,7 +129,6 @@ public class Config {
 	
 	/** Strip out comments, handle the comment state machine. */
 	private String doComments(String line) {
-		// TODO: single-line comments in between :(
 		int startPos, endPos;
 		do {
 			startPos = line.indexOf("/*");
@@ -210,7 +209,7 @@ public class Config {
 			System.out.println("Warning: couldn't load " + fName);
 			return;
 		}
-		// FIXME: better options handling
+		// TODO: better options handling
 		// currently, we can't merge baseVars to cfg, because 
 		// it'd overwrite activeSection's globals too, which is not what we want
 		// options are used only for a few special cases, so for now, just handle them here
@@ -269,7 +268,7 @@ public class Config {
 	 * Merge everything from the given configuration to this.
 	 * 
 	 * Merge globals, and add all config subsections that the given config has. 
-	 * FIXME: this doesn't make deep copies. Not so bad as we mostly just read these.
+	 * TODO: this doesn't make deep copies. Not so bad as we mostly just read these.
 	 * 
 	 * @param other The configuration to merge to this.
 	 */

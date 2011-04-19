@@ -17,7 +17,7 @@ public class Gravitoni {
 		try {
 			if (args.length == 0) new Gravitoni().run();
 			else if (args.length == 1) new Gravitoni(args[0]).run();
-			else new Gravitoni(args[0]).run(Integer.parseInt(args[1]));
+			else new Gravitoni(args[0]).cli(args[1]);
 		} catch (FileNotFoundException e) {
 			System.out.println("404 tms " + e);
 		}
@@ -42,6 +42,12 @@ public class Gravitoni {
 	/** Run the GUI. */
 	public void run() {
 		new UI(world);
+	}
+	
+	/** Run the command-line interface */
+	public void cli(String arg) {
+		run(Integer.parseInt(arg));
+		world.stop();
 	}
 	
 	/** Run for a specific amount of time. */

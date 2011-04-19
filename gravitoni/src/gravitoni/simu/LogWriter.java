@@ -17,7 +17,7 @@ public abstract class LogWriter {
 	protected String filter = null;
 
 	public LogWriter(ConfigBlock cfg) throws IOException {
-		// TODO implement better option error handling so we don't nullpointerexcept if can't get the file or other params.
+		// TODO: implement better option error handling so we don't nullpointerexcept if can't get some params
 		outStream = new PrintWriter(new BufferedWriter(new FileWriter(cfg.get("file"))));
 		cfg.apply(this, LogWriter.class);
 	}
@@ -33,7 +33,7 @@ public abstract class LogWriter {
 		
 		if ((iteration % tick) == 0) {
 			outStream.println(parse(w, body));
-			outStream.flush(); // TODO fix close() and other cleanup stuff
+			// outStream.flush(); // TODO: make sure that close() works correctly
 		}
 	}
 	

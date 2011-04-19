@@ -1,7 +1,6 @@
 package gravitoni.simu;
 
 import gravitoni.config.*;
-
 import java.util.ArrayList;
 
 /** The whole state of the universe */
@@ -19,7 +18,7 @@ public class World {
 	/** Current time */
 	private double time = 0;
 	
-	private gravitoni.simu.Logger logger = new Logger(this);
+	private Logger logger = new Logger(this);
 	
 	public void add(Body body) {
 		bodies.add(body);
@@ -96,5 +95,10 @@ public class World {
 		for (Body b: bodies)
 			if (b.getName().equals(name)) return b;
 		return null;
+	}
+	
+	/** Tell the logger to close the streams. */
+	public void stop() {
+		logger.close();
 	}
 }

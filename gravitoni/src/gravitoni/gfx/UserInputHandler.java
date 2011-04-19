@@ -1,6 +1,5 @@
-package gravitoni.simu;
+package gravitoni.gfx;
 
-import gravitoni.gfx.Renderer;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;

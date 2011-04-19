@@ -7,11 +7,16 @@ import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
+import javax.swing.JSeparator;
+import javax.swing.SwingConstants;
 
 @SuppressWarnings("serial")
 public class SettingPane extends JPanel {
 	private UI ui;
 	private ArrayList<Widget> widgets; 
+	private BodyWidget bw;
+	private TimeWidget tw;
+	private DistanceWidget dw;
 	
 	
 	public SettingPane(UI ui) {
@@ -22,41 +27,40 @@ public class SettingPane extends JPanel {
 	}
 	private void insertContents() {
 	    setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 5));
-	    Widget pane;
 	    
-	    pane = new BodyWidget(ui);
-	    widgets.add(pane);
-	    add(pane);
+	    bw = new BodyWidget(ui);
+	    widgets.add(bw);
+	    add(bw);
+	    add(new JSeparator(SwingConstants.HORIZONTAL));
 	    
-	    pane = new TimeWidget(ui);
-	    widgets.add(pane);
-	    add(pane);
+	    tw = new TimeWidget(ui);
+	    widgets.add(tw);
+	    add(tw);
+	    add(new JSeparator(SwingConstants.HORIZONTAL));
 	    
-	    pane = new DistanceWidget(ui);
-	    widgets.add(pane);
-	    add(pane);
+	    dw = new DistanceWidget(ui);
+	    widgets.add(dw);
+	    add(dw);
+	    add(new JSeparator(SwingConstants.HORIZONTAL));
 	}
 	public void updateDistance() {
-		for (Widget pane : widgets) {
-			if (pane instanceof DistanceWidget)
-				((DistanceWidget)pane).update();
-		}
+		dw.update();
 	}
 	public void setDistanceBodies(Body a, Body b) {
-		for (Widget pane : widgets) {
-			if (pane instanceof DistanceWidget)
-				((DistanceWidget)pane).setBodies(a, b);
-		}
+		dw.setBodies(a, b);
 	}
 	public void setSelected(Body b) {
-		for (Widget pane : widgets) {
-			if (pane instanceof BodyWidget)
-				((BodyWidget)pane).setSelected(b);
-		}
+		bw.setSelected(b);
 	}
 	public void refresh() {
 		for (Widget w: widgets) {
 			w.update();
 		}
+	}
+	public void setPause(boolean pause) {
+		tw.setPause(pause);
+	}
+	public void setPause() {
+		setPause(true);
 	}
 }

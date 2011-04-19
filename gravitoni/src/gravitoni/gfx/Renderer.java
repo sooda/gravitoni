@@ -81,6 +81,9 @@ public class Renderer implements GLEventListener, ActionListener {
     /** Where we picked with the mouse? */
     private Point selectPt;
     
+    /** Where should we go while drawing? This is used only in paused mode (cannot be changed while in realtime). */
+	private int timePercent = 100;
+    
 	public Renderer(World world, UI ui, GLCanvas canvas) {
 		this.world = world;
 		this.ui = ui;
@@ -231,6 +234,21 @@ public class Renderer implements GLEventListener, ActionListener {
 		}
 	}
 	
+	/** Simulate some time depending on the speed */
+	public void runSimulation() {
+		if (!paused) {
+			int iters = (int)speed;
+			double laststep = speed - iters;
+			for (int i = 0; i < iters; i++) {
+				world.run(world.dt);
+				for (GfxBody b: bodies) b.update();
+			}
+			world.run(laststep*world.dt);
+			for (GfxBody b: bodies) b.update();
+			ui.refreshWidgets();
+		}
+	}
+
     public void toggleCursor() {
     	showCursor = !showCursor;
     }
@@ -307,7 +325,7 @@ public class Renderer implements GLEventListener, ActionListener {
 		int i = 0;
 		for (GfxBody b: bodies) {
 			gl.glLoadName(++i); // for picking
-			b.render(gl, b == getActiveBody(), planetzoom);
+			b.render(gl, b == getActiveBody(), planetzoom, timePercent);
 		}
 	}
 	
@@ -338,28 +356,23 @@ public class Renderer implements GLEventListener, ActionListener {
 		glu.gluQuadricDrawStyle(qua, GLU.GLU_FILL);
 	}
 
-	/** Simulate some time depending on the speed TODO: radat kans kuntoon */
-	public void runSimulation() {
-		if (!paused) {
-			int iters = (int)speed;
-			double laststep = speed - iters;
-			for (int i = 0; i < iters; i++) {
-				world.run(world.dt);
-			}
-			world.run(laststep*world.dt);
-		}
-		ui.refreshWidgets();
-	}
-	
 	public void pause() {
 		paused = true;
+		ui.getSettings().setPause();
 	}
 	public void cont() {
 		paused = false;
+		timePercent = 100;
+		ui.getSettings().setPause(false);
 	}
 	
 	public void togglePause() {
 		paused = !paused;
+		if (!paused) timePercent = 100; // continue at the end
+		ui.getSettings().setPause(paused);
+	}
+	public void setPause(boolean state) {
+		paused = state;
 	}
 	
 	public void displayChanged(GLAutoDrawable drawable, boolean modeChanged, boolean deviceChanged) {
@@ -434,4 +447,10 @@ public class Renderer implements GLEventListener, ActionListener {
 		if (--activeBody == -2) activeBody = bodies.size() - 1;
 		System.out.println("Selected: " + getActiveBody());
 	}
+
+	/** Draw only until the given time percent. */
+	public void setTime(int percent) {
+		timePercent = percent;
+	}
+
 }
