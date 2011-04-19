@@ -140,8 +140,8 @@ public class Body {
 		}
 	}
 	
-	/** Calculate speed influence of the given body to this body at the given position */
-	private Vec3 speedCalc(Body b, Vec3 bPos, Vec3 myPos) {
+	/** Calculate acceleration influence of the given body to this body at the given position */
+	protected Vec3 singleAccel(Body b, Vec3 bPos, Vec3 myPos) {
 		// F = GmM / r² = ma -> a = G M / r² = G M * r_u / |r²|
 		Vec3 v = bPos.clone().sub(myPos); // difference vector r
 		double dist = v.len(); // absolute distance |r|
@@ -154,7 +154,7 @@ public class Body {
 		Vec3 total = new Vec3();
 		for (Body b: world.getBodies()) {
 			if (b == this) continue;
-			total.add(speedCalc(b, b.getPos(), location));
+			total.add(singleAccel(b, b.getPos(), location));
 		}
 		//System.out.println("Acceleration:" + body.getName() + ":" + total);
 		return total;
@@ -169,7 +169,7 @@ public class Body {
 				i++;
 				continue;
 			}
-			total.add(speedCalc(b, locations[i], locations[myIdx]));
+			total.add(singleAccel(b, locations[i], locations[myIdx]));
 			i++;
 		}
 		//System.out.println("Acceleration:" + body.getName() + ":" + total);

@@ -23,4 +23,11 @@ public class Rocket extends Body {
 		if (world.getTime() <= thrusttime) x.add(thrust);
 		return x;
 	}
+	
+	/** Add thrust to the general acceleration. */
+	public Vec3 acceleration(World world, Vec3[] locations, int myIdx) {
+		Vec3 x = super.acceleration(world, locations[myIdx]);
+		if (world.getTime() <= thrusttime) x.add(thrust);
+		return x;
+	}
 }
