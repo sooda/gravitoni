@@ -89,6 +89,9 @@ public class Renderer implements GLEventListener, ActionListener {
 	/** Collision happened? Cannot continue */
 	private boolean stopped = false;
 	
+	/** What was selected in the popup menu, used for picking */ 
+	private String menuAction = "";
+	
 	TextRenderer tr;
     
 	public Renderer(World world, UI ui, GLCanvas canvas) {
@@ -111,15 +114,22 @@ public class Renderer implements GLEventListener, ActionListener {
 	void buildMenu(GLCanvas canvas) {
 		popup = new JPopupMenu();
 		
-		JMenuItem itm = new JMenuItem("Select");
+		JMenuItem itm = new JMenuItem("Detailselect");
 		popup.add(itm);
 		itm.addActionListener(this);
 		
-		itm = new JMenuItem("Zomgf");
-		itm.setEnabled(false);
+		itm = new JMenuItem("Distanceselect A");
 		popup.add(itm);
 		itm.addActionListener(this);
 		
+		itm = new JMenuItem("Distanceselect B");
+		popup.add(itm);
+		itm.addActionListener(this);
+
+		itm = new JMenuItem("Cursorselect");
+		popup.add(itm);
+		itm.addActionListener(this);
+
 		PopupListener l = new PopupListener();
 		canvas.addMouseListener(l);		
 		popup.addPopupMenuListener(l);
@@ -180,8 +190,8 @@ public class Renderer implements GLEventListener, ActionListener {
 	}
 	
 	public void zoomBodies(double amount) {
-		if (amount > 0) planetzoom *= 1.1 * amount;
-		else planetzoom /= 1.1 * -amount;		
+		if (amount > 0) planetzoom /= 1.1 * amount;
+		else planetzoom *= 1.1 * -amount;		
 	}
 
 	/** Handle the popup events from the canvas */
@@ -216,10 +226,8 @@ public class Renderer implements GLEventListener, ActionListener {
 	
 	/** Popup menu clicks come here */
 	public void actionPerformed(ActionEvent e) {
-		String cmd = e.getActionCommand();
-		if ("Select".equals(cmd)) {
-			selectMode = true;
-		}
+		menuAction = e.getActionCommand();
+		selectMode = true;
 	}
 
 	/** This is called from the UI scrollbar */
@@ -323,7 +331,20 @@ public class Renderer implements GLEventListener, ActionListener {
 	/** Do something when a body is picked with the mouse */
 	private void pick(GfxBody b) {
 		System.out.println("Picked " + b);
-		ui.getSettings().setSelected(b.getBody());
+		if (menuAction.equals("Detailselect")) {
+			ui.getSettings().setSelected(b.getBody());
+		} else if (menuAction.equals("Distanceselect A")) {
+			ui.getSettings().setDistanceBodies(b.getBody(), null);
+		} else if (menuAction.equals("Distanceselect B")) {
+			ui.getSettings().setDistanceBodies(null, b.getBody());
+		} else if (menuAction.equals("Cursorselect")) {
+			for (int i = 0; i < bodies.size(); i++) {
+				if (bodies.get(i) == b) {
+					activeBody = i;
+					break;
+				}
+			}
+		}
 	}
 	
 	/** Actually draw the scene */
@@ -455,8 +476,10 @@ public class Renderer implements GLEventListener, ActionListener {
 	/** Set the relative origin to be the selected body */
 	public void setOriginActive() {
 		origin = getActiveBody();
+		System.out.println("Set origin: " + (origin == null ? "(null)" : origin.getBody().getName()));
 	}
 	
+	/** Active is the one that is hilighted white and can be choosed to be origin by pressing space */
 	public GfxBody getActiveBody() {
 		return activeBody == -1 ? null : bodies.get(activeBody);
 	}

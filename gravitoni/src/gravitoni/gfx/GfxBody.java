@@ -103,7 +103,8 @@ public class GfxBody {
 		if (rendr.getOrigin() != null) {
 			Vec3 opos = rendr.getOrigin().getPosAt(posIdx);
 			if (opos != null)
-				gl.glTranslated(-SCALER * opos.x, -SCALER * opos.y, SCALER * opos.z);
+				pos = pos.clone().sub(opos);
+				
 		}
 		
 		gl.glTranslated(SCALER * pos.x, SCALER * pos.y, SCALER * pos.z);

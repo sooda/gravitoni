@@ -7,6 +7,8 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+
 import javax.swing.JComboBox;
 import javax.swing.JTextField;
 
@@ -46,6 +48,7 @@ public class BodyWidget extends Widget implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		update();
 	}
+	
 	public void update() {
 		int i = boks.getSelectedIndex();
 		Body b = ui.world.getBodies().get(i);
@@ -56,13 +59,12 @@ public class BodyWidget extends Widget implements ActionListener {
 	}
 	
 	public void setSelected(Body body) {
-		int i = 0;
-		for (Body b: ui.world.getBodies()) {
-			if (b == body) {
+		ArrayList<Body> bodies = ui.world.getBodies();
+		for (int i = 0; i < bodies.size(); i++) {
+			if (bodies.get(i) == body) {
 				boks.setSelectedIndex(i);
 				break;
 			}
-			i++;
 		}
 	}
 }
