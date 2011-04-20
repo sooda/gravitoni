@@ -197,6 +197,7 @@ public class Renderer implements GLEventListener, ActionListener {
 
 	/** Handle the popup events from the canvas */
 	class PopupListener extends MouseInputAdapter implements PopupMenuListener {
+		private boolean pausedBefore;
 	    public void mousePressed(MouseEvent e) {
 	        maybeShowPopup(e);
 	    }
@@ -217,10 +218,11 @@ public class Renderer implements GLEventListener, ActionListener {
 		}
 
 		public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-			cont();
+			if (!pausedBefore) cont();
 		}
 
 		public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+			pausedBefore = paused;
 			pause();
 		}
 	}
@@ -503,6 +505,10 @@ public class Renderer implements GLEventListener, ActionListener {
 	/** Draw only until the given time percent. */
 	public void setTime(int percent) {
 		timePercent = percent;
+	}
+
+	public boolean isPaused() {
+		return paused;
 	}
 
 }

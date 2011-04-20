@@ -100,12 +100,14 @@ public class UI extends JFrame implements ActionListener {
 	
 	
 	class TabPaneListener implements ChangeListener {
+		private boolean pausedBefore = false;
 		public void stateChanged(ChangeEvent e) {
 			if (tabPane.getSelectedIndex() == 0) {
+				pausedBefore = renderer.isPaused();
 				renderer.pause();
 				details.refresh();
 			} else {
-				renderer.cont();
+				if (!pausedBefore) renderer.cont();
 			}
 		}
 	}
