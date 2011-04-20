@@ -3,8 +3,8 @@ package gravitoni.config;
 import gravitoni.simu.Vec3;
 
 import java.lang.reflect.Field;
-import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Set;
 
 /** A block of configuration variable pairs of name/value, that can be parsed into several types */
 public class ConfigBlock {
@@ -46,8 +46,8 @@ public class ConfigBlock {
 	}
 	
 	/** Get variable names. */
-	public Enumeration<String> keys() {
-		return table.keys();
+	public Set<String> keys() {
+		return table.keySet();
 	}
 	
 	/** Read (and possibly overwrite) the given block's variables here. */

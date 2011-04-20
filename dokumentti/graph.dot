@@ -10,24 +10,13 @@ digraph G {
                 fontname = "Bitstream Vera Sans"
                 fontsize = 8
         ]
-        subgraph clusterAnimalImpl {
-                label = "simu"
-				BadRK4 [ label = "{BadRK4|run()\l runOne()\l eval()\l}" ]
-				Body [ label = "{Body|pos\l vel\l name\l init()\l singleAccel()\l acceleration()\l}" ]
-				CsvWriter [ label = "{CsvWriter|parse\l}" ]
-				Derivative [ label = "{Derivative|dpos\l dvel\l}" ]
-				GnuplotWriter [ label = "{GnuplotWriter|parse\l}" ]
-				Integrator [ label = "{Integrator|run()\l}" ]
-				Logger [ label = "{Logger|loadConfig()\l getWriter()\l log()\l}" ]
-				LogWriter [ label = "{LogWriter| write()\l parse\l}" ]
-				RK4 [ label = "{RK4|run()\l runAll()\l evalAll()\l}" ]
-				Rocket [ label = "{Rocket|thrust\l acceleration()\l}" ]
-				State [ label = "{State|pos\l vel\l}" ]
-				Vec3 [ label = "{Vec3|set()\l add()\l dot()\l cross()\l unit()\l parse()\l}" ]
-				Verlet [ label = "{Verlet|run()\l runOne()\l}" ]
-				World [ label = "{World|loadConfig()\l getTime()\l getBody()\l run()\l}" ]
+        subgraph confpackage {
+			label = "conf"
+			Config [ label = "{Config|name\l myVars\l subsections\l activeSection\l read()\l getSubsections()\l getFirstSection()\l doComments()\l addSection()\l descendToSection()\l ascendFromSection()\l mergeInclude()\l getVars()\l}" ]
+			ConfigBlock [ label = "{ConfigBlock|table\l add()\l get()\l getInt()\l getDouble()\l getVec()\l merge()\l apply()\l}" ]
+			ConfigVar [ label = "{ConfigVar|value()\l mandatory()\l}" ]
         }
-        subgraph clusterAnimalImpl2 {
+        subgraph gfxpackage {
 			label = "gfx"
 			ArcBall [ label = "{ArcBall|mapToSphere()\l click()\l drag()\l}" ]
 			GfxBody [ label = "{GfxBody|body\l texture\l posHistory\l loadTexture()\l render()\l getPosAt()\l}" ]
@@ -37,7 +26,24 @@ digraph G {
 			TextureReader [ label = "{TextureReader|readTexture()\l}" ]
 			UserInputHandler [ label = "{UserInputHandler|keyPressed()\l mousePressed()\l mouseDragged()\l}" ]
         }
-        subgraph clusterAnimalImpl3 {
+        subgraph simupackage {
+			label = "simu"
+			BadRK4 [ label = "{BadRK4|run()\l runOne()\l eval()\l}" ]
+			Body [ label = "{Body|pos\l vel\l name\l init()\l singleAccel()\l acceleration()\lcollides()\l}" ]
+			CsvWriter [ label = "{CsvWriter|parse\l}" ]
+			Derivative [ label = "{Derivative|dpos\l dvel\l}" ]
+			GnuplotWriter [ label = "{GnuplotWriter|parse\l}" ]
+			Integrator [ label = "{Integrator|run()\l}" ]
+			Logger [ label = "{Logger|loadConfig()\l getWriter()\l log()\l}" ]
+			LogWriter [ label = "{LogWriter| write()\l parse\l}" ]
+			RK4 [ label = "{RK4|run()\l runAll()\l evalAll()\l}" ]
+			Rocket [ label = "{Rocket|thrust\l acceleration()\l}" ]
+			State [ label = "{State|pos\l vel\l}" ]
+			Vec3 [ label = "{Vec3|set()\l add()\l dot()\l cross()\l unit()\l parse()\l}" ]
+			Verlet [ label = "{Verlet|run()\l runOne()\l}" ]
+			World [ label = "{World|loadConfig()\l getTime()\l getBody()\l run()\l collide()\l}" ]
+        }
+        subgraph uipackage {
 			label = "ui"
 			BodyWidget [ label = "{BodyWidget|actionPerformed()\l update()\l setSelected()\l}" ]
 			DetailView [ label = "{DetailView|world\l WorldTableModel\l \l}" ]
@@ -46,12 +52,6 @@ digraph G {
 			TimeWidget [ label = "{TimeWidget|stateChanged()\l setPause()\l update()\l}" ]
 			UI [ label = "{UI|canvas\l animator\l renderer\l world\l settings\l details\l reload()\l actionPerformed()\l refreshWidgets()\l getRenderer()\l getWorld()\l}" ]
 			Widget [ label = "{Widget|update()\l}" ]
-        }
-        subgraph clusterAnimalImpl4 {
-			label = "conf"
-			Config [ label = "{Config|name\l myVars\l subsections\l activeSection\l read()\l getSubsections()\l getFirstSection()\l doComments()\l addSection()\l descendToSection()\l ascendFromSection()\l mergeInclude()\l getVars()\l}" ]
-			ConfigBlock [ label = "{ConfigBlock|table\l add()\l get()\l getInt()\l getDouble()\l getVec()\l merge()\l apply()\l}" ]
-			ConfigVar [ label = "{ConfigVar|value()\l mandatory()\l}" ]
         }
         Gravitoni [ label = "{Gravitoni|world\l loadConfig()\l run()\l cli()\l}" ]
         edge [

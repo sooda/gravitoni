@@ -305,5 +305,34 @@ public class Config {
 		c.merge(this);
 		return c;
 	}
+
+	/** Dump my contents into the given stream. */
+	private void write(OutputStream out, int indent, boolean noBorders) {
+		PrintStream s = new PrintStream(out);
+		if (!noBorders) {
+			for (int i = 0; i < indent; i++) s.print("\t");
+			s.println(name + " {");
+		} else indent--;
+		
+		for (String key: myVars.keys()) {
+			for (int i = 0; i < indent + 1; i++) s.print("\t");
+			s.println(key + " " + myVars.get(key));
+		}
+		
+		for (String key: subsections.keySet()) {
+			for (Config cfg: subsections.get(key)) {
+				cfg.write(out, indent + 1, false);
+			}
+		}
+		if (!noBorders) {
+			for (int i = 0; i < indent; i++) s.print("\t");
+			s.println("}");
+		}
+		s.flush();
+	}
+	
+	public void write(OutputStream out) {
+		write(out, 0, true);
+	}
 }
 

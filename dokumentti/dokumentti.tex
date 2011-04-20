@@ -60,25 +60,30 @@ konsta.holtta@aalto.fi\\
 
 % Yleinen kuvaus siitä, mitä on luotu. Tähän osioon voi monissa tapauksissa pitkälti lainata suunnitelmasta. Jos osioon on tullut olennaisia muutoksia suunnitelmaan nähden, niistä tulee mainita tässä. Jos aihe on mahdollista toteuttaa usealla eri vaikeusasteella, ilmaise myös, minkä tasoisena työ on lopulta mielestäsi toteutettu.
 
-Ohjelma simuloi taivaankappaleiden ja rakettien liikkeitä. Ennalta aseteltujen kappaleiden ratoja lasketaan eteenpäin fysiikan lakien mukaisesti, ja radat voidaan tallentaa tiedostoon sekä laskentaa voi tarkastella reaaliajassa graafisella käyttöliittymällä kolmiulotteisessa maailmassa OpenGL:n avulla kuvakulmaa reaaliajassa säädellen. Jo simuloitua aikajanaa voi kelata taaksepäin sekä simulointia voi jatkaa koska tahansa loppupisteestä eteenpäin.
+Ohjelma simuloi taivaankappaleiden ja rakettien liikkeitä. Ennalta aseteltujen kappaleiden ratoja lasketaan eteenpäin fysiikan lakien mukaisesti, ja radat voidaan tallentaa tiedostoon sekä laskentaa voi tarkastella reaaliajassa graafisella käyttöliittymällä kolmiulotteisessa maailmassa OpenGL:n avulla kuvakulmaa jatkuvasti säädellen. Jo simuloitua aikajanaa voi kelata taaksepäin sekä simulointia voi jatkaa koska tahansa loppupisteestä eteenpäin.
 
 Simulaatio keskittyy gravitaatiovoimiin ja pienet häiriötekijät kuten ilmanvastus ja suhteellisuusteoria jätetään huomiotta. Algoritmi on kuitenkin matemaattisesti tarkka ja varsin todenmukainen, ja helposti laajennettavissa ulkoisten voimien lisäämiseksi. Integrointiin käytetään RK4:ää, mutta integrointimenetelmää on helppo vaihtaa koodista jos siihen tulee tarvetta.
 
-Ohjelma toimii joko täysin itsenäisesti ilman käyttöliittymää vain lokiin tulostaen tai graafisen käyttöliittymän kautta ohjattuna. Kappaleiden ominaisuudet voidaan lukea asetustiedostosta sekä niitä voidaan lisätä käyttöliittymästä jälkeenpäin. Samaan asetustiedostoon sisällytetään myös säännöt ohjelman automaattiajoon, jolloin itsenäistä simulointia voidaan konfiguroida etukäteen painelematta nappuloita ohjelmasta. Ohjelma ohjeistetaan ajamaan joko tietty aikamäärä eteenpäin, tai kunnes kaksi kappaletta törmää toisiinsa. Mukana on myös raketteja, joita voi laukoa kiertoradoille tietyllä alkunopeudella. Tämä ominaisuus tekee ohjelmasta pelin, jossa pyritään esim. optimoimaan raketin moottorin käyttämä polttoaine, raketin kulkeman matkan pituus tms.
+Ohjelma toimii joko täysin itsenäisesti ilman käyttöliittymää vain lokiin tulostaen tai graafisen käyttöliittymän kautta ohjattuna. Kappaleiden ominaisuudet voidaan lukea asetustiedostosta sekä niitä voidaan lisätä käyttöliittymästä jälkeenpäin. Ohjelma ohjeistetaan ajamaan joko tietty aikamäärä eteenpäin, tai kunnes kaksi kappaletta törmää toisiinsa. Mukana on myös raketteja, joita voi laukoa kiertoradoille (tai muualle) tietyllä alkunopeudella. Tämä ominaisuus tekee ohjelmasta pelin, jossa pyritään esim. optimoimaan raketin moottorin käyttämä polttoaine, raketin kulkeman matkan pituus tms.
 
-Olennaisia muutoksia suunnitelmaan nähden ei tullut. Työn toteutettiin vaikeustasolla haastava.
+Olennaisia muutoksia suunnitelmaan nähden ei tullut. Työn toteutettiin haastavana.
 
 
 \section{Käyttöohje}
 
 Ohjelman voi käynnistää ajamaan pelkkää simulaatiota komentorivillä tai lisäksi graafista käyttöliittymää. Komentorivimoodissa asetukset luetaan normaalisti, mutta maailma simuloidaan loppuun saakka eikä ohjelma ota muita syötteitä; gui-tilassa taas avataan ikkuna ja maailmaan voi vaikuttaa ja sitä voi tarkastella monin tavoin.
 
-Tällä hetkellä kaikkein tärkein ohjelman toimintaan vaikuttava asia on sille annettava asetustiedosto, josta tietoa myöhemmin tiedostot-osiossa.
+Kaikkein tärkein ohjelman toimintaan vaikuttava asia on sille annettava asetustiedosto, josta tietoa myöhemmin tiedostot-osiossa.
 
-Koska ohjelma käyttää OpenGL:ää (JOGL), se pitää käynnistää (komentoriviltä ajettaessa) oikeilla ympäristömuuttujilla. Ohjelman mukana tulee hakemistot lib32 ja lib64, joissa on natiivit kirjastot 32- ja 64-bittisille linux-järjestelmille, sekä lib-hakemisto, jossa on jarit ajoa varten ja jogl-zippi eclipsen ohjeita varten. Mukana on myös apuskriptit run.sh, rungui32.sh ja rungui64.sh, jotka asettavat ympäristömuuttujat oikein ajoa varten; näille voi antaa suoraan asetustiedoston (ja simulointiajan) parametreiksi.
+Koska ohjelma käyttää OpenGL:ää (JOGL), se pitää käynnistää oikeilla ympäristömuuttujilla. Ohjelman mukana tulee hakemistot lib32 ja lib64, joissa on natiivit kirjastot 32- ja 64-bittisille linux-järjestelmille, sekä lib-hakemisto, jossa on jarit ajoa varten ja jogl-zippi eclipsen ohjeita varten. Mukana on myös apuskriptit runraw.sh, rungui32.sh ja rungui64.sh, jotka asettavat ympäristömuuttujat oikein ajoa varten; näille voi antaa suoraan asetustiedoston (ja simulointiajan) parametreiksi. Ohjelman voi myös käynnistää Eclipsestä suoraan, jos sille on aseteltu projektin polut oikein.
+
+Projektin voi kääntää Eclipsestä suoraan tai sitten komentoriviltä seuraavasti:
+\begin{verbatim}
+javac -sourcepath src -classpath lib/jogl.jar src/gravitoni/Gravitoni.java -d bin
+\end{verbatim}
 
 
-\subsection{Komentorivi}
+\subsection{Komentoriviajo}
 
 Komentoriviltä ohjelmalle annetaan vain tiedostonimi ja simulaation loppuaika sekunteina. Simulaatiota tapahtuu joko tähän ajanhetkeen saakka tai kunnes asetuksissa määrätty loppuehto täyttyy (esim. törmäys). Esimeriksi seuraava simuloi vuoden verran eteenpäin:
 
@@ -87,11 +92,15 @@ java gravitoni.Gravitoni conf/all.conf 31536000
 \end{verbatim}
 
 Tai apuskripteillä:
+
 \begin{verbatim}
-./run.sh conf/all.conf 31536000
+./runraw.sh conf/all.conf 31536000
 \end{verbatim}
 
-Komentorivin ajosta kiinnostava tuloste on lokitiedosto(t), jotka määrätään asetuksissa. Ohjelma tulostaa hieman debugdataa käynnistyessään ja mm. törmäysten sattuessa.
+Komentorivin ajosta kiinnostava tuloste on lokitiedosto(t), jotka määrätään asetuksissa. Ohjelma tulostaa hieman debugdataa käynnistyessään ja mm. törmäysten sattuessa. Mukana tulee collisionplot.gnuplot, jonka voi ladata gnuplotiin (komennolla load 'collisionplot.gnuplot') törmäystestiajon ajettuaan (tiedostossa conf/collisiontest.conf).
+
+Suurissa määrin olevia planeettoja voi testailla randomworld.py-skriptin avulla. Se tulostaa komentoriviparametrina annettavan numeron verran kappaleita satunnaisiin paikkoihin. Tämän tulostuksen voi ohjata johonkin asetustiedostoon, joka ladataan itse ohjelmaan.
+
 
 \subsection{GUI}
 
@@ -141,7 +150,7 @@ Valikosta voi avata tiedoston, sulkea ohjelman sekä lisätä ja poistaa planeettoj
 
 \section{Ohjelman rakenne}
 
-\kuvaa{1}{graph.png}{Toteutunut luokkajako ja joitain tärkeimpiä metodeita. Kaavio ei ole UML:ää eikä mitään muutakaan standardia muotoa. Viivat kuvaavat jonkinlaista interaktiota luokkien välillä.}{rakennekuva}
+\kuvaa{1}{graph.pdf}{Toteutunut luokkajako ja joitain tärkeimpiä metodeita. Kaavio ei ole UML:ää eikä mitään muutakaan standardia muotoa. Viivat kuvaavat tärkeimpiä interaktioita luokkien välillä.}{rakennekuva}
 
 Rakenne (kuvassa \ref{fig:rakennekuva} säilyi pääpiirteittäin samanlaisena kun mitä suunniteltiin; jotkut yksityiskohdat vähän elivät eri suuntiin. Koodin rakenne hajautuu neljään pääkategoriaan:
 
@@ -504,7 +513,7 @@ Simulaatiosta tuli lueskeltua muutama RK4-artikkeli. Keplerkoordinaattien muunno
 \item \url{http://www.colorado.edu/ASEN/asen3200/download.html}
 \item \url{http://en.wikipedia.org/wiki/Kepler's_laws_of_planetary_motion}
 \item \url{http://en.wikipedia.org/wiki/Standard_gravitational_parameter}
-% \item \url{
+\item \url{http://en.wikipedia.org/wiki/Shell_theorem}
 
 \item \url{http://en.wikipedia.org/wiki/Solar_System}
 \item \url{http://en.wikipedia.org/wiki/Orbital_elements}

@@ -57,6 +57,7 @@ class Verlet implements Integrator {
 	/**
 	 * That's how it would go if we did it poorly.
 	 */
+	@SuppressWarnings("unused")
 	private State runOne(Body body, double dt) {
 		// x(t+dt) = x(t) + v(t)dt + 0.5a(t)dt^2
 		// a(t+dt) = accfunc(x(t+dt))

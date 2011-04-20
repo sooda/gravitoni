@@ -47,6 +47,7 @@ public class Renderer implements GLEventListener, ActionListener {
 	/** Popup menu for the canvas' right-click. */
 	private JPopupMenu popup;	
 	
+	// TODO: it might be neater to have the camera operations in a different navigator class.
 	/** Current camera transformation since last operations. */
     private Matrix4f currCam = new Matrix4f();
     

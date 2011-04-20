@@ -2,6 +2,9 @@ package gravitoni.simu;
 
 import gravitoni.config.*;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 
 /** The whole state of the universe */
@@ -25,6 +28,7 @@ public class World {
 	private double time = 0;
 	
 	private Logger logger = new Logger(this);
+	private Config config;
 	
 	public void add(Body body) {
 		bodies.add(body);
@@ -61,6 +65,7 @@ public class World {
 		}
 		
 		logger.loadConfig(cfg);
+		config = cfg;
 	}
 	
 	/** Run the world 'dt' seconds forward. Return true, if we can continue (no bodies have collided) */
@@ -114,8 +119,14 @@ public class World {
 		return null;
 	}
 	
-	/** Tell the logger to close the streams. */
+	/** Tell the logger to close the streams, and write the world state to a final logfile. */
 	public void stop() {
 		logger.close();
+		try {
+		config.write(new FileOutputStream(new File("gravitoni-endstate.log")));
+		} catch (IOException e) {
+			System.out.println("IO exception :(");
+			e.printStackTrace();
+		}
 	}
 }
