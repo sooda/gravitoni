@@ -101,8 +101,9 @@ public class GfxBody {
 		
 		gl.glPushMatrix();
 		if (rendr.getOrigin() != null) {
-			Vec3 opos = rendr.getOrigin().getBody().getPos();
-			gl.glTranslated(-SCALER * opos.x, -SCALER * opos.y, opos.z);
+			Vec3 opos = rendr.getOrigin().getPosAt(posIdx);
+			if (opos != null)
+				gl.glTranslated(-SCALER * opos.x, -SCALER * opos.y, SCALER * opos.z);
 		}
 		
 		gl.glTranslated(SCALER * pos.x, SCALER * pos.y, SCALER * pos.z);
@@ -115,7 +116,7 @@ public class GfxBody {
 		tr.begin3DRendering();
 		Vec3 color = body.getCfg().getFirstSection("gfx").getVars().getVec("color");
 		tr.setColor((float)color.x, (float)color.y, (float)color.z, 0.7f);
-		tr.draw3D(body.getName(), (float)(SCALER * (pos.x + r)), (float)(SCALER * (pos.y + r)), (float)(SCALER * (pos.z + r)), 300);
+		tr.draw3D(body.getName(), (float)(SCALER * (pos.x + r)), (float)(SCALER * (pos.y + r)), (float)(SCALER * (pos.z + r)), 500);
 		tr.end3DRendering();
 		
 		renderHistory(gl, timePercent);
@@ -180,15 +181,15 @@ public class GfxBody {
 	/** Update the position history; this should be called after simulating a step. */
 	public void update() {
 		// TODO: Reduce memory usage in a better way.
-		// Now just don't store really tiny steps.
-		// Very small vibrations in the movement won't get noticed because of this now, 
-		// as the limitation is essentially kind of a low-pass filter.
-		if (posHistory.size() != 0) {
+		// If we don't store really tiny steps,
+		// very small vibrations in the movement won't get noticed,
+		// and the Sun will be logged in large steps and origin tracking gets broken :(
+		/*if (posHistory.size() != 0) {
 			Vec3 lastPos = posHistory.get(posHistory.size() - 1);
 			double travel = body.getPos().clone().sub(lastPos).len();
 			if (travel < 0.5 * body.getRadius()) 
 				return;
-		}
+		}*/
 		posHistory.add(body.getPos().clone());
 		velHistory.add(body.getVel().clone());
 		accHistory.add(body.getLastAccel().clone());

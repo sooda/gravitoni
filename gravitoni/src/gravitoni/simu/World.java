@@ -7,6 +7,7 @@ import java.util.ArrayList;
 /** The whole state of the universe */
 public class World {
 	private ArrayList<Body> bodies = new ArrayList<Body>();
+	/** The integrator we use now. Can be changed to BadRK4 or Verlet straight away by replacing it here */
 	private Integrator integrator = new RK4(this);
 	
 	/** 0: do nothing, 1: stop, 2: bounce */
