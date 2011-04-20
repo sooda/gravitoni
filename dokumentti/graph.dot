@@ -10,13 +10,13 @@ digraph G {
                 fontname = "Bitstream Vera Sans"
                 fontsize = 8
         ]
-        subgraph confpackage {
+        subgraph clusterconfpackage {
 			label = "conf"
 			Config [ label = "{Config|name\l myVars\l subsections\l activeSection\l read()\l getSubsections()\l getFirstSection()\l doComments()\l addSection()\l descendToSection()\l ascendFromSection()\l mergeInclude()\l getVars()\l}" ]
 			ConfigBlock [ label = "{ConfigBlock|table\l add()\l get()\l getInt()\l getDouble()\l getVec()\l merge()\l apply()\l}" ]
 			ConfigVar [ label = "{ConfigVar|value()\l mandatory()\l}" ]
         }
-        subgraph gfxpackage {
+        subgraph clustergfxpackage {
 			label = "gfx"
 			ArcBall [ label = "{ArcBall|mapToSphere()\l click()\l drag()\l}" ]
 			GfxBody [ label = "{GfxBody|body\l texture\l posHistory\l loadTexture()\l render()\l getPosAt()\l}" ]
@@ -26,7 +26,7 @@ digraph G {
 			TextureReader [ label = "{TextureReader|readTexture()\l}" ]
 			UserInputHandler [ label = "{UserInputHandler|keyPressed()\l mousePressed()\l mouseDragged()\l}" ]
         }
-        subgraph simupackage {
+        subgraph clustersimupackage {
 			label = "simu"
 			BadRK4 [ label = "{BadRK4|run()\l runOne()\l eval()\l}" ]
 			Body [ label = "{Body|pos\l vel\l name\l init()\l singleAccel()\l acceleration()\lcollides()\l}" ]
@@ -43,7 +43,7 @@ digraph G {
 			Verlet [ label = "{Verlet|run()\l runOne()\l}" ]
 			World [ label = "{World|loadConfig()\l getTime()\l getBody()\l run()\l collide()\l}" ]
         }
-        subgraph uipackage {
+        subgraph clusteruipackage {
 			label = "ui"
 			BodyWidget [ label = "{BodyWidget|actionPerformed()\l update()\l setSelected()\l}" ]
 			DetailView [ label = "{DetailView|world\l WorldTableModel\l \l}" ]

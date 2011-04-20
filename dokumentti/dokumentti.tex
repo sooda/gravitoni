@@ -104,9 +104,18 @@ Suurissa määrin olevia planeettoja voi testailla randomworld.py-skriptin avulla.
 
 \subsection{GUI}
 
-Graafisessa näkymässä maailmaa voi tarkastella joustavammin ja siihen voi vaikuttaa kesken kaiken. Näkymässä on kaksi tilaa: testailunäkymä (kuva \ref{fig:testailutila}) ja numeerinen yksityiskohtainen näkymä (kuva \ref{fig:numerotila}). Testailunäkymässä avaruuden tila näkyy opengl-canvasissa ja joitain nippelitietoja kappaleista näkee vasemmalla infopaneelissa. Numeronäkymässä maailman tilaa voi katsella excel-tyyliin numeerisesti taulukossa.
+\kuvaa{1}{numerotila.png}{Numeerinen yksityiskohtatila}{fig:numerotila}
 
-GUI-tila käynnistetään muuten samoin kuin komentorivi, mutta askelmäärä jätetään antamatta. Asetustiedostokaan ei ole pakollinen; sen voi ladata valikoistakin.
+\kuvaa{1}{testailutila.png}{Testailutila, jossa maailman näkee omin silmin ihmiselle mukavassa muodossa}{fig:testailutila}
+
+Graafisessa näkymässä maailmaa voi tarkastella joustavammin ja siihen voi vaikuttaa kesken kaiken. Näkymässä on kaksi tilaa: numeerinen yksityiskohtainen näkymä (kuva \ref{fig:numerotila} ja testailunäkymä (kuva \ref{fig:testailutila})). Numeronäkymässä maailman tilaa voi katsella excel-tyyliin numeerisesti taulukossa. Testailunäkymässä avaruuden tila näkyy opengl-canvasissa ja joitain nippelitietoja kappaleista ja maailmasta näkee vasemmalla infopaneelissa.
+
+GUI-tila käynnistetään muuten samoin kuin komentorivi, mutta askelmäärä jätetään antamatta.
+
+
+\subsubsection{Numerotila}
+
+Numerotila on excelin tyyppinen näkymä, josta näkee nykyhetken tilan laajemmin koko konfiguraatiolle. Eri kappaleiden sijainnit, nopeudet yms. tiedot näkee samanaikaisesti yhdestä taulukosta sekä niitä voi muokata taulukon soluista suoraan, jolloin kappaleiden tilat muuttuvat välittömästi.
 
 
 \subsubsection{Katselutila}
@@ -118,41 +127,42 @@ Katselutilan pääpaino on 3d-näkymässä, jota voi raahailla hiirellä eestaas ja jo
 \item Hiiren rulla shift pohjassa zoomaa kappaleiden kokoja
 \item Hiiren raahaus vasen näppäin pohjassa pyörittää näkymää
 \item Hiiren raahaus keskinäppäin pohjassa siirtää näkymää
-\item Välilyöntinappi, asettaa valitun kappaleen suhteelliseksi origoksi
-\item Nappi >, valitsee seuraavan kappeleen
-\item Nappi <, valitsee edellisen kappaleen
-\item Nappi r, resetoi näkymän
-\item Nappi p, togglaa pause
-\item Nappi c, togglaa origokursorin näkymisen
-\item Nappi e, togglaa auringon tason näkymisen (TODO ecliptic plane)
+\item Välilyöntinappi asettaa valitun kappaleen suhteelliseksi origoksi
+\item Nappi > valitsee seuraavan kappeleen
+\item Nappi < valitsee edellisen kappaleen
+\item Nappi r resetoi näkymän
+\item Nappi p togglaa pausen
+\item Nappi c togglaa origokursorin näkymisen
+\item Nappi e togglaa debuggaustason näkymisen % (TODO ecliptic plane)
 \end{itemize}
+
+Lisäksi 3d-tilasta oikealla hiiren napilla klikkaamalla saa auki valikon, josta voi valita samoja asioita kuin infopaneelista ja näppäimistöltä.
 
 Infopaneelista voi seurata/säätää seuraavia asioita:
 
 \begin{itemize}
 \item Nykyisen planeetan sijainti ja nopeus
+\item Simulaation nopeus ja aika (ylempi slider on nopeus, alempi aikaprosentti)
 \item Kahden valitun planeetan välinen etäisyys
-\item Simulaation nopeus ja aika (ylempi slider on nopeusprosentti, alempi aikaprosentti)
 \end{itemize}
 
 Jos simulaatio on pysäytettynä (pause-tilassa), sen nopeutta ei voi säätää, mutta ajanhetkeä kylläkin. Ajanhetki vaikuttaa siihen, mihin simuloinnin indeksiin asti ruutua piirretään. Jatkuvasti simuloivassa tilassa taasen nopeutta voi säätää, ja aika on koko ajan simuloinnin loppuhetkessä.
 
+Nopeussliderin keskikohta 50 vastaa yhtä asetustiedostossa asetettua aika-askelta. Tätä pienemmät ja suuremmat simuloivat nopeammin tai hitaammin eksponentiaalisesti.
 
-\subsubsection{Numerotila}
-
-Numerotila on excelin tyyppinen näkymä, josta näkee nykyhetken tilan laajemmin koko konfiguraatiolle. Eri kappaleiden sijainnit, nopeudet yms. tiedot näkee samanaikaisesti yhdestä taulukosta sekä niitä voi muokata taulukon soluista suoraan.
+Jos planeetat törmäävät ja asetuksissa on säädetty tälle maailmanloppu, ohjelma menee pysähdystilaan eikä sitä voi enää jatkaa tästä pisteestä.
 
 
 \subsubsection{Valikko}
-
-Valikosta voi avata tiedoston, sulkea ohjelman sekä lisätä ja poistaa planeettoja. Tiedoston avaaminen pysäyttää simulaation ja sulkee nykyisen maailmakonfiguraation ja avaa uuden kuin ohjelma olisi käynnistetty tällä uudella tiedostolla. Ohjelmasta poistuminen myös sulkee konfiguraation välittömästi. Planeettojen lisääminen ja poistaminen onnistuu vain numerotilassa turvallisuuden vuoksi, koska ohjelman kannattaa olla pausetilassa kappaletta muokatessa mihin se menee itsestään numerotilaan siirtyessä.
+% TODO: OPEN TOIMIMAAN TROLOOLO
+Valikosta voi avata tiedoston, sulkea ohjelman, säätää pausetilaa sekä lisätä ja planeettoja. Tiedoston avaaminen pysäyttää simulaation ja sulkee nykyisen maailmakonfiguraation ja avaa uuden kuin ohjelma olisi käynnistetty tällä uudella tiedostolla. Ohjelmasta poistuminen myös sulkee konfiguraation välittömästi. Planeettojen lisääminen onnistuu vain numerotilassa turvallisuuden vuoksi, koska ohjelman kannattaa olla pausetilassa kappaletta muokatessa mihin se meneekin itsestään numerotilaan siirtyessä.
 
 
 \section{Ohjelman rakenne}
 
-\kuvaa{1}{graph.pdf}{Toteutunut luokkajako ja joitain tärkeimpiä metodeita. Kaavio ei ole UML:ää eikä mitään muutakaan standardia muotoa. Viivat kuvaavat tärkeimpiä interaktioita luokkien välillä.}{rakennekuva}
+\kuvaa{1}{graph.pdf}{Toteutunut luokkajako ja joitain tärkeimpiä metodeita. Kaavio ei ole UML:ää eikä mitään muutakaan standardia muotoa. Viivat kuvaavat tärkeimpiä interaktioita luokkien välillä.}{fig:rakennekuva}
 
-Rakenne (kuvassa \ref{fig:rakennekuva} säilyi pääpiirteittäin samanlaisena kun mitä suunniteltiin; jotkut yksityiskohdat vähän elivät eri suuntiin. Koodin rakenne hajautuu neljään pääkategoriaan:
+Rakenne (kuvassa \ref{fig:rakennekuva}) säilyi pääpiirteittäin samanlaisena kun mitä suunniteltiin; jotkut yksityiskohdat vähän elivät eri suuntiin. Koodin rakenne hajautuu neljään pääkategoriaan:
 
 \begin{itemize}
 	\item Konfiguraatiotiedostojen hallinta: geneerinen konffijärjestelmä, joka ei tiedä mihin sitä käytetään.
@@ -161,65 +171,62 @@ Rakenne (kuvassa \ref{fig:rakennekuva} säilyi pääpiirteittäin samanlaisena kun m
 	\item Graffarenderöinti ja sen käyttöliittymä: renderöijä kyselee kappaleiden tiedot maailmalta ja piirtää ne näytölle, sekä käsittelee mm. näppäimistösyötteet joilla näkymässä voi liikkua.
 \end{itemize}
 
+
 \subsection{Konfiguraatiot}
 
-Tämä jäi ohjelman kokonaisuuden kannalta varsin pieneksi osaksi (kuten oli suunnitelmassakin), mutta ei sovellu sinänsä suoraan mihinkään kolmesta muusta kategoriasta, ja on siinä määrin geneerinen että tämän erikseen oleminen on vain kaunista. Seuraavassa esitellään itse luokkien toiminta; katso tiedostoformaatin tarkka muoto kohdasta Tiedostot.
+Tämä on ohjelman kokonaisuuden kannalta varsin pieni osa (kuten oli suunnitelmassakin), mutta ei sovellu sinänsä suoraan mihinkään kolmesta muusta kategoriasta, ja on siinä määrin geneerinen että tämän erikseen erottelu on vain kaunista. Seuraavassa esitellään itse luokkien toiminta; katso tiedostoformaatin tarkka muoto kohdasta Tiedostot.
 
-Config-luokka vastaa yhtä asetusryhmää, jolla on jokin tyyppinimi ja joka on konffitiedostossa aaltosulkujen sisällä. Asetusryhmän sisällä voi olla asetuksia (nimi/arvo-pari; esim. kappaleen nimi tai sijainti) sekä muita asetusryhmiä. Tämä näkyy siten, että sillä on jäseninään yksi ConfigBlock sekä lista toisia Configeja (taulukkomapissa, koska ryhmiä haetaan nimen perusteella aina). Configin voi yhdistää toiseen merge-metodilla, jolloin yhdistettävän sisältämän ConfigBlockin ja Config-mapin asiat liittyvät yhdistäjään.
+Config-luokka vastaa yhtä asetusryhmää, jolla on jokin tyyppinimi (esim. body) ja joka on konffitiedostossa aaltosulkujen sisällä. Asetusryhmän sisällä voi olla asetuksia (nimi/arvo-pari; esim. kappaleen nimi tai sijainti) sekä muita asetusryhmiä. Tämä näkyy siten, että sillä on jäseninään yksi ConfigBlock sekä lista toisia Configeja (taulukkomapissa, koska ryhmiä haetaan nimen perusteella aina). Configin voi yhdistää toiseen merge-metodilla, jolloin yhdistettävän sisältämän ConfigBlockin ja Config-mapin asiat liittyvät yhdistäjään.
 
 ConfigBlock on yksi asetusläjälohko, joka sisältää yleensä yhdelle asialle (esim. Body) kuuluvat ominaisuudet. Se sisältää ne nimi/arvo-parit, joita voi hakea mm. funktiolla get (palauttaa Stringin) tai getDouble (yrittää parsia arvon doubleksi ja palauttaa sen). Sen taianomainen apply-metodi toimii annotaatioilla ja sillä voidaan lukea lohkon arvot suoraan johonkin olioon, jonka jäsenmuuttjat on sidottu annotaatioiden avulla konfiguraatiomuuttujien nimiin.
+
 
 \subsection{Simulaatio}
 
 Grafiikka-agnostinen simulaatio-osio on projektin matemaattisin osa ja se osa missä itse simulogiikka tapahtuu lokittamisen kera. Komentorivitilassa softa käyttää ainoastaan konffitiedostoja ja simulaatiota.
 
-Vektoriluokka Vec3 kuvaa kaikkia kolmiulotteisia matemaattisia vektoreita. Näitä ovat mm. kappaleiden sijainnit, nopeudet ja kiihtyvyydet. Vektoria hyväksikäytetään myös mm. grafiikkakoodissa rgb-värien varastointiin. Vec3 sisältää vektorien perusominaisuudet kuten toiseen vektoriin summaamisen sekä piste- ja ristitulon ja lisäksi yksinkertaisia apumetodeita kuten sijoittamisen toisesta vektorista tai olion kloonausmetodin.
+Vektoriluokka Vec3 kuvaa kaikkia kolmiulotteisia matemaattisia vektoreita. Näitä ovat mm. kappaleiden sijainnit, nopeudet ja kiihtyvyydet. Vektoria hyväksikäytetään myös mm. grafiikkakoodissa rgb-värien varastointiin. Vec3 sisältää vektorien perusominaisuudet kuten toiseen vektoriin summaamisen sekä piste- ja ristitulon ja lisäksi yksinkertaisia apumetodeita kuten sijoittamisen toisesta vektorista tai olion kloonausmetodin. Metodit muokkaavat itse oliota ja palauttavat referenssin itseensä, jolloin metodikutsujen ketjutus onnistuu näppärästi.
 
-Kappaleen perusluokka on Body joka varastoi yhden kappaleen kaikki tiedot. Bodyllä on myös aliluokka Kepler johon voidaan lukea asetuksista keplerkoordinaatit, jolloin sillä muunnetaan ne karteesiseen koordinaatistoon. Kappaleen päätarkoitus on erotella eri lentävien objektien ominaisuudet eri olioihin; kappaleella ei ihmeempää toiminnallisuutta ole.
+Kappaleen perusluokka on Body joka varastoi yhden kappaleen kaikki tiedot. Bodyllä on myös aliluokka Kepler johon voidaan lukea asetuksista keplerkoordinaatit, jolloin sillä muunnetaan ne karteesiseen koordinaatistoon. Kappaleen päätarkoitus on erotella eri lentävien objektien ominaisuudet eri olioihin. Kappaleella ei ihmeempää toiminnallisuutta ole; tärkeimpänä kuitenkin mainittakoon collides()-metodi jolla tarkistetaan törmäys muihin vertaamalla etäisyyttä.
 
-Tavallisille planeetoille riittää Body-luokka. Rakettiluokka Rocket periytyy Bodystä, ja sillä on kiihtyvyysfunktiossa lisäksi johonkin aikaan loppuva vakiovoima joka kuvaa polttoainetta. Tätä voitaisiin jatkokehittää siten, että voimaa voisi ohjata tarkemmin käyttäjän syötteen perusteella.
+Tavallisille planeetoille riittää Body-luokka. Rakettiluokka Rocket periytyy Bodystä, ja sillä on kiihtyvyysfunktiossa lisäksi johonkin aikaan loppuva vakiovoima joka kuvaa polttoaineen työntövoimaa. Tätä voitaisiin jatkokehittää siten, että voimaa voisi ohjata tarkemmin käyttäjän syötteen perusteella.
 
-Varsinainen maailmankaikkeuden toiminnallisuus on World-luokassa. Se varastoi listassa Body-oliot ja hoitaa interaktion simulaatiossa muiden luokkien välillä ja integroi pyydettäessä. Metodi loadConfig ottaa konfiguraatio-osion, josta haetaan Bodyjä vastaavat lohkot joilla instantioidaan Body-olioita. Metodi run ajaa integraattoria yhden parametrina tulevan aika-askeleen määrän verran. Integraattorin käyttämä metodi acceleration palauttaa tietyn hetken kiihtyvyyden annetulle planeetalle.
+Varsinainen maailmankaikkeuden toiminnallisuus on World-luokassa. Se varastoi listassa Body-oliot ja hoitaa interaktion simulaatiossa muiden luokkien välillä ja integroi pyydettäessä. Metodi loadConfig ottaa konfiguraatio-osion, josta haetaan Bodyjä vastaavat lohkot joilla instantioidaan Body-olioita. Metodi run ajaa integraattoria yhden parametrina tulevan aika-askeleen määrän verran. Integraattorin käyttämä metodi acceleration palauttaa tietyn hetken kiihtyvyyden annetulle planeetalle. Runissa myös tarkistetaan törmäykset collide-metodilla integraattorin ajon jälkeen, ja tehdään toimenpiteitä asetustiedostojen mukaan, kuten ilmaistaan maailmanloppu tai törmäytetään planeettoja.
 
 Worldilla on Integrator-rajapinnan toteuttava jäsenolio joka hoitelee itse algoritmin. Se kyselee Worldilta kiihtyvyyksiä tiettyinä ajanhetkinä eri kappaleille, ja siirtää kappaleita niiden mukaan. RK4 on oletuksena toimiva integraattori, mutta esimerkin vuoksi on tehty myös Verlet, sekä huonompi RK4 joka pitää muuta maailmaa paikallaan laskiessa yhdelle kappaleelle kiihtyvyyttä ajanhetkellä t+dt uudessa paikassa (luokka BadRK4). Integratorin selventämiseksi simussa on myös luokat State ja Derivative, jotka säilövät sijainteja ja kiihtyvyyksiä ilman erityisempää toiminnallisuutta.
 
-World kans tsekkaa törmäilyt, XXX!
-
-Integraatorit runkkaa koko maailmavektoria!
+Integrointi tulee siis hoitaa koko ''maailmavektorille'' kerrallaan: RK4 ja Verlet laskevat kaikille kappaleille omat uudet sijannit, joita käyttävät askeleen välilaskuissa antamalla kaikki sijainnit taulukossa kiihtyvyysfunktiolle, joka käyttää niitä maailman nykytilan sijaan.
 
 World osaa myös lokittaa ajon yhteydessä. Logger-luokka hoitaa kaiken lokittamisen kokonaisuudessaan, ja maailma kutsuu log()-metodia tarvittaessa. Loggerin sisällä on LogWriterista periytyviä olioita kuten GnuplotWriter ja CsvWriter. Nämä eri tyyppiset lokikirjoittimet kirjoittavat eri tyyppistä dataa tiedostoon nimensä mukaan.
 
 
 \subsection{Käyttöliittymä}
 
-Kuten käyttöohjeessa mainittiin, käyttöliittymä on kaksiosainen. Pääikkunaa kuvaa UI-luokka; se hoitaa ikkunan korkeimman tason asiat ja komentaa eri näkymiä, testailu- ja numerotilaa joista käyttöohjeessa mainittiin. Näiden kahden näkymän välillä siirrytään välilehtijutulla. Asetushässäkkä on taulukkoinputti joka hanskaa worldin bodyt.
+Kuten käyttöohjeessa mainittiin, käyttöliittymä on kaksiosainen. Pääikkunaa kuvaa UI-luokka; se hoitaa ikkunan korkeimman tason asiat ja komentaa eri näkymiä, testailu- ja numerotilaa. Näiden kahden näkymän välillä siirrytään välilehtipaneelilla. Asetushässäkkä on taulukkoinputti joka hoitelee Bodyjen välillä interaktiota AbstractTableModelista periytyvällä luokalla.
 
 3D-näkymän asiat hoidetaan grafiikan puolella GLCanvasia kuuntelevassa GLEventListeneristä periytyvässä Rendererissä, joka on UI:n sisällä myös. Tässä näkymässä on myös SettingPane, joka sisältää Widgettejä.
 
 BodyWidget: kappaleen tiedot. Koostuu valikosta, josta valitaan käsiteltävä kappale, sekä muutamasta tekstilaatikosta joista näkee mm. kappaleen paikan. Käsiteltävän kappaleen voi klikata myös 3d-näkymästä, jolloin laatikon valittu elementti vaihtuu samalla.
 
-DistanceWidget: etäisyyden laskenta. Valitaan kaksi kappaletta kuten BodyWidgetistä, ja näiden välinen etäisyys näkyy tekstilaatikossa. Kappaleet tähänkin voi valita 3d-näytöltä.
+TimeWidget: simulaation ajan ja nopeuden säätö. Sisältää pausenapin sekä säätöpalkit ajanhetkelle ja simulaation piirtämisen nopeudelle. Ajanhetki säätyy eksponentiaalisesti ja ajanhetki lineaarisesti.
 
-TimeWidget: simulaation ajan ja nopeuden säätö. Sisältää säätöpalkit ajanhetkelle ja simulaation piirtämisen nopeudelle.
+DistanceWidget: etäisyyden laskenta. Valitaan kaksi kappaletta kuten BodyWidgetistä, ja näiden välinen etäisyys näkyy tekstilaatikossa. Kappaleet tähänkin voi valita 3d-näytöltä.
 
 SettingPane hoitaa widgettien puuhat eteenpäin tylsillä proxymetodeillaan. Käyttöliittymäjutut ovat tylsiä ja hoidetaan Swingillä ihan normaalisti.
 
 
 \subsection{Grafiikat}
 
-Grafiikkojen renderöinti keskittyy GLCanvas-luokasta periytyvään Renderer-luokkaan, joka hoitaa kappaleiden piirtelyn. Renderer sisältää GfxBody-olioita, joiden piirtometodeita kutsuu tarvittaessa (draw() tjsp). Renderer rekisteröi muutamia syötteenkäsittelijöitä UserInputHandler-luokkaan, joka hoitaa hiiren ja näppiksen interaktion. Näkymän katselusuunta muuttuu maailmaa pyörittäessä, zoomatessa ja siirtäessä. Nämä hoituvat erityisen kameramatriisin avulla, jota tuo handler pyytää päivittämään kun käyttäjä niin toivoo.
+Grafiikkojen renderöinti keskittyy GLCanvas-luokasta periytyvään Renderer-luokkaan, joka hoitaa kappaleiden piirtelyn. Renderer sisältää GfxBody-olioita, joiden piirtometodeita (render()) kutsuu tarvittaessa. Renderer rekisteröi muutamia syötteenkäsittelijöitä UserInputHandler-luokkaan, joka hoitaa hiiren ja näppiksen interaktion. Näkymän katselusuunta muuttuu maailmaa pyörittäessä, zoomatessa ja siirtäessä. Nämä hoituvat erityisen kameramatriisin avulla, jota tuo handler pyytää päivittämään kun käyttäjä niin toivoo. Kameramatriisi annetaan OpenGL:lle suoraan kertomaan kappaleiden koordinaatteja.
 
 UserInputHandler toteuttaa erinäisiä tapahtumakuuntelijainterfaceja. Kun jotain näppäintä painetaan, se tekee jotain tarvittaessa. Hiiren napin mennessä pohjaan alkaa pyöritys- tai pannausoperaatio, ja kun hiirtä raahataan, handleri pyytää Rendereriä päivittämään näkymän kameraa muuttuneiden parametrien suhteen.
 
-Koska maailman pyörittelyoperaatio vaatii hieman erikoista toimintalogiikkaa, se on ulkoistettu ArcBall-luokalle (joka on pienin muutoksin kopioitu raa'asti NeHe:n esimerkeistä (VAI ONKO?)). Kun pyöritys alkaa, ArcBallille kerrotaan hiiren alkusijainti. ArcBall projisoi tämän pisteen tietyn sikamageen pallon pinnalle ja ottaa pintapisteen muistiin. Kun hiirtä raahataan, pyörittely lasketaan kvaternioilla uuden hiiripisteen projisoituun paikkaan. Tästä lisää algoritmit-osiossa. Maailman pyörittelyn avuksi grafiikkapuolella on luokat Quat (kvaternio) ja Matrix4f (4x4 matriisi).
+Koska maailman pyörittelyoperaatio vaatii hieman erikoista toimintalogiikkaa, se on ulkoistettu ArcBall-luokalle (joka on pienin muutoksin kopioitu raa'asti NeHe:n esimerkeistä). Kun pyöritys alkaa, ArcBallille kerrotaan hiiren alkusijainti. ArcBall projisoi tämän pisteen tietyn kuvitellun pallon pinnalle ja ottaa pintapisteen muistiin. Kun hiirtä raahataan, pyörittely lasketaan kvaternioilla uuden hiiripisteen projisoituun paikkaan. Maailman pyörittelyn avuksi grafiikkapuolella on luokat Quat (kvaternio) ja Matrix4f (4x4 matriisi). Kuvitellun pallon keskipisteestä ajatellaan vektorit klikattuihin pisteisiin pallon pinnalla, ja lasketaan, minkä akselin suhteen ja kuinka paljon tässä palloa pitäisi pyörittää. Tällainen arcball-pyöritys toimii samaan tyyliin kuin mm. Blender-ohjelmassa.
 
-GfxBody on erillinen luokka, joka sisältää viittauksen Bodyyn jota se esittää. GfxBody ei periydy Bodystä, koska nämä ovat kuitenkin varsin eri asiat; piirrettävä objekti on tavallaan kääre Bodylle, eikä mikään Body erikoistoiminnoilla. Tämä myös selventää ohjelman toimintaa muualta, kun ei tarvitse tarkistaa, annetaanko simulaattorille listaa GfxBodyistä UI:n tapauksessa tai Bodyistä CLI:n tapauksessa. Periyttäminen ei itseasiassa olisi edes mahdollista, koska Bodyjen tilalla voi olla Rocketeja. GfxBody lukee asetuksista lisämääreitä kappaleelle: väri ja tekstuuri. Tekstuuria käytetään kappaleen piirtämiseen ja väriä liikehistoriakäppyrään; nämä selkeyttävät kappaleiden erottamista toisistaan. GfxBodyn päätehtävä on piirtää kappale liikehistorioineen, jonka se myös varastoi tiettyyn rajaan asti.
+GfxBody on erillinen luokka, joka sisältää viittauksen Bodyyn jota se esittää. GfxBody ei periydy Bodystä, koska nämä ovat kuitenkin varsin eri asiat; piirrettävä objekti on tavallaan kääre Bodylle, eikä mikään Body erikoistoiminnoilla. Tämä myös selventää ohjelman toimintaa muualta, kun ei tarvitse tarkistaa, annetaanko simulaattorille listaa GfxBodyistä UI:n tapauksessa tai Bodyistä CLI:n tapauksessa. Periyttäminen ei itseasiassa olisi edes mahdollista, koska Bodyjen tilalla voi olla Rocketejakin. GfxBody lukee asetuksista lisämääreitä kappaleelle: toistaiseksi värin ja tekstuurin. Tekstuuria käytetään kappaleen piirtämiseen ja väriä liikehistoriakäppyrään; nämä selkeyttävät kappaleiden erottamista toisistaan. GfxBodyn päätehtävä on piirtää kappale liikehistorioineen, jonka se myös varastoi jotta historian takaisinkelaus voisi olla mahdollista.
 
-TextureReader on myös muualta lainattua koodia, ja sen tehtävä on eristää tekstuuritiedostojen lukeminen muualle.
+TextureReader on myös muualta lainattua koodia, ja sen tehtävä on eristää tekstuuritiedostojen lukeminen tiedostoista opengl-luvuiksi muualle. Sitä on hieman yksinkertaistettu ja siihen on lisätty cachaus koska kymmenien kappaleiden tekstuurien lataus hidastaa ohjelman käynnistymistä ikävästi.
 
-% Ohjelman erottelu tärkeimpiin osakokonaisuuksiinsa, toteutuneen luokkajaon esittely. Minkälaisilla luokilla kuvaatte ohjelman ongelma-aluetta? Mitä ongelman osaa kukin luokka mallintaa? Mitkä ovat luokkien väliset suhteet? Entä millaisia luokkia käytätte ohjelman käyttöliittymän kuvaamiseen?
-
-% Tässä kannattaa esittäkää myös mahdollisia muita ratkaisumalleja ja perustella valittu ratkaisu. Jos suinkin mahdollista, liittäkää mukaan jonkinlainen graafinen luokkakaavio (voitte käyttää esim. UML-luokkakaavionotaatiota, mutta se ei ole millään muotoa pakollista). Esitelkää luokkien keskeiset metodit. Huom. oleellista on vain se, mitä metodeilla tehdään, ei se, miten ne sisäisesti toimivat.
 
 \section{Algoritmit}
 
@@ -265,8 +272,6 @@ Vaihtelun vuoksi toteutettiin myös ns. Velocity Verlet.
 Tämä on helppo muuttaa koodiksi siten, että uusi paikka lasketaan ensin, sitten uuden paikan kohdassa lasketaan kiihtyvyys uudessa kohdassa, ja lopuksi uuden nopeuden laskemiseen käytetään vanhaa ja uutta kiihtyvyyttä.
 
 
-TODO: koodissa paskasti. ei vektoreina.
-
 \subsubsection{Törmäysten hallinta}
 
 Törmäykset hallitaan kahden kappaleen välisinä tarkistuksina: integroinnin jälkeen tarkistetaan, onko kahden kappaleen välinen etäisyys pienempi kuin niiden säteet yhteenlaskettuna. Mikäli näin on, tehdään jokin törmäyshallinta: ei tehdä mitään, pysäytetään simulaatio tai kimmotetaan kappaleet.
@@ -276,7 +281,8 @@ Jos ei tehdä mitään, simulaatio jatkuu ja kappaleet menevät toistensa lävitse. P
 Kimpoaminen hallitaan täysin kimmoisasti massakeskipisteen kautta. Liikemäärävektorit muunnetaan massakeskipistekoordinaatistoon ja kaavat pyöritellään sitä kautta niin, että tässä koordinaatistossa kappaleet liikkuvat suoraan toisiaan kohti jolloin niiden nopeuksien merkki vaihtuu. Massakeskipiste:
 
 \begin{align}
-p_cm &= (m_1 + m_2) v_cm = p_1 + p_2 \\
+p_cm &= (m_1 + m_2) \\
+v_cm &= p_1 + p_2 \\
 v_cm &= \frac{m_1}{m_1 + m_2} v_1 + \frac{m_2}{m_1 + m_2} v_2
 \end{align}
 
@@ -287,15 +293,17 @@ v_{1,cm} &= v_1 - v_{cm} \\
 p_{1,cm} &= p_1 - m_1  v_{cm} = m_1 v_1 - (m_1 \frac{m_1}{m_1 + m_2} v_1 + m_1 \frac{m_2}{m_1 + m_2} v_2) \\
 &= \frac{m_1 m_2}{m_1 + m_2} (v_1 - v_2)
 \end{align}
+
 Kappaleelle 2 vastaavasti.
 
 Nyt liikemäärän muutos on molemmille kappaleille vain merkinvaihto, eli liikemäärän muutos on itse liikemäärä kaksinkertaisena ja negatiivisena. Tästä takaisin maailmakoordinaatistoon muuttamalla saadaan
 
 \begin{align}
-\delta v_1 = \delta p_1 / m_1 = -2 \frac{m_1 m_2}{m_1 + m_2} (v_1 - v_2)
+\Delta v_1 = \Delta p_1 / m_1 = -2 \frac{m_1 m_2}{m_1 + m_2} (v_1 - v_2)
 \end{align}
 
-ja sama kappaleelle 2 vastaavasti. Tämä nopeuden muutos vaihdetaan integroinnin jälkeen integraattoriluokassa, jos asetukset ovat niin määränneet.
+ja sama kappaleelle 2 vastaavasti. Tämä nopeuden muutos hoidetaan kappaleen nopeuteen World-luokassa, jos asetukset niin määrää.
+
 
 \subsection{Muuta}
 
@@ -311,9 +319,9 @@ Grafiikan piirrossa suhteellinen origo on mainitsemisen arvoinen ominaisuus. Glo
 
 Kappaleita voi lisäillä kesken kaiken, joten niitä varastoidaan ArrayListeissä eikä ihan perustaulukoissa. Sama kappaleiden historiadatalle yms. Suora indeksointi on suhteellisen harvaa ja kappaleita lähinnä iteroidaan läpi, joten tilalle sopisi myös linkitetty lista. Sen hyvistä puolista ei tosin juuri ole hyötyä, koska keskeltä ei poisteta tai lisäillä olioita juuri koskaan.
 
-TODO: Historiadata vois olla linklistissä.
+Historiadata vois olla linkitetyssä listassa, jos siihen olisi tehty muistioptimointi poistamalla alusta dataa sitä mukaa kun sitä tulee alkuun.
 
-Asetusryhmän (Config) sisältämät toiset ryhmät varastoidaan sekä taulukoita sisältävässä hashmapissa että kaikki kerrallaan yhdessä taulukossa. Hashmapista saa taulukollisen tietyn nimisiä ryhmiä, koska tätä tarvitaan jossain (esim. haetaan kaikki body-ryhmät). Näin ryhmiä ei tarvitse hakea kaikkien ryhmien sisältävästä taulukosta aina, kun niitä tietyllä nimellä tarvitaan.
+Asetusryhmän (Config) sisältämät toiset ryhmät varastoidaan taulukoita sisältävässä hashmapissa. Hashmapista saa taulukollisen tietyn nimisiä ryhmiä, koska tätä tarvitaan jossain (esim. haetaan kaikki body-ryhmät). Näin ryhmiä ei tarvitse hakea kaikkien ryhmien sisältävästä taulukosta aina, kun niitä tietyllä nimellä tarvitaan.
 
 Raakoja taulukoita käytetään integraattorissa, kun tarvitaan useita väliaikaistaulukoita joiden koko ei muutu miksikään, vaan ne alustetaan valmiiksi oikean kokoisiksi.
 
@@ -321,7 +329,7 @@ Raakoja taulukoita käytetään integraattorissa, kun tarvitaan useita väliaikaista
 
 \section{Tiedostot}
 
-Tiedostoformaatti suunniteltiin helppoa muokattavuutta silmällä pitäen. Koska maailman tiedot kuitenkin kannattaa kirjoittaa ihmisen toimesta tiedostoon eikä naksutella GUIsta, muoto on varsin minimalistinen eikä kovin ihmeellinen.
+Tiedostoformaatti suunniteltiin helppoa muokattavuutta silmälläpitäen. Koska maailman tiedot kuitenkin kannattaa kirjoittaa ihmisen toimesta tiedostoon eikä naksutella GUIsta, muoto on varsin minimalistinen eikä kovin ihmeellinen.
 
 Esimerkki 1, planeetan määritykset:
 \begin{verbatimtab}[4]
@@ -343,7 +351,7 @@ body {
         }
         gfx {
                 texture earth.png
-                color 0,0,1
+                color 0,0,1 /* rgb */
         }
 }
 \end{verbatimtab}
@@ -361,7 +369,7 @@ log {
         file full.log
 }
 log {
-        tick 100 /* kerran päivässä */
+        tick 100 /* kerran päivässä, sadan askeleen välein */
         filter Sun /* lokita vain aurinko */
         file sun.log
 }
@@ -381,76 +389,43 @@ Include-sana lukee toisen tiedoston ja sisällyttää sen siihen kohtaan, missä se 
 
 Asetusryhmällä on jokin nimi (esim. body, kepler tai log) ja se on aina jonkin toisen asetusryhmän sisällä, poislukien ylimmän tason ladattava tiedosto joka ei ole minkään sisällä. Ryhmän sisältö ympäröidään aaltosuluilla. Parserissa ei ole kovinkaan paljon älyä, joten avaavan aaltosulun on oltava rivin lopussa, ja sulkevan on oltava rivin ainoa merkki. Välilyöntejä, tabeja ja kommentteja ei tosin lasketa tähän.
 
-Kappaleille voi antaa sijainti- ja nopeusvektorin, tai sitten kepler-lohkossa keplerblah orbital parameters -jutut, mistä ne päätellään. Kulmat ovat asteissa.
-
-
-% Selostakaa tässä osiossa myös millaisia tiedostoja ohjelmasi käsittelee, jos mitään. Esim. ovatko ne tekstitiedostoja vai binaaritiedostoja, ja miten tieto on niissä esitetty? Kuvatkaa lopullinen tiedostoformaatti sillä tasolla, että assitentti voi halutessaan helposti luoda ohjelmalle testidataa. Laittakaa liitteeksi joitakin tiedostoja joita ohjelma tarvitsee/on tuottanut.
-\begin{itemize}
-\item Config: tarkistetaan, että latausmetodit lataavat globaalit muuttujat ja blokit kunnolla sekä skippaavat kommentit.
-\item ConfigBlock: getterit palauttavat oikean arvon niitä hakiessa. Esim. getInt heittää poikkeuksen mikäli arvoa ei voi tulkita kokonaislukuna. Setterit vastaavasti.
-\item Simulaation toimivuus: Pyöritellään maapalloa auringon ympärillä pari aika-askelta ja katsotaan, että on siellä minne ennustettiin. Kiihtyvyysfunktiosta katsotaan, että kaikki planeetat vaikuttavat toisiinsa.
-\item Lagrangen pisteessä oleva kappale ei integroidessa liiku suhteessa muihin.
-\item Törmäykset: törmäystarkistusmetodi reagoi oikein kun kappaleet ovat liian lähekkäin.
-\item Käyttöliittymän napit tekevät mitä pitääkin; testattava lähinnä käsin.
-\item Asetuswidgettien chooseBody-metodit ym. reagoivat esim. valitsemalla oikean kappaleen.
-\item Renderer piirtää sille annetut palikat oikeisiin kohtiin. Apurakenteeksi jokin testihomma joka käynnistää rendausikkunan dummykappaleilla.
-\item Rendererin navigointimetodit; testattava käsin.
-\end{itemize}
-
-\begin{itemize}
-	\item Ladatun asetustiedoston tietojen oikeellisuus suhteessa tiedoston sisältöön (helppo testata koneellisesti).
-	\item Virheellisen asetustiedoston oikeaoppinen hallinta: configluokka heittää poikkeusta ja pääohjelma käsittelee sen sopivasti ja ilmoittaa käyttäjälle ongelmasta.
-	\item Simulaation kaavojen toimivuus: Lagrangen pisteessä oleva kappale pysyy paikallaan; maa kiertää auringon siinä ajassa kun oikeastikin eikä niiden välinen etäisyys muutu.
-	\item Kappaleiden lisäys konfigurointikäyttöliittymässä: käyttöliittymä reagoi kuten haluttaisiin ja kappale ilmestyy listoihin ja 3d-näkymään.
-	\item Kappaleiden muokkaus: simulaatio reagoi sitä mukaa kun kappaleelle säätää vaikka uuden paikan tai massan.
-	\item Luonnonvakioiden ja muiden yleismuuttujien muokkaus: simulaatio reagoi vastaavasti.
-	\item Renderöinnin oikeellisuus planeettojen sijaintien, suuntavektorien, ratojen ym. osalta: kappaleiden sijainnit vastaavat toisiaan konfiguraationäkymässä lokitiedostossa.
-	\item 3d-näkymässä liikkuminen: näppis ja hiiri toimivat odotetusti.
-	\item Kappaleen valinta 3d-näkymästä: näkymästä klikatessa oikea planeetta valitaan, konfigurointipaneeli reagoi valintaan ja 3d-näkymässä näkyy korostettuna, että kappale on valittu.
-	\item Kappaleen siirto 3d-näkymässä: valittua kappaletta voi raahailla hiirellä.
-	\item Kappaleen seuranta 3d-näkymässä: kappale pysyy näkymän keskipisteessä liikkuessaankin.
-	\item Origon määritys: muu maailma käyttäytyy siten kun seurattu kappale olisi origo.
-	\item Satelliitin laukaisu: 3d-näkymä ja simulaatio reagoivat oikein kun konfigurointipaneelista painetaan nappia satelliitin lähettämiseksi.
-\end{itemize}
+Kappaleille voi antaa sijainti- ja nopeusvektorin, tai sitten kepler-lohkossa kiertorataparametreina, mistä sijainti ja nopeus päätellään. Kiertorataparametrien kulmat ovat asteissa.
 
 
 \section{Testaus}
 
-Ohjelman päätoiminnallisuutta testattiin yksikkötesteillä sekä isompia ja grafiikkaan liittyviä testejä tehtiin käsin. Asetuksille on muutama yksikkötestaus, mutta niitäkin tuli kokeiltua käsin niin, että ne toimivat halutusti kokonaisuuden kera.
+Ohjelman päätoiminnallisuutta testattiin aluksi yksikkötesteillä sekä isompia ja grafiikkaan liittyviä testejä tehtiin käsin. Asetuksille on muutama yksikkötestaus, mutta niitäkin tuli kokeiltua käsin niin, että ne toimivat halutusti kokonaisuuden kera. Systemaattista JUnit-koodia voisi olla enemmän, mutta koska ohjelmassa käytetään vähän kaikkea kaikesta, ongelmat tulevat kätevästi systeemitestauksessa ilmi.
 
-Simulaation oikeellisuus koestettiin pääosin testailunäkymästä katselemalla, että vuosia eteenpäin simuloimalla kappaleiden radat pysyvät oikeina sekä ajamalla yksinkertaisia automaattisia testejä ja seuraamalla ajolokeja. Lagrangen pisteiden haxailua ei testailtu (TODO: joopa!! tehää tehää)
+Simulaation oikeellisuus koestettiin pääosin testailunäkymästä katselemalla, että vuosia eteenpäin simuloimalla kappaleiden radat pysyvät oikeina sekä ajamalla yksinkertaisia automaattisia testejä ja seuraamalla ajolokeja. Lagrangen pisteiden kokeilu unohtui.
 
-Törmäykset testattiin tekemällä asetustiedosto jossa on kaksi kappaletta paikallaan, ja toteamalla että komentoriviohjelma päättyy kun ne törmäävät; törmäyksen saa tarkasteltua lokitiedostoista helposti jälkeenpäin.
+Törmäykset testattiin tekemällä asetustiedosto jossa on kaksi kappaletta paikallaan, ja toteamalla että komentoriviohjelma päättyy kun ne törmäävät; törmäyksen saa tarkasteltua lokitiedostoista helposti jälkeenpäin. Kimpoilemisenkin näkee selvästi graafisesta käyttöliittymästä.
 
 Monia ohjelman toiminnallisuuksia tuli kokeiltua käyttöliittymästä, ja käyttöliittymän toimivuus tuli tarkistettua siinä samalla. Eri tiloista toisiin piti kokeilla että kaikki toimivat edelleen; esim. pausetilan syklittäminen ei hajota mitään. Kappaleiden muokkaus toimii testatusti ja planeetat siirtyvät kun niiden tietoja muokataan numeronäkymästä.
 
-Renderöinti näyttää oikealta ja siinä navigointi (pyöritys ja siirto) toimii odotetusti.
+Renderöinti näyttää oikealta ja siinä navigointi (pyöritys ja siirto) toimii odotetusti. Origon muuttamisen oikeellisuuden näkee siitä, että auringon ollessa origo muiden radat eivät venähdä, ja esim. Maan origoksi asettaminen saa auringon näyttämään siltä, että se kiertäisi Maata.
 
 Kaikki toteutetut asiat testattiin ja todettiin toimivaksi.
 
 Esimerkiksi törmäystestaus hoituu helposti antamalla ohjelmalle conf/collisiontest.conf-tiedosto ja muokkaamalla siitä collisiontype-muuttujaa.
 
-% Kertokaa miten ohjelmaa testattiin ja kuinka se vastasi suunnitelmassa esitettyä.
-
-% Läpäiseekö ohjelma kaikki suunnitelmassa esitetyt testit? Kuinka ohjelmaa testattiin sitä rakennettaessa? Oliko testauksen suunnittelussa jotain olennaisia aukkoja?
 
 \section{Ohjelman tunnetut puutteet ja viat}
 
-Virhetilanteiden hallinta ei ole erityisen käyttäjäystävällistä. Jotkut paikat heittävät tarkoituksella RuntimeErroreita, koska käyttöliittymän virheilmoitusten hallinta ei erityisemmin kiinnostanut eikä sitä ollut määritelty suunnitelmassa erityisen tarkasti. Ohimennen suunniteltiin, että käyttöliittymä käsittelisi asetustiedostojen poikkeukset, mutta niitä ei priorisoitu korkealle ja jäivät toteuttamatta; oletetaan, että käyttäjä tarkastelee konsolia poikkeusten varalta. Toisaalta poikkeuksia ei tavallisessa käytössä pitäisi ihmeemmin lennellä, vaan enimmäkseen asetustiedostojen virheellisyydestä. Poikkeusten kuvausviestit ovat kuitenkin järkeviä, kuten esim. jos asetustiedostosta noustaan ylimmänkin tason yläpuolelle (eli siellä on ylimääräinen \}-merkki), lentää virhe viestillä ''One does not simply ascend out from the topmost config section!''.
+Virhetilanteiden hallinta ei ole erityisen käyttäjäystävällistä. Jotkut paikat heittävät tarkoituksella RuntimeErroreita, koska käyttöliittymän virheilmoitusten hallinta ei erityisemmin kiinnostanut eikä sitä ollut määritelty suunnitelmassa erityisen tarkasti. Ohimennen suunniteltiin, että käyttöliittymä käsittelisi asetustiedostojen poikkeukset, mutta niitä ei priorisoitu korkealle ja jäivät toteuttamatta; oletetaan, että käyttäjä tietää mitä tekee ja tarkastelee konsolia poikkeusten varalta. Myöskään esim. nimissä ei saisi olla duplikaatteja, mutta sitä ei testata. Jossain osissa koodia haetaan kappaleita nimen perusteella, ja tällöin saadaan ensimmäiseksi löytynyt.
+
+Toisaalta poikkeuksia ei tavallisessa käytössä pitäisi ihmeemmin lennellä, vaan enimmäkseen asetustiedostojen virheellisyydestä ohjelmaa käynnistäessä. Erityispoikkeusten kuvausviestit ovat kuitenkin järkeviä. Pienemmistä virheistä tulostetaan varoituksia konsoliin kaatumatta.
 
 Jotkut suunnitellut ominaisuudet jäivät toteuttamatta; näistä puutteista tarkemmin kohdassa Poikkeamat suunnitelmasta.
-%Kuvaa tässä osiossa kaikki tuntemasi puutteet ja viat ohjelmassasi. Kerro miten korjaisit nämä ongelmat jos jatkaisit projektia. Mitä vähemmän assistentti löytää puutteita kohdista joiden väität toimivan sen parempi. Ole siis rehellinen. 
 
-Nimissä ei saisi olla duplikaatteja, mutta sitä ei testata.
+Oheisella esimerkkiaurinkokunnalla muita kappaleita ei oikein näe paitsi tekstin suhteen, koska aurinko on niin massiivinen. Tämä on pikemminkin ominaisuus eikä vika, koska koot renderöidään oikeassa suhteessa.
+
 
 \section{3 parasta ja 3 heikointa kohtaa}
 
-Teknisesti parhaita lienevät asetustiedoston nätti rekursiivisuus ja lokitiedostojen modulaarisuus, keino-origon säätö ja yleinen koodin laajennettavuus mihin kuuluu lokitiedostojen säädettävyys ja integrointimenetelmän joustavuus. Toki RK4-integrointikin on mukavan tarkka, mutta sehän on prujattu wikipediasta eikä itse menetelmä ole omaa tuotantoa.
+Teknisesti parhaita lienevät asetustiedoston nätti rekursiivisuus ja lokitiedostojen modulaarisuus, keino-origon säätö ja muu 3d-tilan toimivuus sekä ja yleinen koodin laajennettavuus mihin kuuluu lokitiedostojen säädettävyys ja integrointimenetelmän joustavuus. Toki RK4-integrointikin on mukavan tarkka, mutta sehän on prujattu wikipediasta eikä itse menetelmä ole omaa tuotantoa.
 
 Heikoimpia kohtia ovat käyttöliittymän rumuus ja kankeus, virhetilanteiden viimeistelemättömyys käyttäjän näkökulmasta sekä automaattisten testien vähyys.
 
-
-% Assistentti käyttää runsaasti aikaa tutustuessaan ohjelmaasi, mutta ei välttämättä näe toteutustasi samalla tavoin kuin sinä. Jos ohjelmassa on joitakin kohtia joita itse pidät erityisen hyvinä, mainitse tässä niistä 1-3 kappaletta lyhyen perustelun kera. Jos ohjelmassa on kohtia jotka itsekin tiedät heikoiksi, voi mainita myös nämä. Tällöin mahdollisuus että nämä heikot kohdat dominoivat arvostelua vähenee huomattavasti. Tässä voi myös esittää sanallisesti kuinka olisi nämä asiat halutessaan korjannut. 
 
 \section{Poikkeamat suunnitelmasta}
 
@@ -458,13 +433,12 @@ Joitain suunniteltuja ominaisuuksia puuttuu, koska projektiin ei käytetty ihan n
 
 Suunniteltu anaglyfikolmiulotteisuus jäi toteuttamatta, mutta se on helppo lisätä, sillä opengl tukee sitä varsin suoraan. Se onnistuisi renderöimällä kahdesti päällekkäin vaihtamalla kameran sijaintia ja värimaskia välissä.
 
-Kappaleita ei voi siirtää tai seurata 3d-näkymässä. Siirtäminen olisi kuitenkin hankalaa tehdä tarkasti, jolloin on parempi muokata suoraan numeroarvoja. Seuranta vain ei ehtinyt mukaan.
+Kappaleita ei voi siirtää tai seurata 3d-näkymässä. Siirtäminen olisi kuitenkin hankalaa tehdä tarkasti käyttäjän kannalta, jolloin on parempi muokata suoraan numeroarvoja. Seuranta vain ei ehtinyt mukaan.
 
 Satelliitin/raketin laukaisulle ei ole käyttöliittymässä nappia eikä niitä voi lisätä jälkeenpäin, vaan ne on laitettava asetustiedostoon valmiiksi (mallia voi ottaa conf-hakemiston esimerkkitiedostoista).
 
-Törmäyksissä kappaleet eivät hajoa palasiksi. TODO.
+Törmäyksissä kappaleet eivät hajoa palasiksi.
 
-% Teittekö jotain toisin kuin olitte suunnitellut? Miksi? Osuiko suunnitelmaan laatimasi ajankäyttöarvio oikeaan? Miksei? Entä toteutusjärjestys?
 
 \section{Toteutunut työjärjestys ja aikataulu}
 
@@ -482,23 +456,20 @@ Seuraavassa viikkokohtaiset suunnitellut ja toteutuneet asiat:
 \item[13] Suunniteltu konffien virheellisyyden hallintaa ja konffauspaneelin reagointia muutoksiin. Tuli jatkettua viime viikon asioita ja aloiteltua näitä; toteutui kohtalaisesti.
 \item[14] Suunniteltu 3d-näkymään hienouksia. Toteutui varsin hyvin edellisiin verrattuna.
 \item[15] Suunniteltu viilausta; toteutui suunnitelmien puitteissa aika raskaasti.
-\item[16] Suunniteltu DL:ään viimeiset viilailut, toteutui aggressiivisena koodaamisena ja dokumentaation pohdinnalla.
+\item[16] Suunniteltu DL:ään viimeiset viilailut, toteutui aggressiivisena koodaamisena ja dokumentaation hakkaamisella viimeisinä päivinä ja öinä.
 \end{description}
 
-% Kerro tässä yleisellä tasolla missä järjestyksessä projekti lopulta toteutettiin (mielellään myös päivämäärät). Missä poikettiin suunnitelmasta? 
-\section{Arvio lopputuloksesta}
+Aikaa tuli käytettyä karkeasti arvioiden kuutisenkymmentä tuntia koodailut, dokumentoinnit ja googlailut mukaanlukien.
 
-% TODO: kiihtyvyysvektorit, suunta- ja nuo silleen et ne näkee, tekstit openglkanvasiin, törmäyshallinta, raketti
+
+\section{Arvio lopputuloksesta}
 
 Projekti onnistui periaatteessa hyvin vaikka joitain hienouksia jäi toteuttamatta; oleelliset asiat löytyvät ja koodi on helposti laajennettavaa, jolloin kiinnostuksen jatkuessa hienoudet voi toteuttaa helposti vaikka pitkän ajan päästä. Koska perustoiminnallisuuteen ja hyvään koodiin sekä dokumentaatioon tuli kiinnitettyä eniten huomiota, huonona puolena käyttöliittymämukavuus ja viimeiset viilailut jäivät vähän vähemmälle.
 
-Modulaarisuutta ja laajennettavuutta helpottavat mm. seuraavat ominaisuudet: Lisäasetuksia on helppo lisätä tarvittaessa, koska asetustiedostot ovat varsin käyttöagnostisia ja aidosti rekursiivisia. Lokitiedostotyyppejä voi kirjoittaa lisää lisäämällä Writer-luokkia. Integraattoria voi vaihtaa koodaamalla uuden luokan sitä varten ja vaihtamalla sen World-luokkaan käyttöön. Bodystä voi periä uudenlaisia lentokappaleita helposti. GfxBodyn voi erikoistaa piirtämään joitain muita kappaleita kuin palloja. SettingPaneen voi lisätä uusia ominaisuuksia naputtelemalla Widget-luokkia ja lisäilemällä niille sinne tuen.
+Modulaarisuutta ja laajennettavuutta helpottavat mm. seuraavat ominaisuudet: Lisäasetuksia on helppo lisätä tarvittaessa, koska asetustiedostot ovat varsin käyttöagnostisia ja aidosti rekursiivisia. Lokitiedostotyyppejä voi kirjoittaa lisää lisäämällä Writer-luokkia. Integraattoria voi vaihtaa koodaamalla uuden luokan sitä varten ja vaihtamalla sen World-luokkaan käyttöön. Integrointi ja kiihtyvyyksien laskeskelu tuli toteutettua varsin hyvin, sillä parin viimeisen illan viilailut sen suhteen veivät hyvin vähän aikaa, vaikka muutokset olivatkin varsin radikaaleja. Bodystä voi periä uudenlaisia lentokappaleita helposti. GfxBodyn voi erikoistaa piirtämään joitain muita kappaleita kuin palloja. SettingPaneen voi lisätä uusia ominaisuuksia naputtelemalla Widget-luokkia ja lisäilemällä niille sinne tuen.
 
-Mielenkiintoista olisi ollut saada jostain suuri läjä eri kappaleiden tietoja (luokkaa satoja tai tuhansia kappaleita) ja testata ohjelman suorituskykyä ja todenmukaisuutta niillä.
+Mielenkiintoista olisi ollut saada jostain suuri läjä eri kappaleiden tietoja (luokkaa satoja tai tuhansia kappaleita) ja testata ohjelman suorituskykyä ja todenmukaisuutta niillä. Nyt suorituskykykokeissa voi tyytyä generoimaan asetustiedoston, jossa on suuri määrä satunnaiskappaleita.
 
-% "Yhteenveto" ja itsearviointi joka voi toistaa yllämainittujakin asioita.
-
-% Arvioikaa ohjelman laatua, kertokaa sen hyvistä ja huonoista puolista. Onko työssä oleellisia puutteita ja mistä ne johtuvat (mahdollinen hyvä perustelu dokumentissa voi korvata pienet puutteet)? Miten ohjelmaa olisi voinut tai voisi tulevaisuudessa parantaa? Olisiko ratkaisumenetelmien, tietorakenteiden tai luokkajaon valinnan voinut tehdä paremmin? Soveltuuko ohjelman rakenne muutosten tai laajennusten tekemiseen? Miksi tai miksi ei?
 
 \section{Viitteet}
 
@@ -536,7 +507,14 @@ Simulaatiosta tuli lueskeltua muutama RK4-artikkeli. Keplerkoordinaattien muunno
 
 \section{Liitteet}
 
-Lopuksi pari hassua esimerkkiä piirtelystä.
+Lopuksi pari hassua esimerkkiä piirtelystä. Kuvassa \ref{fig:esim1} näkyy, kuinka kappaleiden radat vaeltavat suhteessa globaaliin koordinaatistoon, koska aurinko vaeltaa myös. Kuvassa \ref{fig:esim2} on sama tilanne, kun aurinko on asetettu origoksi. Kuvassa \ref{fig:esim3} origon on maapallo, ja muiden kappaleiden radat menevät vinksin vonksin. Kuvassa \ref{fig:esim4} on kuva satunnaisgeneroidusta 200 kappaleen tilanteesta.
+
+Ohjelmakoodi on myös liitteenä erillisenä tiedostona.
+
+\kuvaa{1}{esim1.png}{Radat vaeltavat}{fig:esim1}
+\kuvaa{1}{esim2.png}{Vaeltaminen eliminoitu}{fig:esim2}
+\kuvaa{1}{esim3.png}{Vempularatoja suhteessa maapalloon}{fig:esim3}
+\kuvaa{1}{esim4.png}{Satunnaiskappaleita}{fig:esim4}
 
 %Kaikkein tärkein projektin liite on projektin koko Java-lähdekoodi.
 

@@ -3,7 +3,6 @@ gravitoni/bin
 *.pdf
 *.ps
 teknosuunnitelma/*.png
-dokumentti/*.png
 gravitoni/lib32
 gravitoni/lib64
 aikataulu.txt

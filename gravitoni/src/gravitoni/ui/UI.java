@@ -28,7 +28,7 @@ public class UI extends JFrame implements ActionListener {
 	private DetailView details;
 	
 	public UI(World world) {
-		super("Eippää, behold maailmankaikkeus!");
+		super("Gravitoni");
 		this.world = world;
 		doit();
 	}
@@ -64,7 +64,7 @@ public class UI extends JFrame implements ActionListener {
 		animator.start();
 	}
 	
-	private void reload(World w) { // TODO: reload crashes :(
+	private void reload(World w) { // TODO: reload crashes, fix it :(
 		removeAll();
 		world = w;
 		doit();
@@ -117,7 +117,7 @@ public class UI extends JFrame implements ActionListener {
 		menu = new JMenu("File");
 		menu.setMnemonic(KeyEvent.VK_F);
 		menuBar.add(menu);
-		addMenuItem(menu, "Open");
+		// addMenuItem(menu, "Open"); // Didn't work for some reason, just gets stuck somewhere.
 		addMenuItem(menu, "Pause");
 		addMenuItem(menu, "Unpause");
 		addMenuItem(menu, "New body");
