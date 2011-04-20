@@ -8,15 +8,27 @@ import java.awt.image.PixelGrabber;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.HashMap;
 
 /**
  * Image loading class that converts BufferedImages into a data
- * structure that can be easily passed to OpenGL. A bit modified from the original.
- * @author Pepijn Van Eeckhoudt
+ * structure that can be easily passed to OpenGL. A bit modified from the original to support caching and stuff.
+ * Original author Pepijn Van Eeckhoudt.
  */
 public class TextureReader {
+	/** Cache some textures in case we load tens of them... */
+	private static HashMap<String, TextureReader.Texture> cache = new HashMap<String, TextureReader.Texture>();
+	
+	public static void flush() {
+		cache.clear();
+	}
+	
     public static Texture readTexture(String filename) throws IOException {
-        return readTexture(filename, false);
+    	if (!cache.containsKey(filename)) {
+    		Texture t = readTexture(filename, false);
+    		cache.put(filename, t);
+    	}
+        return cache.get(filename);
     }
 
     public static Texture readTexture(String filename, boolean storeAlphaChannel) throws IOException {

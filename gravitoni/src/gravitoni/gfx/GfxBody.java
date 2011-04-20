@@ -140,7 +140,7 @@ public class GfxBody {
 			}
 			//gl.glColor4d(1 - (double)i / n, (double)i / n, 0, 1);
 			double ii = (double)i / n, jj = 1 - ii;
-			gl.glColor3d(ii * color.x + jj * 0.5, ii * color.y + jj * 0.5, ii * color.z + jj * 0.5);
+			gl.glColor3d((ii + jj * 0.5) * color.x, (ii + jj * 0.5) * color.y, (ii + jj * 0.5) * color.z);
 			gl.glVertex3d(SCALER * p.x, SCALER * p.y, SCALER * p.z);
 		}
 		gl.glEnd();

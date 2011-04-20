@@ -46,7 +46,7 @@ public class Gravitoni {
 	
 	/** Run the command-line interface */
 	public void cli(String arg) {
-		run(Integer.parseInt(arg));
+		run(Double.parseDouble(arg));
 		world.stop();
 	}
 	

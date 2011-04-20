@@ -444,6 +444,7 @@ public class Renderer implements GLEventListener, ActionListener {
 		for (Body b: world.getBodies()) {
 			bodies.add(new GfxBody(b, gl, qua, this));
 		}
+		TextureReader.flush();
 		
         lastCam.setIdentity();
         currCam.setIdentity();
