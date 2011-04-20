@@ -12,6 +12,7 @@ import com.sun.opengl.util.j2d.TextRenderer;
 
 import gravitoni.simu.Body;
 import gravitoni.simu.Vec3;
+import gravitoni.simu.World;
 
 /** Handle 3D graphics for a body. Draw the sphere and its name; remember position history and draw it.  */
 public class GfxBody {
@@ -80,7 +81,7 @@ public class GfxBody {
 	void render(GL gl, boolean selected, double zoom, int timePercent) {
 		if (posHistory.size() == 0) return;
 		Vec3 pos = posHistory.get((int)(timePercent / 100.0 * (posHistory.size() - 1)));
-		double r = .01/1e3 * body.getRadius(); // TODO: yhtenäistä kertoimet
+		double r = SCALER * body.getRadius(); // TODO: yhtenäistä kertoimet
 		
 		gl.glColor4d(1, 1, 1, 1);
 		if (selected) {
@@ -130,7 +131,7 @@ public class GfxBody {
 			//gl.glColor4d(1 - (double)i / n, (double)i / n, 0, 1);
 			double ii = (double)i / n, jj = 1 - ii;
 			gl.glColor3d(jj * color.x + ii * 0.5, jj * color.y + ii * 0.5, jj * color.z + ii * 0.5);
-			gl.glVertex3d(1e-6 *p.x, 1e-6 * p.y, 1e-6 * p.z);
+			gl.glVertex3d(SCALER * p.x, SCALER * p.y, SCALER * p.z);
 		}
 		gl.glEnd();
 	}
@@ -143,18 +144,24 @@ public class GfxBody {
 	/** Draw the velocity and acceleration vectors */
 	private void renderVectors(GL gl) {
 		gl.glDisable(GL.GL_TEXTURE_2D);
+		gl.glColor3d(1.0, 1.0, 0);
+		renderVector(gl, body.getVel());
+		gl.glColor3d(1.0, 0, 1.0);
+		renderVector(gl, body.getLastAccel());
+	}
+	
+	/** Helper for drawing one vector arrow */
+	private void renderVector(GL gl, Vec3 vec) {		
 		gl.glPushMatrix();
-		gl.glColor3d(1, 1.0, 0);
 		Vec3 orig = new Vec3(0, 0, 1); // the cylinder goes originally in this direction
-		Vec3 dir = body.getVel().clone().unit(); // where's the speed going?
+		Vec3 dir = vec.clone().unit(); // where's the given vector going?
 		Vec3 cross = orig.clone().cross(dir); // rotation axis
 		double cos = dir.dot(orig); // rotation amount
-		double spdamount = body.getVel().len();
-		spdamount = Math.log(1+spdamount);
-		//spdamount *= 0.05;// / body.getRadius();
+		double amount = vec.len();
+		amount = Math.log(1 + amount);
 		gl.glRotated(180 / Math.PI * Math.acos(cos), cross.x, cross.y, cross.z);
-		double r = .01/1e3 * body.getRadius();
-		glu.gluCylinder(qua, r - 1, 0, (1 + spdamount) * r, 100, 100);
+		double r = SCALER * body.getRadius();
+		glu.gluCylinder(qua, r - 1, 0, (1 + amount) * r, 100, 100);
 		gl.glPopMatrix();
 	}
 	

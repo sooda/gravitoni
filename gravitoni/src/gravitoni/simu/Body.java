@@ -23,6 +23,8 @@ public class Body {
 	
 	protected Config cfg;
 	
+	private Vec3 lastAccel = new Vec3();
+	
 	/** Construct a new body from the given configuration, but don't take the kepler parameters into account yet */
 	public Body(Config cfg) {
 		ConfigBlock vars = cfg.getVars();
@@ -156,7 +158,7 @@ public class Body {
 			if (b == this) continue;
 			total.add(singleAccel(b, b.getPos(), location));
 		}
-		//System.out.println("Acceleration:" + body.getName() + ":" + total);
+		lastAccel = total;
 		return total;
 	}
 	
@@ -172,7 +174,7 @@ public class Body {
 			total.add(singleAccel(b, locations[i], locations[myIdx]));
 			i++;
 		}
-		//System.out.println("Acceleration:" + body.getName() + ":" + total);
+		lastAccel = total;
 		return total;
 	}
 	
@@ -234,5 +236,10 @@ public class Body {
 		double distance = pos.clone().sub(other.pos).len();
 		double collLen = radius + other.radius;
 		return distance <= collLen;
+	}
+
+	/** Helper for transferring the acceleration to renderer for drawing the vectors */
+	public Vec3 getLastAccel() {
+		return lastAccel.clone();
 	}
 }
