@@ -1,20 +1,23 @@
 package gravitoni.simu;
 
+import gravitoni.config.Config;
+
 import java.util.ArrayList;
 
 
 /** Velocity verlet integration */
-class Verlet implements Integrator {
+class Verlet extends Integrator {
 	private World world;
 	
-	public Verlet(World world) {
+	public Verlet(World world, Config cfg) {
+		super(cfg);
 		this.world = world;
 	}
 	
 	/**
 	 * Run the integrator, calculate one step forwards.
 	 */
-	public void run(double dt) {
+	public boolean run(double dt) {
 		ArrayList<Body> bodies = world.getBodies();
 		State[] newStates = new State[bodies.size()];
 
@@ -25,6 +28,8 @@ class Verlet implements Integrator {
 			//System.out.println("New state for " + bodies.get(i).getName() + ":" + newStates[i].pos + ";" + newStates[i].vel);
 			bodies.get(i).setState(newStates[i]);
 		}
+		
+		return collide(world);
 	}
 	
 	/**

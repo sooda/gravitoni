@@ -1,5 +1,8 @@
 package gravitoni.simu;
 
+import gravitoni.config.Config;
+import gravitoni.config.ConfigVar;
+
 import java.util.ArrayList;
 
 /*
@@ -17,23 +20,27 @@ f = ma, a = f / m
 */
 
 /** Fourth-order runge-kutta */
-class RK4 implements Integrator {
+class RK4 extends Integrator {
 	private World world;
 	
-	public RK4(World world) {
+	public RK4(World world, Config cfg) {
+		super(cfg);
 		this.world = world;
 	}
 	
 	/**
 	 * Run the integrator, calculate one step forwards.
+	 * @return true, if the simulation can continue on from this moment
 	 */
-	public void run(double dt) {
+	public boolean run(double dt) {
 		State[] newStates = runAll(dt);
 
 		ArrayList<Body> bodies = world.getBodies();
 
 		for (int i = 0; i < bodies.size(); i++)
 			bodies.get(i).setState(newStates[i]);
+		
+		return collide(world);
 	}
 	
 	/** Calculate new states for all of the bodies */

@@ -20,7 +20,11 @@ public class Logger {
 	/** Setup this from configuration */
 	public void loadConfig(Config cfg) {
 		Config defaults = cfg.getFirstSection("log.defaults");
-		for (Config blk: cfg.getSubsections().get("log")) {
+		
+		ArrayList<Config> things = cfg.getSubsections().get("log");
+		if (things == null) return;
+		
+		for (Config blk: things) {
 			if (defaults != null) {
 				Config orig = defaults.clone();
 				orig.merge(blk);

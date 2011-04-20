@@ -91,6 +91,8 @@ public class ConfigBlock {
 						}
 					} catch (NullPointerException e) {
 						// couldn't transform the type as the value could not be found
+					} catch (NumberFormatException e) {
+						// ignore bad values
 					}
 				}
 			}

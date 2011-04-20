@@ -6,14 +6,14 @@ import java.util.ArrayList;
 /** The whole state of the universe */
 public class World {
 	private ArrayList<Body> bodies = new ArrayList<Body>();
-	private Integrator integrator = new RK4(this);
+	private Integrator integrator = new RK4(this, new Config(""));
 	
 	//@ConfigVar("G") -- it's sane to have at least this here...
 	public static final double G = 6.67e-11;
 	
 	/** Timestep from the configuration file */
 	@ConfigVar("dt")
-	public double dt = 0;
+	public double dt = 1;
 	
 	/** Current time */
 	private double time = 0;
@@ -36,6 +36,7 @@ public class World {
 	public void loadConfig(Config cfg) {
 		ConfigBlock globals = cfg.getVars();
 		globals.apply(this, World.class);
+		integrator = new RK4(this, cfg);
 
 		if (cfg.hasSections("body")) {
 			for (Config blk: cfg.getSubsections("body")) {
@@ -57,11 +58,12 @@ public class World {
 		logger.loadConfig(cfg);
 	}
 	
-	/** Run the world 'dt' seconds forward */
-	public void run(double dt) {
-		integrator.run(dt);
+	/** Run the world 'dt' seconds forward. Return true, if we can continue (no bodies have collided) */
+	public boolean run(double dt) {
+		boolean ret = integrator.run(dt);
 		time += dt;
 		logger.log();
+		return ret;
 	}
 
 

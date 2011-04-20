@@ -9,6 +9,15 @@
 \usepackage{hyperref}
 \usepackage{verbatim}
 \usepackage{moreverb}
+
+\setlength{\hoffset}{-1in}
+\setlength{\voffset}{-1in}
+\setlength{\topmargin}{1cm}
+\setlength{\textheight}{25cm}
+\setlength{\oddsidemargin}{25mm}
+\setlength{\evensidemargin}{25mm}
+\setlength{\textwidth}{16cm}
+
 %\pagestyle{myheadings}
 %\markright{Lols\hfill Foobaa\hfill}
 \begin{document}
@@ -55,9 +64,7 @@ Ohjelma simuloi taivaankappaleiden ja rakettien liikkeitä. Ennalta aseteltujen k
 
 Simulaatio keskittyy gravitaatiovoimiin ja pienet häiriötekijät kuten ilmanvastus ja suhteellisuusteoria jätetään huomiotta. Algoritmi on kuitenkin matemaattisesti tarkka ja varsin todenmukainen, ja helposti laajennettavissa ulkoisten voimien lisäämiseksi. Integrointiin käytetään RK4:ää, mutta integrointimenetelmää on helppo vaihtaa koodista jos siihen tulee tarvetta.
 
-Törmäykselle voidaan valita eri käsittelytapoja: simulaatio loppuu törmäyksen sattuessa, törmäykset jätetään huomiotta, kappaleet kimpoavat toisistaan tai kappaleet hajoavat törmäyksessä pienemmiksi. Mukana on myös raketteja, joita voi laukoa kiertoradoille tietyllä alkunopeudella. Tämä ominaisuus tekee ohjelmasta pelin, jossa pyritään esim. optimoimaan raketin moottorin käyttämä polttoaine, raketin kulkeman matkan pituus tms.
-
-Ohjelma toimii joko täysin itsenäisesti ilman käyttöliittymää vain lokiin tulostaen tai graafisen käyttöliittymän kautta ohjattuna. Kappaleiden ominaisuudet voidaan lukea asetustiedostosta sekä niitä voidaan lisätä käyttöliittymästä jälkeenpäin. Samaan asetustiedostoon sisällytetään myös säännöt ohjelman automaattiajoon, jolloin itsenäistä simulointia voidaan konfiguroida etukäteen painelematta nappuloita ohjelmasta.
+Ohjelma toimii joko täysin itsenäisesti ilman käyttöliittymää vain lokiin tulostaen tai graafisen käyttöliittymän kautta ohjattuna. Kappaleiden ominaisuudet voidaan lukea asetustiedostosta sekä niitä voidaan lisätä käyttöliittymästä jälkeenpäin. Samaan asetustiedostoon sisällytetään myös säännöt ohjelman automaattiajoon, jolloin itsenäistä simulointia voidaan konfiguroida etukäteen painelematta nappuloita ohjelmasta. Ohjelma ohjeistetaan ajamaan joko tietty aikamäärä eteenpäin, tai kunnes kaksi kappaletta törmää toisiinsa. Mukana on myös raketteja, joita voi laukoa kiertoradoille tietyllä alkunopeudella. Tämä ominaisuus tekee ohjelmasta pelin, jossa pyritään esim. optimoimaan raketin moottorin käyttämä polttoaine, raketin kulkeman matkan pituus tms.
 
 Olennaisia muutoksia suunnitelmaan nähden ei tullut. Työn toteutettiin vaikeustasolla haastava.
 
@@ -325,11 +332,50 @@ Asetusryhmällä on jokin nimi (esim. body, kepler tai log) ja se on aina jonkin t
 
 Kappaleille voi antaa sijainti- ja nopeusvektorin, tai sitten kepler-lohkossa keplerblah orbital parameters -jutut, mistä ne päätellään. Kulmat ovat asteissa.
 
+
 % Selostakaa tässä osiossa myös millaisia tiedostoja ohjelmasi käsittelee, jos mitään. Esim. ovatko ne tekstitiedostoja vai binaaritiedostoja, ja miten tieto on niissä esitetty? Kuvatkaa lopullinen tiedostoformaatti sillä tasolla, että assitentti voi halutessaan helposti luoda ohjelmalle testidataa. Laittakaa liitteeksi joitakin tiedostoja joita ohjelma tarvitsee/on tuottanut.
+\begin{itemize}
+\item Config: tarkistetaan, että latausmetodit lataavat globaalit muuttujat ja blokit kunnolla sekä skippaavat kommentit.
+\item ConfigBlock: getterit palauttavat oikean arvon niitä hakiessa. Esim. getInt heittää poikkeuksen mikäli arvoa ei voi tulkita kokonaislukuna. Setterit vastaavasti.
+\item Simulaation toimivuus: Pyöritellään maapalloa auringon ympärillä pari aika-askelta ja katsotaan, että on siellä minne ennustettiin. Kiihtyvyysfunktiosta katsotaan, että kaikki planeetat vaikuttavat toisiinsa.
+\item Lagrangen pisteessä oleva kappale ei integroidessa liiku suhteessa muihin.
+\item Törmäykset: törmäystarkistusmetodi reagoi oikein kun kappaleet ovat liian lähekkäin.
+\item Käyttöliittymän napit tekevät mitä pitääkin; testattava lähinnä käsin.
+\item Asetuswidgettien chooseBody-metodit ym. reagoivat esim. valitsemalla oikean kappaleen.
+\item Renderer piirtää sille annetut palikat oikeisiin kohtiin. Apurakenteeksi jokin testihomma joka käynnistää rendausikkunan dummykappaleilla.
+\item Rendererin navigointimetodit; testattava käsin.
+\end{itemize}
+
+\begin{itemize}
+	\item Ladatun asetustiedoston tietojen oikeellisuus suhteessa tiedoston sisältöön (helppo testata koneellisesti).
+	\item Virheellisen asetustiedoston oikeaoppinen hallinta: configluokka heittää poikkeusta ja pääohjelma käsittelee sen sopivasti ja ilmoittaa käyttäjälle ongelmasta.
+	\item Simulaation kaavojen toimivuus: Lagrangen pisteessä oleva kappale pysyy paikallaan; maa kiertää auringon siinä ajassa kun oikeastikin eikä niiden välinen etäisyys muutu.
+	\item Kappaleiden lisäys konfigurointikäyttöliittymässä: käyttöliittymä reagoi kuten haluttaisiin ja kappale ilmestyy listoihin ja 3d-näkymään.
+	\item Kappaleiden muokkaus: simulaatio reagoi sitä mukaa kun kappaleelle säätää vaikka uuden paikan tai massan.
+	\item Luonnonvakioiden ja muiden yleismuuttujien muokkaus: simulaatio reagoi vastaavasti.
+	\item Renderöinnin oikeellisuus planeettojen sijaintien, suuntavektorien, ratojen ym. osalta: kappaleiden sijainnit vastaavat toisiaan konfiguraationäkymässä lokitiedostossa.
+	\item 3d-näkymässä liikkuminen: näppis ja hiiri toimivat odotetusti.
+	\item Kappaleen valinta 3d-näkymästä: näkymästä klikatessa oikea planeetta valitaan, konfigurointipaneeli reagoi valintaan ja 3d-näkymässä näkyy korostettuna, että kappale on valittu.
+	\item Kappaleen siirto 3d-näkymässä: valittua kappaletta voi raahailla hiirellä.
+	\item Kappaleen seuranta 3d-näkymässä: kappale pysyy näkymän keskipisteessä liikkuessaankin.
+	\item Origon määritys: muu maailma käyttäytyy siten kun seurattu kappale olisi origo.
+	\item Satelliitin laukaisu: 3d-näkymä ja simulaatio reagoivat oikein kun konfigurointipaneelista painetaan nappia satelliitin lähettämiseksi.
+\end{itemize}
+
 
 \section{Testaus}
 
-Ohjelman päätoiminnallisuutta testattiin yksikkötesteillä sekä isompia ja grafiikkaan liittyviä testejä tehtiin käsin.
+Ohjelman päätoiminnallisuutta testattiin yksikkötesteillä sekä isompia ja grafiikkaan liittyviä testejä tehtiin käsin. Asetuksille on muutama yksikkötestaus, mutta niitäkin tuli kokeiltua käsin niin, että ne toimivat halutusti kokonaisuuden kera.
+
+Simulaation oikeellisuus koestettiin pääosin testailunäkymästä katselemalla, että vuosia eteenpäin simuloimalla kappaleiden radat pysyvät oikeina sekä ajamalla yksinkertaisia automaattisia testejä ja seuraamalla ajolokeja. Lagrangen pisteiden haxailua ei testailtu (TODO: joopa!! tehää tehää)
+
+Törmäykset testattiin tekemällä asetustiedosto jossa on kaksi kappaletta paikallaan, ja toteamalla että komentoriviohjelma päättyy kun ne törmäävät; törmäyksen saa tarkasteltua lokitiedostoista helposti jälkeenpäin.
+
+Monia ohjelman toiminnallisuuksia tuli kokeiltua käyttöliittymästä, ja käyttöliittymän toimivuus tuli tarkistettua siinä samalla. Eri tiloista toisiin piti kokeilla että kaikki toimivat edelleen; esim. pausetilan syklittäminen ei hajota mitään. Kappaleiden muokkaus toimii testatusti ja planeetat siirtyvät kun niiden tietoja muokataan numeronäkymästä.
+
+Renderöinti näyttää oikealta ja siinä navigointi (pyöritys ja siirto) toimii odotetusti.
+
+Kaikki toteutetut asiat testattiin ja todettiin toimivaksi.
 
 % Kertokaa miten ohjelmaa testattiin ja kuinka se vastasi suunnitelmassa esitettyä.
 
@@ -337,21 +383,33 @@ Ohjelman päätoiminnallisuutta testattiin yksikkötesteillä sekä isompia ja grafii
 
 \section{Ohjelman tunnetut puutteet ja viat}
 
-Virhetilanteiden hallinta ei ole erityisen käyttäjäystävällistä. Jotkut paikat heittävät tarkoituksella RuntimeErroreita, koska käyttöliittymän virheilmoitusten hallinta ei erityisemmin kiinnostanut eikä sitä ollut määritelty suunnitelmassa (TODO: tarkistapa). Poikkeusten kuvausviestit ovat kuitenkin järkeviä, kuten esim. jos asetustiedostosta noustaan ylimmänkin tason yläpuolelle (eli siellä on ylimääräinen \}-merkki), lentää virhe viestillä ''One does not simply ascend out from the topmost config section!''.
+Virhetilanteiden hallinta ei ole erityisen käyttäjäystävällistä. Jotkut paikat heittävät tarkoituksella RuntimeErroreita, koska käyttöliittymän virheilmoitusten hallinta ei erityisemmin kiinnostanut eikä sitä ollut määritelty suunnitelmassa erityisen tarkasti. Ohimennen suunniteltiin, että käyttöliittymä käsittelisi asetustiedostojen poikkeukset, mutta niitä ei priorisoitu korkealle ja jäivät toteuttamatta; oletetaan, että käyttäjä tarkastelee konsolia poikkeusten varalta. Toisaalta poikkeuksia ei tavallisessa käytössä pitäisi ihmeemmin lennellä, vaan enimmäkseen asetustiedostojen virheellisyydestä. Poikkeusten kuvausviestit ovat kuitenkin järkeviä, kuten esim. jos asetustiedostosta noustaan ylimmänkin tason yläpuolelle (eli siellä on ylimääräinen \}-merkki), lentää virhe viestillä ''One does not simply ascend out from the topmost config section!''.
+
+Jotkut suunnitellut ominaisuudet jäivät toteuttamatta; näistä puutteista tarkemmin kohdassa Poikkeamat suunnitelmasta.
 %Kuvaa tässä osiossa kaikki tuntemasi puutteet ja viat ohjelmassasi. Kerro miten korjaisit nämä ongelmat jos jatkaisit projektia. Mitä vähemmän assistentti löytää puutteita kohdista joiden väität toimivan sen parempi. Ole siis rehellinen. 
+
+Nimissä ei saisi olla duplikaatteja, mutta sitä ei testata.
 
 \section{3 parasta ja 3 heikointa kohtaa}
 
-Teknisesti parhaita lienevät asetustiedoston nätti rekursiivisuus ja lokitiedostojen modulaarisuus, keino-origon säätö ja yleinen hienous.
+Teknisesti parhaita lienevät asetustiedoston nätti rekursiivisuus ja lokitiedostojen modulaarisuus, keino-origon säätö ja yleinen koodin laajennettavuus mihin kuuluu lokitiedostojen säädettävyys ja integrointimenetelmän joustavuus. Toki RK4-integrointikin on mukavan tarkka, mutta sehän on prujattu wikipediasta eikä itse menetelmä ole omaa tuotantoa.
 
-Heikoimpia kohtia ovat käyttöliittymän rumuus ja viimeistelyttömyys, virhetilanteiden hallinnan kankeus käyttäjän näkökulmasta sekä ??.
+Heikoimpia kohtia ovat käyttöliittymän rumuus ja kankeus, virhetilanteiden viimeistelemättömyys käyttäjän näkökulmasta sekä automaattisten testien vähyys.
 
 
 % Assistentti käyttää runsaasti aikaa tutustuessaan ohjelmaasi, mutta ei välttämättä näe toteutustasi samalla tavoin kuin sinä. Jos ohjelmassa on joitakin kohtia joita itse pidät erityisen hyvinä, mainitse tässä niistä 1-3 kappaletta lyhyen perustelun kera. Jos ohjelmassa on kohtia jotka itsekin tiedät heikoiksi, voi mainita myös nämä. Tällöin mahdollisuus että nämä heikot kohdat dominoivat arvostelua vähenee huomattavasti. Tässä voi myös esittää sanallisesti kuinka olisi nämä asiat halutessaan korjannut. 
 
 \section{Poikkeamat suunnitelmasta}
 
+Joitain suunniteltuja ominaisuuksia puuttuu, koska projektiin ei käytetty ihan niin paljoa aikaa kuin mitä alussa tuli kuviteltua.
+
 Suunniteltu anaglyfikolmiulotteisuus jäi toteuttamatta, mutta se on helppo lisätä, sillä opengl tukee sitä varsin suoraan. Se onnistuisi renderöimällä kahdesti päällekkäin vaihtamalla kameran sijaintia ja värimaskia välissä.
+
+Kappaleita ei voi siirtää tai seurata 3d-näkymässä. Siirtäminen olisi kuitenkin hankalaa tehdä tarkasti, jolloin on parempi muokata suoraan numeroarvoja. Seuranta vain ei ehtinyt mukaan.
+
+Satelliitin/raketin laukaisulle ei ole käyttöliittymässä nappia eikä niitä voi lisätä jälkeenpäin, vaan ne on laitettava asetustiedostoon valmiiksi (mallia voi ottaa conf-hakemiston esimerkkitiedostoista).
+
+Törmäyksissä kappaleet eivät hajoa palasiksi. TODO.
 
 % Teittekö jotain toisin kuin olitte suunnitellut? Miksi? Osuiko suunnitelmaan laatimasi ajankäyttöarvio oikeaan? Miksei? Entä toteutusjärjestys?
 
@@ -379,7 +437,7 @@ Seuraavassa viikkokohtaiset suunnitellut ja toteutuneet asiat:
 
 % TODO: kiihtyvyysvektorit, suunta- ja nuo silleen et ne näkee, tekstit openglkanvasiin, törmäyshallinta, raketti
 
-Projekti onnistui periaatteessa hyvin vaikka joitain hienouksia jäi toteuttamatta; oleelliset asiat löytyvät ja koodi on helposti laajennettavaa, jolloin kiinnostuksen jatkuessa hienoudet voi toteuttaa helposti vaikka pitkän ajan päästä. Koska perustoiminnallisuuteen ja hyvään koodiin sekä dokumentaatioon tuli kiinnitettyä eniten huomiota, jolloin huonona puolena käyttöliittymämukavuus ja viimeiset viilailut jäivät vähän vähemmälle.
+Projekti onnistui periaatteessa hyvin vaikka joitain hienouksia jäi toteuttamatta; oleelliset asiat löytyvät ja koodi on helposti laajennettavaa, jolloin kiinnostuksen jatkuessa hienoudet voi toteuttaa helposti vaikka pitkän ajan päästä. Koska perustoiminnallisuuteen ja hyvään koodiin sekä dokumentaatioon tuli kiinnitettyä eniten huomiota, huonona puolena käyttöliittymämukavuus ja viimeiset viilailut jäivät vähän vähemmälle.
 
 Modulaarisuutta ja laajennettavuutta helpottavat mm. seuraavat ominaisuudet: Lisäasetuksia on helppo lisätä tarvittaessa, koska asetustiedostot ovat varsin käyttöagnostisia ja aidosti rekursiivisia. Lokitiedostotyyppejä voi kirjoittaa lisää lisäämällä Writer-luokkia. Integraattoria voi vaihtaa koodaamalla uuden luokan sitä varten ja vaihtamalla sen World-luokkaan käyttöön. Bodystä voi periä uudenlaisia lentokappaleita helposti. GfxBodyn voi erikoistaa piirtämään joitain muita kappaleita kuin palloja. SettingPaneen voi lisätä uusia ominaisuuksia naputtelemalla Widget-luokkia ja lisäilemällä niille sinne tuen.
 
@@ -391,7 +449,7 @@ Mielenkiintoista olisi ollut saada jostain suuri läjä eri kappaleiden tietoja (l
 
 \section{Viitteet}
 
-Simulaatiosta tuli lueskeltua muutama RK4-artikkeli. Keplerkoordinaattien muunnoksesta tuli luettua nippelitietoa sieltä sun täältä. Taivaankappaleiden ratakonffitiedot ovat Wikipediasta kunkin kappaleen omalta sivulta, joita on turha erikseen luetella kaikkia. Javan API tarjosi ohjeita Swingissä. Swingin tutoriaalit olivat myös hyödyksi. OpenGL:n saloja tuli heräteltyä muistista muutamalla pienellä oppaalla sekä api-speksillä.
+Simulaatiosta tuli lueskeltua muutama RK4-artikkeli. Keplerkoordinaattien muunnoksesta tuli luettua nippelitietoa sieltä sun täältä. Taivaankappaleiden keplerratatiedot ovat Wikipediasta kunkin kappaleen omalta sivulta, joita on turha erikseen luetella kaikkia. Javan API tarjosi ohjeita Swingissä. Swingin tutoriaalit olivat myös hyödyksi. OpenGL:n saloja tuli heräteltyä muistista muutamalla pienellä oppaalla sekä api-speksillä. Myös toteuttamattomia ominaisuuksia tuli opiskeltua, kuten anaglyyfipiirtoa ja barnes-hut-optimointia.
 
 \begin{itemize}
 \item \url{http://en.wikipedia.org/wiki/Verlet_integration}
@@ -402,7 +460,7 @@ Simulaatiosta tuli lueskeltua muutama RK4-artikkeli. Keplerkoordinaattien muunno
 \item \url{http://www.colorado.edu/ASEN/asen3200/download.html}
 \item \url{http://en.wikipedia.org/wiki/Kepler's_laws_of_planetary_motion}
 \item \url{http://en.wikipedia.org/wiki/Standard_gravitational_parameter}
-\item \url{
+% \item \url{
 
 \item \url{http://en.wikipedia.org/wiki/Solar_System}
 \item \url{http://en.wikipedia.org/wiki/Orbital_elements}
@@ -418,9 +476,14 @@ Simulaatiosta tuli lueskeltua muutama RK4-artikkeli. Keplerkoordinaattien muunno
 \item \url{http://paulbourke.net/texture_colour/anaglyph/}
 \item \url{http://paulbourke.net/miscellaneous/stereographics/stereorender/}
 \item \url{http://www.cs.princeton.edu/courses/archive/fall03/cs126/assignments/barnes-hut.html}
+
+\item \url{http://cnx.org/content/m26666/latest/}
+\item \url{http://en.wikipedia.org/wiki/Two-body_problem}
 \end{itemize}
 
 \section{Liitteet}
+
+Lopuksi pari hassua esimerkkiä piirtelystä.
 
 %Kaikkein tärkein projektin liite on projektin koko Java-lähdekoodi.
 

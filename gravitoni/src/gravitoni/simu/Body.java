@@ -228,4 +228,11 @@ public class Body {
 	public void setName(String n) {
 		name = n;
 	}
+
+	/** Return true if this collides with the given body. */
+	public boolean collides(Body other) {
+		double distance = pos.clone().sub(other.pos).len();
+		double collLen = radius + other.radius;
+		return distance <= collLen;
+	}
 }

@@ -1,21 +1,3 @@
-# On branch master
-# Untracked files:
-#   (use "git add <file>..." to include in what will be committed)
-#
-#	.gitignore
-#	.metadata/
-#	.smalltest.conf.swp
-#	gravitoni/.classpath
-#	gravitoni/.project
-#	gravitoni/.settings/
-#	gravitoni/Equirectangular-projection.jpg
-#	gravitoni/bin/
-#	gravitoni/earth.jpg
-#	gravitoni/earth.png
-#	gravitoni/fulllog
-#	gravitoni/lol.png
-#	gravitoni/src/demos/
-#	gravitoni/src/tests/
 .metadata
 gravitoni/bin
 *.pdf
@@ -24,8 +6,10 @@ teknosuunnitelma/*.png
 dokumentti/*.png
 gravitoni/lib32
 gravitoni/lib64
-gravitoni/*.log
 aikataulu.txt
 gravitoni/doc/api
 *.swp
 *-swp
+*.log
+*.aux
+*.out

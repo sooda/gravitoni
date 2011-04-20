@@ -54,7 +54,10 @@ public class Gravitoni {
 	public void run(double seconds) {
 		double dt = world.dt;
 		for (int i = 0; i * dt < seconds; i++) {
-			world.run(dt);
+			if (!world.run(dt)) {
+				System.out.println("Stopped at " + world.getTime() + " due to collision");
+				return;
+			}
 		}
 	}
 }

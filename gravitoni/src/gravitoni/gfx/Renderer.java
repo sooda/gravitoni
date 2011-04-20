@@ -1,5 +1,6 @@
 package gravitoni.gfx;
 
+import java.awt.Font;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -20,6 +21,7 @@ import javax.swing.*;
 import javax.swing.event.*;
 
 import com.sun.opengl.util.BufferUtil;
+import com.sun.opengl.util.j2d.TextRenderer;
 
 /** Renderer is the uppermost level of 3D drawing. 
  * 
@@ -83,6 +85,11 @@ public class Renderer implements GLEventListener, ActionListener {
     
     /** Where should we go while drawing? This is used only in paused mode (cannot be changed while in realtime). */
 	private int timePercent = 100;
+	
+	/** Collision happened? Cannot continue */
+	private boolean stopped = false;
+	
+	TextRenderer tr;
     
 	public Renderer(World world, UI ui, GLCanvas canvas) {
 		this.world = world;
@@ -243,14 +250,20 @@ public class Renderer implements GLEventListener, ActionListener {
 	
 	/** Simulate some time depending on the speed */
 	public void runSimulation() {
-		if (!paused) {
+		if (!paused && !stopped) {
 			int iters = (int)speed;
 			double laststep = speed - iters;
 			for (int i = 0; i < iters; i++) {
-				world.run(world.dt);
+				if (!world.run(world.dt)) {
+					stopped = true;
+					break;
+				}
 				for (GfxBody b: bodies) b.update();
 			}
-			world.run(laststep*world.dt);
+			if (!stopped) {
+				if (!world.run(laststep*world.dt))
+					stopped = true;
+			}
 			for (GfxBody b: bodies) b.update();
 			ui.refreshWidgets();
 		}
@@ -326,6 +339,13 @@ public class Renderer implements GLEventListener, ActionListener {
 		if (!selectMode && showCursor) drawCursor(gl);
 		if (showEclPlane) drawEclPlane(gl);
 		drawBodies(gl);
+		
+		if (stopped) {
+			tr.beginRendering(800, 600);
+			tr.setColor(1, 1, 1, 1);
+			tr.draw("[STOPPED]", 10, 10);
+			tr.endRendering();
+		}
 	}
 	
 	private void drawBodies(GL gl) {
@@ -408,6 +428,7 @@ public class Renderer implements GLEventListener, ActionListener {
         lastCam.setIdentity();
         currCam.setIdentity();
         currCam.get(matrix);    
+        tr = new TextRenderer(new Font("Courier New", 0, 12));
 	}
 	
 	/** Opengl canvas size changed (not used, I guess) */

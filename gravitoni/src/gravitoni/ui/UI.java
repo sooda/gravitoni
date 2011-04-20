@@ -40,7 +40,8 @@ public class UI extends JFrame implements ActionListener {
 		renderer = new Renderer(world, this, canvas);
 		
 		settings = new SettingPane(this);
-		settings.setDistanceBodies(world.getBodies().get(0), world.getBodies().get(1));
+		if (world.getBodies().size() >= 2)
+			settings.setDistanceBodies(world.getBodies().get(0), world.getBodies().get(1));
 		
 		insertContents();
 		pack();

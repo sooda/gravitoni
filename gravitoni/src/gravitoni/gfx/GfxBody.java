@@ -80,7 +80,7 @@ public class GfxBody {
 	void render(GL gl, boolean selected, double zoom, int timePercent) {
 		if (posHistory.size() == 0) return;
 		Vec3 pos = posHistory.get((int)(timePercent / 100.0 * (posHistory.size() - 1)));
-		double r = .01/1e3 * body.getRadius();
+		double r = .01/1e3 * body.getRadius(); // TODO: yhtenäistä kertoimet
 		
 		gl.glColor4d(1, 1, 1, 1);
 		if (selected) {

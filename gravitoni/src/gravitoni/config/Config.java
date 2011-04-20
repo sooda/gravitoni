@@ -127,7 +127,7 @@ public class Config {
 	 */
 	public Config getFirstSection(String name) {
 		ArrayList<Config> blks = subsections.get(name);
-		if (blks.size() == 0) return null;
+		if (blks == null || blks.size() == 0) return null;
 		return blks.get(0);
 	}
 	

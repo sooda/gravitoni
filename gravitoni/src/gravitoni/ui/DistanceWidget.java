@@ -9,7 +9,7 @@ import gravitoni.simu.Body;
 /** Widget for displaying the distance between two bodies */
 @SuppressWarnings("serial")
 public class DistanceWidget extends Widget {
-	private Body a, b;
+	private Body a = null, b = null;
 	private JTextField tf1 = new JTextField("Rai rai");
 	private JTextField tf2 = new JTextField("Rai rai");
 	private JTextField tf3 = new JTextField("Rai rai");
@@ -31,7 +31,9 @@ public class DistanceWidget extends Widget {
 		tf2.setText(b.getName());
 	}
 	public void update() {
-		double distance = Math.abs(a.getPos().clone().sub(b.getPos()).len());
-		tf3.setText("" + distance);
+		if (a != null && b != null) {
+			double distance = Math.abs(a.getPos().clone().sub(b.getPos()).len());
+			tf3.setText("" + distance);
+		}
 	}
 }
