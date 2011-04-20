@@ -91,8 +91,10 @@ public class ConfigBlock {
 						}
 					} catch (NullPointerException e) {
 						// couldn't transform the type as the value could not be found
+						System.out.println("Warning: couldn't apply cfg to " + f.getName());
 					} catch (NumberFormatException e) {
 						// ignore bad values
+						System.out.println("Warning: couldn't apply cfg to " + f.getName());
 					}
 				}
 			}

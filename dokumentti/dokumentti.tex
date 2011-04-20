@@ -75,16 +75,23 @@ Ohjelman voi käynnistää ajamaan pelkkää simulaatiota komentorivillä tai lisäksi 
 
 Tällä hetkellä kaikkein tärkein ohjelman toimintaan vaikuttava asia on sille annettava asetustiedosto, josta tietoa myöhemmin tiedostot-osiossa.
 
+Koska ohjelma käyttää OpenGL:ää (JOGL), se pitää käynnistää (komentoriviltä ajettaessa) oikeilla ympäristömuuttujilla. Ohjelman mukana tulee hakemistot lib32 ja lib64, joissa on natiivit kirjastot 32- ja 64-bittisille linux-järjestelmille, sekä lib-hakemisto, jossa on jarit ajoa varten ja jogl-zippi eclipsen ohjeita varten. Mukana on myös apuskriptit run.sh, rungui32.sh ja rungui64.sh, jotka asettavat ympäristömuuttujat oikein ajoa varten; näille voi antaa suoraan asetustiedoston (ja simulointiajan) parametreiksi.
+
 
 \subsection{Komentorivi}
 
 Komentoriviltä ohjelmalle annetaan vain tiedostonimi ja simulaation loppuaika sekunteina. Simulaatiota tapahtuu joko tähän ajanhetkeen saakka tai kunnes asetuksissa määrätty loppuehto täyttyy (esim. törmäys). Esimeriksi seuraava simuloi vuoden verran eteenpäin:
 
 \begin{verbatim}
-java Gravitoni conf/all.conf 31536000
+java gravitoni.Gravitoni conf/all.conf 31536000
 \end{verbatim}
 
-Komentorivin ajosta ainoa kiinnostava tuloste on lokitiedosto(t), jotka määrätään asetuksissa.
+Tai apuskripteillä:
+\begin{verbatim}
+./run.sh conf/all.conf 31536000
+\end{verbatim}
+
+Komentorivin ajosta kiinnostava tuloste on lokitiedosto(t), jotka määrätään asetuksissa. Ohjelma tulostaa hieman debugdataa käynnistyessään ja mm. törmäysten sattuessa.
 
 \subsection{GUI}
 
@@ -166,6 +173,10 @@ Tavallisille planeetoille riittää Body-luokka. Rakettiluokka Rocket periytyy Bod
 Varsinainen maailmankaikkeuden toiminnallisuus on World-luokassa. Se varastoi listassa Body-oliot ja hoitaa interaktion simulaatiossa muiden luokkien välillä ja integroi pyydettäessä. Metodi loadConfig ottaa konfiguraatio-osion, josta haetaan Bodyjä vastaavat lohkot joilla instantioidaan Body-olioita. Metodi run ajaa integraattoria yhden parametrina tulevan aika-askeleen määrän verran. Integraattorin käyttämä metodi acceleration palauttaa tietyn hetken kiihtyvyyden annetulle planeetalle.
 
 Worldilla on Integrator-rajapinnan toteuttava jäsenolio joka hoitelee itse algoritmin. Se kyselee Worldilta kiihtyvyyksiä tiettyinä ajanhetkinä eri kappaleille, ja siirtää kappaleita niiden mukaan. RK4 on oletuksena toimiva integraattori, mutta esimerkin vuoksi on tehty myös Verlet, sekä huonompi RK4 joka pitää muuta maailmaa paikallaan laskiessa yhdelle kappaleelle kiihtyvyyttä ajanhetkellä t+dt uudessa paikassa (luokka BadRK4). Integratorin selventämiseksi simussa on myös luokat State ja Derivative, jotka säilövät sijainteja ja kiihtyvyyksiä ilman erityisempää toiminnallisuutta.
+
+World kans tsekkaa törmäilyt, XXX!
+
+Integraatorit runkkaa koko maailmavektoria!
 
 World osaa myös lokittaa ajon yhteydessä. Logger-luokka hoitaa kaiken lokittamisen kokonaisuudessaan, ja maailma kutsuu log()-metodia tarvittaessa. Loggerin sisällä on LogWriterista periytyviä olioita kuten GnuplotWriter ja CsvWriter. Nämä eri tyyppiset lokikirjoittimet kirjoittavat eri tyyppistä dataa tiedostoon nimensä mukaan.
 
@@ -407,6 +418,8 @@ Monia ohjelman toiminnallisuuksia tuli kokeiltua käyttöliittymästä, ja käyttölii
 Renderöinti näyttää oikealta ja siinä navigointi (pyöritys ja siirto) toimii odotetusti.
 
 Kaikki toteutetut asiat testattiin ja todettiin toimivaksi.
+
+Esimerkiksi törmäystestaus hoituu helposti antamalla ohjelmalle conf/collisiontest.conf-tiedosto ja muokkaamalla siitä collisiontype-muuttujaa.
 
 % Kertokaa miten ohjelmaa testattiin ja kuinka se vastasi suunnitelmassa esitettyä.
 

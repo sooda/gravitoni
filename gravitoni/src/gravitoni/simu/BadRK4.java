@@ -1,7 +1,5 @@
 package gravitoni.simu;
 
-import gravitoni.config.Config;
-
 import java.util.ArrayList;
 
 /*
@@ -21,18 +19,17 @@ f = ma, a = f / m
 /** This assumes that the surrounding world is stationary between timesteps:
  * Faster to implement, but has more error, will do better afterwards. 
  */
-class BadRK4 extends Integrator {
+class BadRK4 implements Integrator {
 	private World world;
 	
-	public BadRK4(World world, Config cfg) {
-		super(cfg);
+	public BadRK4(World world) {
 		this.world = world;
 	}
 	
 	/**
 	 * Run the integrator, calculate one step forwards.
 	 */
-	public boolean run(double dt) {
+	public void run(double dt) {
 		ArrayList<Body> bodies = world.getBodies();
 		State[] newStates = new State[bodies.size()];
 
@@ -43,7 +40,6 @@ class BadRK4 extends Integrator {
 			//System.out.println("New state for " + bodies.get(i).getName() + ":" + newStates[i].pos + ";" + newStates[i].vel);
 			bodies.get(i).setState(newStates[i]);
 		}
-		return collide(world);
 	}
 	
 	/**

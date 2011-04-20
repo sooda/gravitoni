@@ -1,19 +1,24 @@
 package gravitoni.simu;
 
 import gravitoni.config.*;
+
 import java.util.ArrayList;
 
 /** The whole state of the universe */
 public class World {
 	private ArrayList<Body> bodies = new ArrayList<Body>();
-	private Integrator integrator = new RK4(this, new Config(""));
+	private Integrator integrator = new RK4(this);
 	
-	//@ConfigVar("G") -- it's sane to have at least this here...
+	/** 0: do nothing, 1: stop, 2: bounce */
+	@ConfigVar("collisiontype")
+	private int collisionType = 0;
+	
+	//@ConfigVar("G") -- don't load from config.. it's just sane to have at least this here
 	public static final double G = 6.67e-11;
 	
 	/** Timestep from the configuration file */
 	@ConfigVar("dt")
-	public double dt = 1;
+	public double dt = 1; // sane defaults so we simulate at least something
 	
 	/** Current time */
 	private double time = 0;
@@ -36,7 +41,6 @@ public class World {
 	public void loadConfig(Config cfg) {
 		ConfigBlock globals = cfg.getVars();
 		globals.apply(this, World.class);
-		integrator = new RK4(this, cfg);
 
 		if (cfg.hasSections("body")) {
 			for (Config blk: cfg.getSubsections("body")) {
@@ -60,10 +64,36 @@ public class World {
 	
 	/** Run the world 'dt' seconds forward. Return true, if we can continue (no bodies have collided) */
 	public boolean run(double dt) {
-		boolean ret = integrator.run(dt);
+		integrator.run(dt);
 		time += dt;
 		logger.log();
-		return ret;
+		return collide();
+	}
+	/** Check for collisions, return true if we can continue from this. */
+	protected boolean collide() {
+		if (collisionType < 1 || collisionType > 2) return true;
+
+		for (int i = 0; i < bodies.size(); i++) {
+			for (int j = i + 1; j < bodies.size(); j++) {
+				if (bodies.get(i).collides(bodies.get(j))) {
+					System.out.println("Collision! a=" + bodies.get(i) + " b=" + bodies.get(j));
+					if (collisionType == 1) return false;
+					doCollision(bodies.get(i), bodies.get(j));
+				}
+			}
+		}
+		return true;
+	}
+	
+	/** Handle a two-body collision, perform an elastic bounce */
+	private void doCollision(Body a, Body b) {
+		double m1 = a.getMass(), m2 = b.mass;
+		double coef = 2 / (m1 + m2); // delta v1 = delta p1 / m = 2 * m2 / (m1 + m2) * (v2 - v1)
+		Vec3 dv = a.vel.clone().sub(b.vel);
+		Vec3 dv1 = dv.clone().neg().mul(m2 * coef);
+		Vec3 dv2 = dv.mul(m1 * coef);
+		a.vel.add(dv1);
+		b.vel.add(dv2);
 	}
 
 

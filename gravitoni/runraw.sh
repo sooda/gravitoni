@@ -1,1 +1,1 @@
-CLASSPATH=bin java gravitoni.Gravitoni conf/earthsun.conf $@
+CLASSPATH=bin java gravitoni.Gravitoni $@

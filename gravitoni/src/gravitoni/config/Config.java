@@ -245,6 +245,7 @@ public class Config {
 		// skip whitespace and comments
 		line = line.trim();
 		line = doComments(line);
+		line = line.trim();
 		if (line.length() == 0) return;
 		
 		//System.out.println(name + " PARSING:"+line);
