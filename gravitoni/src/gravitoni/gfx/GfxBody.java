@@ -12,7 +12,6 @@ import com.sun.opengl.util.j2d.TextRenderer;
 
 import gravitoni.simu.Body;
 import gravitoni.simu.Vec3;
-import gravitoni.simu.World;
 
 /** Handle 3D graphics for a body. Draw the sphere and its name; remember position history and draw it.  */
 public class GfxBody {
@@ -30,6 +29,13 @@ public class GfxBody {
 	
 	/** Last positions */
 	private ArrayList<Vec3> posHistory = new ArrayList<Vec3>();
+	
+	// need these too when rewinding the history
+	/** Last velocities */
+	private ArrayList<Vec3> velHistory = new ArrayList<Vec3>();
+	
+	/** Last accelerations */
+	private ArrayList<Vec3> accHistory = new ArrayList<Vec3>();
 	
 	/** We need to ask renderer things about the origin */
 	private Renderer rendr;
@@ -80,8 +86,10 @@ public class GfxBody {
 	/** Draw everyting we need */
 	void render(GL gl, boolean selected, double zoom, int timePercent) {
 		if (posHistory.size() == 0) return;
-		Vec3 pos = posHistory.get((int)(timePercent / 100.0 * (posHistory.size() - 1)));
-		double r = SCALER * body.getRadius(); // TODO: yhtenäistä kertoimet
+		int posIdx = (int)(timePercent / 100.0 * (posHistory.size() - 1));
+		Vec3 pos = posHistory.get(posIdx);
+		
+		double r = SCALER * body.getRadius();
 		
 		gl.glColor4d(1, 1, 1, 1);
 		if (selected) {
@@ -101,7 +109,7 @@ public class GfxBody {
 		gl.glScaled(zoom, zoom, zoom);
 		
 		glu.gluSphere(qua, r, 20, 20);
-		renderVectors(gl);
+		renderVectors(gl, posIdx);
 		gl.glPopMatrix();
 		
 		tr.begin3DRendering();
@@ -130,7 +138,7 @@ public class GfxBody {
 			}
 			//gl.glColor4d(1 - (double)i / n, (double)i / n, 0, 1);
 			double ii = (double)i / n, jj = 1 - ii;
-			gl.glColor3d(jj * color.x + ii * 0.5, jj * color.y + ii * 0.5, jj * color.z + ii * 0.5);
+			gl.glColor3d(ii * color.x + jj * 0.5, ii * color.y + jj * 0.5, ii * color.z + jj * 0.5);
 			gl.glVertex3d(SCALER * p.x, SCALER * p.y, SCALER * p.z);
 		}
 		gl.glEnd();
@@ -142,12 +150,12 @@ public class GfxBody {
 	}
 	
 	/** Draw the velocity and acceleration vectors */
-	private void renderVectors(GL gl) {
+	private void renderVectors(GL gl, int posIdx) {
 		gl.glDisable(GL.GL_TEXTURE_2D);
 		gl.glColor3d(1.0, 1.0, 0);
-		renderVector(gl, body.getVel());
+		renderVector(gl, velHistory.get(posIdx));
 		gl.glColor3d(1.0, 0, 1.0);
-		renderVector(gl, body.getLastAccel());
+		renderVector(gl, accHistory.get(posIdx));
 	}
 	
 	/** Helper for drawing one vector arrow */
@@ -182,6 +190,8 @@ public class GfxBody {
 				return;
 		}
 		posHistory.add(body.getPos().clone());
+		velHistory.add(body.getVel().clone());
+		accHistory.add(body.getLastAccel().clone());
 	}
 	
 }

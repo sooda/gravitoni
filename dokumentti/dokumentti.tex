@@ -205,6 +205,8 @@ TextureReader on myˆs muualta lainattua koodia, ja sen teht‰v‰ on erist‰‰ tekstu
 
 \subsection{Simulaatio}
 
+\subsubsection{Integrointi}
+
 P‰‰algoritmi on nelj‰nnen asteen Runge-Kutta-menetelm‰ (RK4). Kappaleiden tilat $y$ ja aika $t$ muuttuvat seuraavasti (alaindeksit y:lle ja t:lle kuvaavat integrointikierrosten indeksej‰):
 
 %\begin{equation}
@@ -235,9 +237,9 @@ Koska maailman tila on yhten‰inen eri kappaleiden suhteen ja kyseess‰ on periaat
 Vaihtelun vuoksi toteutettiin myˆs ns. Velocity Verlet.
 
 \begin{align}
-\vec{x}(t + \Delta t) = \vec{x}(t) + \vec{v}(t)\, \Delta t + \frac{1}{2} \,\vec{a}(t) \Delta t^2
+\vec{x}(t + \Delta t) &= \vec{x}(t) + \vec{v}(t)\, \Delta t + \frac{1}{2} \,\vec{a}(t) \Delta t^2
 \\
-\vec{v}(t + \Delta t) = \vec{v}(t) + \frac{\vec{a}(t) + \vec{a}(t + \Delta t)}{2} \Delta t
+\vec{v}(t + \Delta t) &= \vec{v}(t) + \frac{\vec{a}(t) + \vec{a}(t + \Delta t)}{2} \Delta t
 \end{align}
 
 T‰m‰ on helppo muuttaa koodiksi siten, ett‰ uusi paikka lasketaan ensin, sitten uuden paikan kohdassa lasketaan kiihtyvyys uudessa kohdassa, ja lopuksi uuden nopeuden laskemiseen k‰ytet‰‰n vanhaa ja uutta kiihtyvyytt‰.
@@ -245,6 +247,35 @@ T‰m‰ on helppo muuttaa koodiksi siten, ett‰ uusi paikka lasketaan ensin, sitten 
 
 TODO: koodissa paskasti. ei vektoreina.
 
+\subsubsection{Tˆrm‰ysten hallinta}
+
+Tˆrm‰ykset hallitaan kahden kappaleen v‰lisin‰ tarkistuksina: integroinnin j‰lkeen tarkistetaan, onko kahden kappaleen v‰linen et‰isyys pienempi kuin niiden s‰teet yhteenlaskettuna. Mik‰li n‰in on, tehd‰‰n jokin tˆrm‰yshallinta: ei tehd‰ mit‰‰n, pys‰ytet‰‰n simulaatio tai kimmotetaan kappaleet.
+
+Jos ei tehd‰ mit‰‰n, simulaatio jatkuu ja kappaleet menev‰t toistensa l‰vitse. Pienell‰ aika-askeleella kappaleiden v‰linen voima lasketaan v‰‰rin (jos ne ovat sis‰kk‰in, gravitaation vaikutus on erilainen) ja kappaleet singahtavat kauas toisistaan. Teoriassa kappaleet voivat p‰‰ty‰ myˆs tasan p‰‰llekk‰in, jolloin niiden v‰linen nollaet‰isyys aiheuttaa nollallajakovirheen.
+
+Kimpoaminen hallitaan t‰ysin kimmoisasti massakeskipisteen kautta. Liikem‰‰r‰vektorit muunnetaan massakeskipistekoordinaatistoon ja kaavat pyˆritell‰‰n sit‰ kautta niin, ett‰ t‰ss‰ koordinaatistossa kappaleet liikkuvat suoraan toisiaan kohti jolloin niiden nopeuksien merkki vaihtuu. Massakeskipiste:
+
+\begin{align}
+p_cm &= (m_1 + m_2) v_cm = p_1 + p_2 \\
+v_cm &= \frac{m_1}{m_1 + m_2} v_1 + \frac{m_2}{m_1 + m_2} v_2
+\end{align}
+
+Uudessa koordinaatistossa:
+
+\begin{align}
+v_{1,cm} &= v_1 - v_{cm} \\
+p_{1,cm} &= p_1 - m_1  v_{cm} = m_1 v_1 - (m_1 \frac{m_1}{m_1 + m_2} v_1 + m_1 \frac{m_2}{m_1 + m_2} v_2) \\
+&= \frac{m_1 m_2}{m_1 + m_2} (v_1 - v_2)
+\end{align}
+Kappaleelle 2 vastaavasti.
+
+Nyt liikem‰‰r‰n muutos on molemmille kappaleille vain merkinvaihto, eli liikem‰‰r‰n muutos on itse liikem‰‰r‰ kaksinkertaisena ja negatiivisena. T‰st‰ takaisin maailmakoordinaatistoon muuttamalla saadaan
+
+\begin{align}
+\delta v_1 = \delta p_1 / m_1 = -2 \frac{m_1 m_2}{m_1 + m_2} (v_1 - v_2)
+\end{align}
+
+ja sama kappaleelle 2 vastaavasti. T‰m‰ nopeuden muutos vaihdetaan integroinnin j‰lkeen integraattoriluokassa, jos asetukset ovat niin m‰‰r‰nneet.
 
 \subsection{Muuta}
 

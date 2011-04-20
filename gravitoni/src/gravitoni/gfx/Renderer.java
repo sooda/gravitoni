@@ -65,7 +65,7 @@ public class Renderer implements GLEventListener, ActionListener {
     private Point panStart;
     
     /** How small the world should look like */
-    private double zoom = 350000;
+    private double zoom = 1.5e6;
     
     /** How large do the planets look like */
     private double planetzoom = 1;    
@@ -217,7 +217,6 @@ public class Renderer implements GLEventListener, ActionListener {
 	/** Popup menu clicks come here */
 	public void actionPerformed(ActionEvent e) {
 		String cmd = e.getActionCommand();
-		System.out.println("Tottoroo " + e);
 		if ("Select".equals(cmd)) {
 			selectMode = true;
 		}
@@ -260,6 +259,7 @@ public class Renderer implements GLEventListener, ActionListener {
 				}
 				for (GfxBody b: bodies) b.update();
 			}
+			if (speed < world.dt)
 			if (!stopped) {
 				if (!world.run(laststep*world.dt))
 					stopped = true;
@@ -309,7 +309,6 @@ public class Renderer implements GLEventListener, ActionListener {
 		int hits = gl.glRenderMode(GL.GL_RENDER);
 		gl.glMatrixMode(GL.GL_MODELVIEW);
 		
-		System.out.println("HIts: " + hits);
 		buf.rewind();
 		buf.get(buff);
 		for (int i = 0; i < hits; i++) {

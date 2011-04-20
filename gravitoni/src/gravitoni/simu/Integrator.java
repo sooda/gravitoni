@@ -26,6 +26,7 @@ public abstract class Integrator {
 		for (int i = 0; i < bodies.size(); i++) {
 			for (int j = i + 1; j < bodies.size(); j++) {
 				if (bodies.get(i).collides(bodies.get(j))) {
+					System.out.println("Collision! a=" + bodies.get(i) + " b=" + bodies.get(j));
 					if (collisionType == 1) return false;
 					doCollision(bodies.get(i), bodies.get(j));
 				}

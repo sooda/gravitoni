@@ -240,6 +240,6 @@ public class Body {
 
 	/** Helper for transferring the acceleration to renderer for drawing the vectors */
 	public Vec3 getLastAccel() {
-		return lastAccel.clone();
+		return lastAccel;
 	}
 }

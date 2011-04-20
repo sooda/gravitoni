@@ -1,8 +1,6 @@
 package gravitoni.simu;
 
 import gravitoni.config.Config;
-import gravitoni.config.ConfigVar;
-
 import java.util.ArrayList;
 
 /*
