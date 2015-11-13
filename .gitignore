@@ -1,6 +1,6 @@
 .metadata
 gravitoni/bin
-*.pdf
+*/*.pdf
 *.ps
 teknosuunnitelma/*.png
 gravitoni/lib32
