@@ -157,7 +157,7 @@ public class UI extends JFrame implements ActionListener {
 			tabPane.setSelectedIndex(0);
 			int i = 1;
 			while (world.getBody("newbody" + i) != null) i++;
-			world.getBodies().add(new Body(Config.fromString("name newbody" + i)));
+			world.getBodies().add(new Body(Config.fromString("name newbody" + i + "\ngfx {\ntexture earth.png\ncolor 1,1,1\n}\n")));
 			details.refresh();
 		}
 	}

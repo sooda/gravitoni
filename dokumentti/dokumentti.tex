@@ -97,6 +97,8 @@ Tai apuskripteillä:
 ./runraw.sh conf/all.conf 31536000
 \end{verbatim}
 
+Jos runrawilta unohtuu aikamäärä, se yrittää käynnistää guita muttei onnistu siinä ellei classpath ole kunnossa. Tästä lentää poikkeus.
+
 Komentorivin ajosta kiinnostava tuloste on lokitiedosto(t), jotka määrätään asetuksissa. Ohjelma tulostaa hieman debugdataa käynnistyessään ja mm. törmäysten sattuessa. Mukana tulee collisionplot.gnuplot, jonka voi ladata gnuplotiin (komennolla load 'collisionplot.gnuplot') törmäystestiajon ajettuaan (tiedostossa conf/collisiontest.conf).
 
 Suurissa määrin olevia planeettoja voi testailla randomworld.py-skriptin avulla. Se tulostaa komentoriviparametrina annettavan numeron verran kappaleita satunnaisiin paikkoihin. Tämän tulostuksen voi ohjata johonkin asetustiedostoon, joka ladataan itse ohjelmaan.
@@ -133,7 +135,7 @@ Katselutilan pääpaino on 3d-näkymässä, jota voi raahailla hiirellä eestaas ja jo
 \item Nappi r resetoi näkymän
 \item Nappi p togglaa pausen
 \item Nappi c togglaa origokursorin näkymisen
-\item Nappi e togglaa debuggaustason näkymisen % (TODO ecliptic plane)
+\item Nappi e togglaa debuggaustason näkymisen
 \end{itemize}
 
 Lisäksi 3d-tilasta oikealla hiiren napilla klikkaamalla saa auki valikon, josta voi valita samoja asioita kuin infopaneelista ja näppäimistöltä.
@@ -155,7 +157,7 @@ Jos planeetat törmäävät ja asetuksissa on säädetty tälle maailmanloppu, ohjelma 
 
 \subsubsection{Valikko}
 % TODO: OPEN TOIMIMAAN TROLOOLO
-Valikosta voi avata tiedoston, sulkea ohjelman, säätää pausetilaa sekä lisätä ja planeettoja. Tiedoston avaaminen pysäyttää simulaation ja sulkee nykyisen maailmakonfiguraation ja avaa uuden kuin ohjelma olisi käynnistetty tällä uudella tiedostolla. Ohjelmasta poistuminen myös sulkee konfiguraation välittömästi. Planeettojen lisääminen onnistuu vain numerotilassa turvallisuuden vuoksi, koska ohjelman kannattaa olla pausetilassa kappaletta muokatessa mihin se meneekin itsestään numerotilaan siirtyessä.
+Valikosta voi sulkea ohjelman, säätää pausetilaa sekä lisätä ja planeettoja. Tiedoston avaaminen pysäyttää simulaation ja sulkee nykyisen maailmakonfiguraation ja avaa uuden kuin ohjelma olisi käynnistetty tällä uudella tiedostolla. Ohjelmasta poistuminen myös sulkee konfiguraation välittömästi. Planeettojen lisääminen onnistuu vain numerotilassa turvallisuuden vuoksi, koska ohjelman kannattaa olla pausetilassa kappaletta muokatessa mihin se meneekin itsestään numerotilaan siirtyessä.
 
 
 \section{Ohjelman rakenne}
@@ -170,6 +172,8 @@ Rakenne (kuvassa \ref{fig:rakennekuva}) säilyi pääpiirteittäin samanlaisena kun 
 	\item Käyttöliittymä ja dialogit: käli on pääasiassa yksi ikkuna, jossa on modulaarisesti eri asetuspaneeleita sekä 3d-canvas erillisinä luokkina.
 	\item Graffarenderöinti ja sen käyttöliittymä: renderöijä kyselee kappaleiden tiedot maailmalta ja piirtää ne näytölle, sekä käsittelee mm. näppäimistösyötteet joilla näkymässä voi liikkua.
 \end{itemize}
+
+Javadoc-html löytyy hakemistosta doc/api.
 
 
 \subsection{Konfiguraatiot}
@@ -438,6 +442,8 @@ Kappaleita ei voi siirtää tai seurata 3d-näkymässä. Siirtäminen olisi kuitenkin 
 Satelliitin/raketin laukaisulle ei ole käyttöliittymässä nappia eikä niitä voi lisätä jälkeenpäin, vaan ne on laitettava asetustiedostoon valmiiksi (mallia voi ottaa conf-hakemiston esimerkkitiedostoista).
 
 Törmäyksissä kappaleet eivät hajoa palasiksi.
+
+Kappaleiden lopputilaa ei voi tallentaa konfigurointitiedostoon, mutta tunnin koodaamisella ja testauksella sekin olisi mahdollista. Config-luokassa on valmiiksi tiedostoonkirjoitusfunktio tätä varten; kappaleiden tiedot pitäisi päivittää asetuslohkoihin ja kirjoittaa ne johonkin käyttäjän määrittämään tiedostoon.
 
 
 \section{Toteutunut työjärjestys ja aikataulu}
